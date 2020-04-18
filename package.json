@@ -1,0 +1,19 @@
+{
+  "name": "jablko",
+  "version": "0.1.0",
+  "description": "Smart home server powered by NodeJS and Express",
+  "main": "jablko.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ccoverstreet/Jablko.git"
+  },
+  "author": "Cale Overstreet, Corinne Gerhold",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ccoverstreet/Jablko/issues"
+  },
+  "homepage": "https://github.com/ccoverstreet/Jablko#readme"
+}
