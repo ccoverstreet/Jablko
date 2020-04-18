@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/ccoverstreet/Jablko/issues"
   },
-  "homepage": "https://github.com/ccoverstreet/Jablko#readme"
+  "homepage": "https://github.com/ccoverstreet/Jablko#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
