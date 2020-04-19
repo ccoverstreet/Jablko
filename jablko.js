@@ -8,33 +8,61 @@ const child_options = {
 	silent: true
 };
 
-function jablko_log(process_name, data, options={color: "normal"}) {
-	var prefix = `${process_name} [${new Date().toLocaleString("sv-SE")}]: ` // Creating prefix for process log
-	const split_data_string = data.toString().split("\n"); // Split at newline to create proper indentation later on
-
-	var output_string = prefix;
-	for (var i = 0; i < split_data_string.length; i++) {
-		if (i == 0) {
-			output_string += split_data_string[i];
-		} 
-		output_string += "\nASD";
-		
-	}
-
-	console.log(output_string);
-		
-	console.log(options.color);
-}
-
 const fork = require("child_process").fork; // Used for forking submodules
 
-var jablko_web_interface = fork(`${jablko_root}/web_interface/jablko_web_interface.js`, child_options);
+console_colors = {
+	"normal": "\x1b[0m",
+	"reset": "\x1b[0m",
+	"red": "\x1b[31m"
+};
 
-jablko_web_interface.stdout.on("data", function(data) {
-	jablko_log("Jablko Web Interface", data);
-});
+function jablko_log(process_name, data, options={color: "normal"}) {
+	var prefix = `${process_name} [${new Date().toLocaleString("sv-SE")}]: ` // Creating prefix for process log
+	const split_data_string = data.split("\n"); // Split at newline to create proper indentation later on
 
-jablko_web_interface.stderr.on("data", function(data) {
-	console.log(data.toString());
-});
+	var output_string = `${console_colors[options.color]}${prefix}`;
 
+	// Check if empty line was sent
+	if (split_data_string.length == 1) {
+		return; // Avoid logging empty lines
+	}
+
+	// Append each line with proper indentation
+	for (var i = 0; i < split_data_string.length; i++) {
+		if (split_data_string[i].length != 0) {
+			if (i == 0) {
+				output_string += split_data_string[i];
+			} else {
+				output_string += "\n" + " ".repeat(prefix.length) + split_data_string[i];
+			}	
+		}
+	}
+
+	output_string += `${console_colors["reset"]}`;
+
+	console.log(output_string);
+}
+
+function jablko_fork(fork_name, program_location) {
+	// Fork name is somehting like "Jablko Web Interface"
+	// Program location is relative to jablko_root and should be formatted like /path/to/file
+	var new_fork = fork(`${jablko_root}${program_location}`, {silent: true});
+
+	new_fork.stdout.on("data", function(data) {
+		jablko_log(fork_name, data.toString());
+	});
+
+	new_fork.stderr.on("data", function(data) {
+		jablko_log(fork_name, data.toString(), {color: "red"});
+	});
+
+	new_fork.on("exit", function() {
+		jablko_fork(fork_name, program_location);
+	});
+
+	return new_fork;
+}
+
+var jablko_web_interface = jablko_fork("Jablko Web Interface", "/web_interface/jablko_web_interface.js");
+
+var jablko_sms_server = jablko_fork("Jablko SMS Server", "/sms_server/jablko_sms_server.js");
