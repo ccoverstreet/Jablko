@@ -22,11 +22,6 @@ function jablko_log(process_name, data, options={color: "normal"}) {
 
 	var output_string = `${console_colors[options.color]}${prefix}`;
 
-	// Check if empty line was sent
-	if (split_data_string.length == 1) {
-		return; // Avoid logging empty lines
-	}
-
 	// Append each line with proper indentation
 	for (var i = 0; i < split_data_string.length; i++) {
 		if (split_data_string[i].length != 0) {
@@ -56,8 +51,14 @@ function jablko_fork(fork_name, program_location) {
 		jablko_log(fork_name, data.toString(), {color: "red"});
 	});
 
-	new_fork.on("exit", function() {
-		jablko_fork(fork_name, program_location);
+	new_fork.on("exit", function(code) {
+		if (code == 0) {
+			jablko_log(fork_name, "Exited with no error code");
+			return;
+		} else {
+			jablko_log("Jablko", `Process ${fork_name} exited with code ${code}`);
+			jablko_fork(fork_name, program_location);
+		}
 	});
 
 	return new_fork;
@@ -66,3 +67,5 @@ function jablko_fork(fork_name, program_location) {
 var jablko_web_interface = jablko_fork("Jablko Web Interface", "/web_interface/jablko_web_interface.js");
 
 var jablko_sms_server = jablko_fork("Jablko SMS Server", "/sms_server/jablko_sms_server.js");
+
+setTimeout(function fart(){jablko_web_interface.send("Hi")}, 3000);

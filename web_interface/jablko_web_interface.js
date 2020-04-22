@@ -16,4 +16,6 @@ server.listen(10230, function() {
 	console.log("Jablko Web Interface started on port 10230");
 });
 
-
+process.on("message", function(message) {
+	console.log(message);
+});
