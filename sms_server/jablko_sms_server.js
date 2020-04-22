@@ -34,9 +34,6 @@ const mail_options = {
 	text: "I Love You!"
 };
 
-transporter.sendMail(mail_options, function(err, info) {
-	console.log(info);
-});
 
 var server = express();
 server.use(bodyParser.json());
@@ -48,7 +45,7 @@ server.post("/send_message", function(req, res) {
 	const mail_options=  {
 		from: credentials.email,
 		to: to_address,
-		subject "",
+		subject: "",
 		text: req.body.message
 	};
 

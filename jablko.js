@@ -67,5 +67,3 @@ function jablko_fork(fork_name, program_location) {
 var jablko_web_interface = jablko_fork("Jablko Web Interface", "/web_interface/jablko_web_interface.js");
 
 var jablko_sms_server = jablko_fork("Jablko SMS Server", "/sms_server/jablko_sms_server.js");
-
-setTimeout(function fart(){jablko_web_interface.send("Hi")}, 3000);
