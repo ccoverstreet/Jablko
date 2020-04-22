@@ -7,10 +7,12 @@ const jablko_root = __dirname.replace("/web_interface", ""); // Root of the Jabl
 const jablko_web_root = __dirname.replace("/web_interface", "/public_html"); // Root of web assets
 
 const express = require("express"); // Main express include
+const axios = require("axios");
 
 const server = express(); // Creating server object
 
 server.use(express.static(`${jablko_web_root}`));
+
 
 server.listen(10230, function() {
 	console.log("Jablko Web Interface started on port 10230");
