@@ -3,8 +3,8 @@
 // April 18, 2020
 // Primary server for serving smart home web interface.
 
-const jablko_root = __dirname.replace("/web_interface", ""); // Root of the Jablko Repo
-const jablko_web_root = __dirname.replace("/web_interface", "/public_html"); // Root of web assets
+const jablko_root = __dirname; // Root of the Jablko Repo
+const jablko_web_root = __dirname + "/public_html"; // Root of web assets
 
 const express = require("express"); // Main express include
 const axios = require("axios");
