@@ -2,13 +2,17 @@
 // Cale Overstreet, Corinne Gerhold
 // Uses a gmail account to send messages to residents
 
+console.log(process.argv);
+
 // Package requires
 const express = require("express");
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
 
-// Credentials
-const credentials = require("../jablko_sms_config.json");
+const credentials = {
+	email: process.argv[2],
+	password: process.argv[3]
+};
 
 // Domains for certain phone providers
 carriers = {
@@ -29,9 +33,9 @@ const transporter = nodemailer.createTransport({
 
 const mail_options = {
 	from: "jablkohome@gmail.com",
-	to: "6156892522@mms.att.net",
+	to: "7578975969@vtext.com",
 	subject: "",
-	text: "I Love You!"
+	text: "Test 1"
 };
 
 
