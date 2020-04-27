@@ -38,7 +38,7 @@ function jablko_log(process_name, data, options={color: "normal"}) {
 	console.log(output_string);
 }
 
-function jablko_fork(fork_name, program_location, args) {
+function jablko_fork(fork_name, program_location) {
 	// Fork name is somehting like "Jablko Web Interface"
 	// Program location is relative to jablko_root and should be formatted like /path/to/file
 	var new_fork = fork(`${jablko_root}${program_location}`, args, {silent: true});
@@ -66,4 +66,4 @@ function jablko_fork(fork_name, program_location, args) {
 
 var jablko_server= jablko_fork("Jablko Server", "/jablko_server.js");
 
-var jablko_sms_server = jablko_fork("Jablko SMS Server", "/sms_server/jablko_sms_server.js", process.argv.slice(2, 4));
+var jablko_sms_server = jablko_fork("Jablko SMS Server", "/sms_server/jablko_sms_server.js");

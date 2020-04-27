@@ -9,6 +9,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
 
+// Read credentials from config file
+const credentials = require("../jablko_sms_config.json");
+
 const credentials = {
 	email: process.argv[2],
 	password: process.argv[3]
