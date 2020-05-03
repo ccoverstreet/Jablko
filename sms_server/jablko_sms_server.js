@@ -12,11 +12,6 @@ const nodemailer = require("nodemailer");
 // Read credentials from config file
 const credentials = require("../jablko_sms_config.json");
 
-const credentials = {
-	email: process.argv[2],
-	password: process.argv[3]
-};
-
 // Domains for certain phone providers
 carriers = {
     att:    'mms.att.net',
@@ -33,14 +28,6 @@ const transporter = nodemailer.createTransport({
 		pass: credentials.password
 	}
 });
-
-const mail_options = {
-	from: "jablkohome@gmail.com",
-	to: "7578975969@vtext.com",
-	subject: "",
-	text: "Test 1"
-};
-
 
 var server = express();
 server.use(bodyParser.json());

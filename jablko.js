@@ -41,7 +41,7 @@ function jablko_log(process_name, data, options={color: "normal"}) {
 function jablko_fork(fork_name, program_location) {
 	// Fork name is somehting like "Jablko Web Interface"
 	// Program location is relative to jablko_root and should be formatted like /path/to/file
-	var new_fork = fork(`${jablko_root}${program_location}`, args, {silent: true});
+	var new_fork = fork(`${jablko_root}${program_location}`, child_options);
 
 	new_fork.stdout.on("data", function(data) {
 		jablko_log(fork_name, data.toString());
@@ -57,7 +57,7 @@ function jablko_fork(fork_name, program_location) {
 			return;
 		} else {
 			jablko_log("Jablko", `Process ${fork_name} exited with code ${code}`);
-			jablko_fork(fork_name, program_location);
+			setTimeout(jablko_fork, 3000, fork_name, program_location);
 		}
 	});
 
