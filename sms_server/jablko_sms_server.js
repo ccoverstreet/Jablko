@@ -2,8 +2,6 @@
 // Cale Overstreet, Corinne Gerhold
 // Uses a gmail account to send messages to residents
 
-console.log(process.argv);
-
 // Package requires
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -53,7 +51,10 @@ server.post("/send_message", function(req, res) {
 	});
 });
 
+server.get("/status", function(req, res) {
+	res.json({status: "good", message: "SMS Server Operational"});
+});
+
 server.listen(10231, function() {
 	console.log("Jablko SMS Interface started on port 10231");
-	console.log(credentials);
 });

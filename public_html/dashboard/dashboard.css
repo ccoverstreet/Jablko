@@ -1,0 +1,56 @@
+body {
+	font-family: Arial;
+	margin: 0px;
+}
+
+.body_dark {
+	background-color: #2f3640;
+}
+
+.body_light {
+	background-color: #dcdde1;
+}
+
+.light_card {
+	background-color: #f5f6fa;
+	color: #000000;
+}
+
+.dark_card {
+	background-color: #353b48;
+	color: #f5f6fa;
+}
+
+.card_title {
+	font-size: 28px;
+	font-weight: bold;
+	padding: 5px;
+	padding-left: 15px;
+}
+
+.label_value_pair {
+	display: grid;
+	grid-template-columns: 50% 50%;
+}
+
+.label {
+	display: flex;
+	justify-content: flex-end;
+	padding: 5px;
+}
+
+.value {
+	padding: 5px;
+}
+
+hr {
+	margin: 0px;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+.jablko_module_card {
+	margin: 10px;
+	border-radius: 5px;
+}

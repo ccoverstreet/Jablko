@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="/dashboard/dashboard.css">
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script>
+			function change_theme() {
+				document.body.classList.toggle("body_dark");
+				document.body.classList.toggle("body_light");
+
+				$(".jablko_module_card").toggleClass("dark_card");
+				$(".jablko_module_card").toggleClass("light_card");
+			}
+
+			function time_check() {
+				const x = new Date().toLocaleTimeString("sv-SE");
+				const seconds = parseInt(x.split(":")[0]) * 3600 + parseInt(x.split(":")[1]) * 60 + parseInt(x.split(":")[2]);
+
+				if (seconds < 23400 || seconds > 72000) {
+					change_theme();
+					console.log("ASDAS");
+				}
+			}
+
+			$(document).ready(function() {
+				time_check();
+				console.log("ASDAS");
+			});
+		</script>
+	</head>
+	
+	<body class="body_light">
+		<button onclick="change_theme()">Switch</button>
+		<div id="module_container">
+			$JABLKO_MODULES
+		</div>
+	</body>
+</html>

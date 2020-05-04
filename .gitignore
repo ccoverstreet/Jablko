@@ -2,3 +2,4 @@
 /package-lock.json
 jablko_sms_config.json
 /database/*.db
+/public_html/dashboard/dashboard.html
