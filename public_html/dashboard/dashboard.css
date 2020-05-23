@@ -11,6 +11,10 @@ body {
 	background-color: #dcdde1;
 }
 
+#module_container {
+	columns: 3 300px;
+}
+
 .light_card {
 	background-color: #f5f6fa;
 	color: #000000;
@@ -48,9 +52,12 @@ hr {
 	margin-left: 10px;
 	margin-right: 10px;
 	margin-bottom: 10px;
+	border-color: #0097e6;
 }
 
 .jablko_module_card {
+	display: inline-block;
 	margin: 10px;
 	border-radius: 5px;
+	width: calc(100% - 20px);
 }

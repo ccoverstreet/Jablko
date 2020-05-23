@@ -17,9 +17,10 @@ server.use(express.static(`${jablko_web_root}`));
 const fs = require("fs");
 var jablko_modules_dict = new Object();
 
+console.log("Loading Jablko Modules and mapping assets...");
 const module_names = fs.readdirSync(`${jablko_root}/jablko_modules`);
 for (var i = 0; i < module_names.length; i++) {
-	jablko_modules_dict[module_names] = require(`${jablko_root}/jablko_modules/${module_names[i]}/${module_names[i]}.js`);
+	jablko_modules_dict[module_names[i]] = require(`${jablko_root}/jablko_modules/${module_names[i]}/${module_names[i]}.js`);
 }
 
 // Generate dashboard.html from dashboard_template.html
@@ -28,11 +29,10 @@ console.log("Generating dashboard.html from template...");
 
 var jablko_modules_string = "";
 Object.keys(jablko_modules_dict).forEach(function(item) {
-	jablko_modules_string += jablko_modules_dict[item].generate_card();
+	jablko_modules_string = jablko_modules_string + jablko_modules_dict[item].generate_card();
 });
 
 var dashboard_template = fs.readFileSync(`${jablko_web_root}/dashboard/dashboard_template.html`).toString();
-
 dashboard_template = dashboard_template.replace("$JABLKO_MODULES", jablko_modules_string);
 
 fs.writeFileSync(`${jablko_web_root}/dashboard/dashboard.html`, dashboard_template);
@@ -42,6 +42,11 @@ console.log(`Generated dashboard.html with modules: ${module_names}`);
 
 server.get("/", function(req, res) {
 	res.sendFile(`${jablko_web_root}/dashboard/dashboard.html`);
+});
+
+server.post("/jablko_modules/:module_name/:function", function(req, res) {
+	// Pass request to the jablko module it is intended for. Needs Error Handling
+	jablko_modules_dict[req.params.module_name][req.params.function](req, res);
 });
 
 server.listen(10230, function() {

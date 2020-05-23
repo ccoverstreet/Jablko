@@ -23,5 +23,5 @@ function generate_card() {
 		<div class="value">N/A</div>
 	</div>
 </div>
-	`
+`
 }
