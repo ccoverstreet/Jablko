@@ -8,7 +8,7 @@ const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
 
 // Read credentials from config file
-const credentials = require("../jablko_sms_config.json");
+const credentials = require("../jablko_config.json");
 
 // Domains for certain phone providers
 carriers = {
@@ -22,8 +22,8 @@ carriers = {
 const transporter = nodemailer.createTransport({
 	service: "gmail",
 	auth: {
-		user: credentials.email,
-		pass: credentials.password
+		user: credentials.sms_email,
+		pass: credentials.sms_password
 	}
 });
 
