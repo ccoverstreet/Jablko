@@ -1,5 +1,5 @@
 /node_modules
 /package-lock.json
-jablko_sms_config.json
+jablko_config.json
 /database/*.db
 /public_html/dashboard/dashboard.html
