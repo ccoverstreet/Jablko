@@ -20,16 +20,25 @@ function generate_card() {
 		}
 	}	
 </script>
-<div class="jablko_module_card light_card">
+<div class="jablko_module_card">
 	<div class="card_title">Test Module</div>
 	<hr>
 	<div class="label_value_pair">
 		<div class="label">Hello</div>
 		<div class="value">World</div>
 	</div>
-	<hr>
-	<hr>
-	<hr>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
 	<button onclick="test_module.fire()">Push to Talk</button>
 </div>
 `

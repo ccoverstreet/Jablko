@@ -11,7 +11,7 @@ function generate_card() {
 	return `
 <script> 
 </script>
-<div class="jablko_module_card light_card">
+<div class="jablko_module_card">
 	<div class="card_title">Server Status</div>
 	<hr>
 	<div class="label_value_pair">

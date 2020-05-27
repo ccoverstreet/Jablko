@@ -7,11 +7,8 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script>
 			function change_theme() {
-				document.body.classList.toggle("body_dark");
-				document.body.classList.toggle("body_light");
-
-				$(".jablko_module_card").toggleClass("dark_card");
-				$(".jablko_module_card").toggleClass("light_card");
+				document.body.classList.toggle("theme_light");
+				document.body.classList.toggle("theme_dark");
 			}
 
 			function time_check() {
@@ -31,7 +28,7 @@
 		</script>
 	</head>
 	
-	<body class="body_light">
+	<body class="theme_light">
 		<button onclick="change_theme()">Switch</button>
 		<div id="module_container">
 			$JABLKO_MODULES
