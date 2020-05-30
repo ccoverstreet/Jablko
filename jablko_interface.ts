@@ -12,6 +12,8 @@ const router = new Router();
 
 const web_root = "public_html";
 
+console.log(window);
+
 // Keep an average for a frame of 100 requests. Once 100 is reached, clear the average and reset the size counter
 export const server_start_time = new Date().getTime();
 
@@ -45,8 +47,15 @@ app.addEventListener("error", (evt) => {
 app.use(async (context, next) => {
 	const request_start_time = new Date().getTime();	
 	await next();
+	
+	if (request_handling_times.size_counter > request_handling_times.window_size) {
+		request_handling_times.size_counter = 1;
+		request_handling_times.current_average = 0;
+	} else {
+		request_handling_times.size_counter++;
+	}
+	
 
-	request_handling_times.size_counter++;
 	const size = request_handling_times.size_counter;
 
 	request_handling_times.current_average = request_handling_times.current_average * (size - 1) / size + (new Date().getTime() - request_start_time) / (size);
