@@ -3,12 +3,9 @@
 // May 23, 2020
 // This module is just a test module for testing formatting and new features
 
-module.exports = {
-	generate_card: generate_card,
-	test_response: test_response
-}
+import { Context } from "https://deno.land/x/oak/mod.ts";
 
-function generate_card() {
+export function generate_card() {
 	return `
 <script>
 	var test_module = {
@@ -44,6 +41,9 @@ function generate_card() {
 `
 }
 
-function test_response(req, res) {
-	res.send("This is the server speaking.");
+export function test_response(context: Context) {
+	context.response.type = "json";
+	context.response.body = {
+		hello: "world"
+	};
 }
