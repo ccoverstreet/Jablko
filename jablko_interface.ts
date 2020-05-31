@@ -44,6 +44,7 @@ export var request_handling_times = {
 }
 
 async function load_jablko_modules() {
+	// Creates an object containing jablko modules and all exported functions for server routing
 	var loaded_modules: any = new Object();
 
 	for await (const dirEntry of Deno.readDir("jablko_modules")) {
@@ -54,7 +55,7 @@ async function load_jablko_modules() {
 }
 
 var jablko_modules: any = await load_jablko_modules(); // Only bit that needs to use type any. Hopefully a future design removes this need
-console.log(jablko_modules);
+
 
 console.log("Creating Middleware Handlers...");
 
@@ -63,8 +64,8 @@ app.addEventListener("error", (evt) => {
   console.log(evt.error);
 });
 
-// Timer Middleware. Logs how much time it takes to handle a request
 app.use(async (context, next) => {
+	// Timer Middleware. Logs how much time it takes to handle a request. Uses a evolving average for a certain window of requests.
 	const request_start_time = new Date().getTime();	
 	await next();
 	
@@ -74,13 +75,13 @@ app.use(async (context, next) => {
 	} else {
 		request_handling_times.size_counter++;
 	}
-	
 
 	const size = request_handling_times.size_counter;
 
 	request_handling_times.current_average = request_handling_times.current_average * (size - 1) / size + (new Date().getTime() - request_start_time) / (size);
 }); 
 
+// Defining Server Routes
 router.get("/", async (context) => {
 	var dashboard_string: string = await readFileStr(`${web_root}/dashboard/dashboard_template.html`);
 	var module_string = "";
