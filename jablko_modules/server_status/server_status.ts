@@ -18,7 +18,10 @@ export function generate_card() {
 				const interface_response_time_element = document.getElementById("interface_response_time");
 
 				interface_status_element.textContent = data.interface_status;
-				interface_uptime_element.textContent = data.interface_uptime + " s";
+				const hour = Math.floor(data.interface_uptime / 3600);
+				const minute = Math.floor((data.interface_uptime - hour * 3600) / 60);
+				const second = Math.floor((data.interface_uptime - hour * 3600 - minute * 60));
+				interface_uptime_element.textContent = hour + " h " + minute + " m " + second + " s";
 				interface_response_time_element.textContent = data.interface_response_time.toFixed(3) + " ms";
 
 				switch (data.interface_status) {
@@ -68,15 +71,6 @@ export function generate_card() {
 	<div class="label_value_pair">
 		<div class="label">Response Time:</div>
 		<div id="interface_response_time" class="value">N/A</div>
-	</div>
-	<br>
-	<div class="label_value_pair">
-		<div class="label">SMS Server Status:</div>
-		<div class="value">N/A</div>
-	</div>
-	<div class="label_value_pair">
-		<div class="label">SMS Server Message:</div>
-		<div class="value">N/A</div>
 	</div>
 </div>
 `

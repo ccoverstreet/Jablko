@@ -6,13 +6,33 @@
 console.log("Starting Jablko Interface...");
 import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
 import { readFileStr } from "https://deno.land/std/fs/mod.ts"
+import { SmtpClient } from "https://deno.land/x/smtp/mod.ts";
 
 const app = new Application();
 const router = new Router();
 
-const web_root = "public_html";
+// Connect SMTP client
+/* Need to wait for fix to be merged
+const smtp_client = new SmtpClient();
+console.log(smtp_client);
 
-console.log(window);
+await smtp_client.connect({
+	hostname: "smtp.gmail.com",
+	port: 465,
+	username: "jablkohome@gmail.com",
+	password: "CorinneWaBijin"
+});
+
+await smtp_client.send({
+	from: "jablkohome@gmail.com",
+	to: "7578975969@vtext.com",
+	subject: "ASDAS",
+	content: "Hello"
+});
+ */
+
+// Important Paths
+const web_root = "public_html";
 
 // Keep an average for a frame of 100 requests. Once 100 is reached, clear the average and reset the size counter
 export const server_start_time = new Date().getTime();
