@@ -6,30 +6,9 @@
 console.log("Starting Jablko Interface...");
 import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
 import { readFileStr } from "https://deno.land/std/fs/mod.ts"
-import { SmtpClient } from "https://deno.land/x/smtp/mod.ts";
 
 const app = new Application();
 const router = new Router();
-
-// Connect SMTP client
-/* Need to wait for fix to be merged
-const smtp_client = new SmtpClient();
-console.log(smtp_client);
-
-await smtp_client.connect({
-	hostname: "smtp.gmail.com",
-	port: 465,
-	username: "jablkohome@gmail.com",
-	password: "CorinneWaBijin"
-});
-
-await smtp_client.send({
-	from: "jablkohome@gmail.com",
-	to: "7578975969@vtext.com",
-	subject: "ASDAS",
-	content: "Hello"
-});
- */
 
 // Important Paths
 const web_root = "public_html";
@@ -47,6 +26,7 @@ async function load_jablko_modules() {
 	// Creates an object containing jablko modules and all exported functions for server routing
 	var loaded_modules: any = new Object();
 
+	console.log("Loading Jablko Modules...");
 	for await (const dirEntry of Deno.readDir("jablko_modules")) {
 		loaded_modules[dirEntry.name] = await import(`./jablko_modules/${dirEntry.name}/${dirEntry.name}.ts`);
 	}
@@ -82,6 +62,8 @@ app.use(async (context, next) => {
 }); 
 
 // Defining Server Routes
+console.log("Defining Server Routes...");
+
 router.get("/", async (context) => {
 	var dashboard_string: string = await readFileStr(`${web_root}/dashboard/dashboard_template.html`);
 	var module_string = "";
@@ -116,4 +98,5 @@ app.use(async (context) => {
 	});
 });
 
+console.log("Jablko Interface Listening on Port 10230");
 await app.listen({port: 10230});
