@@ -104,8 +104,13 @@ async function create_user() {
 
 	console.log("Enter Phone Number ##########:");
 	for await (const line of readLines(Deno.stdin)) {
-		user_data.phone_number = line.trim();
-		break;
+		const regex = /[0-9]{10}/;
+		if (regex.test(line.trim())) {
+			user_data.phone_number = line.trim();
+			break;
+		}
+
+		console.log("Incorrect Format");
 	}
 
 	console.log("Enter Phone Carrier (eg. verizon, att, tmobile):");
@@ -114,10 +119,15 @@ async function create_user() {
 		break;
 	}
 
-	console.log("Enter Preferred Wakeup Time (hh:mm):");
+	console.log("Enter Preferred Wakeup Time 24 hour format (hh:mm):");
 	for await (const line of readLines(Deno.stdin)) {
-		user_data.wakeup_time = line.trim();
-		break;
+		const regex = /[0-9]{2}:[0-9]{2}/;
+		if (regex.test(line.trim())) {
+			user_data.wakeup_time = line.trim();
+			break;
+		}
+
+		console.log("Incorrect Format");
 	}
 
 	// Create Password Hash	
@@ -131,4 +141,5 @@ async function create_user() {
 	)`, [user_data.username, hash, user_data.first_name, user_data.phone_number, user_data.phone_carrier, user_data.wakeup_time]);
 }
 
+// Start Mainloop
 mainloop();
