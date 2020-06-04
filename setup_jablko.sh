@@ -2,6 +2,7 @@
 
 echo "Starting Jablko Smart Home Configuration"
 
+echo fart
 
 echo "Configuring Jablko SMS Server"
 printf "\tEnter Gmail Address: "
