@@ -22,15 +22,20 @@
 				}
 			}
 
+
 			$(document).ready(function() {
 				time_check();
 				console.log("ASDAS");
+				$("#toolbar").load("/toolbar/toolbar.html", function() {
+					console.log("Toolbar loaded");
+				});
 			});
 		</script>
 	</head>
 	
 	<body class="theme_light">
-		<button onclick="change_theme()">Switch</button>
+		<div id="toolbar"></div>
+
 		<div id="module_container">
 			$JABLKO_MODULES
 		</div>

@@ -6,11 +6,13 @@ body {
 
 .theme_light {
 	--color-background: #dcdde1;
+	--color-inverted-background: #2f3640;
 	--color-card-background: #f5f6fa;
 	--font-color: #000000;
 }
 
 .theme_dark {
+	--color-inverted-background: #dcdde1;
 	--color-background: #2f3640;
 	--color-card-background: #353b48;
 	--font-color: #f5f6fa;
@@ -19,6 +21,7 @@ body {
 
 #module_container {
 	columns: 3 350px;
+	margin-top: 50px;
 }
 
 .card_title {

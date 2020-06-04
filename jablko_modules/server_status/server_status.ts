@@ -6,6 +6,10 @@
 import { Context } from "https://deno.land/x/oak/mod.ts";
 import { request_handling_times, server_start_time } from "../../jablko_interface.ts"
 
+export const info = {
+	permissions: "all"
+}
+
 export function generate_card() {
 	return `
 <script> 
@@ -58,7 +62,7 @@ export function generate_card() {
 	setInterval(server_status.check_status, 15000);
 </script>
 <div class="jablko_module_card">
-	<div class="card_title">Server Status</div>
+<div class="card_title" style="background: url('/icons/server_status_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Server Status</div>
 	<hr>
 	<div class="label_value_pair">
 		<div class="label">Interface Status:</div>

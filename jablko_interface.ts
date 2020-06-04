@@ -5,10 +5,12 @@
 
 console.log("Starting Jablko Interface...");
 import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
-import { readFileStr } from "https://deno.land/std/fs/mod.ts"
+import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 
 const app = new Application();
 const router = new Router();
+
+
 
 // Important Paths
 const web_root = "public_html";
@@ -27,7 +29,7 @@ async function load_jablko_modules() {
 	var loaded_modules: any = new Object();
 
 	console.log("Loading Jablko Modules...");
-	for await (const dirEntry of Deno.readDir("jablko_modules")) {
+	for await (const dirEntry of Deno.readDir("./jablko_modules")) {
 		loaded_modules[dirEntry.name] = await import(`./jablko_modules/${dirEntry.name}/${dirEntry.name}.ts`);
 	}
 
@@ -35,6 +37,14 @@ async function load_jablko_modules() {
 }
 
 var jablko_modules: any = await load_jablko_modules(); // Only bit that needs to use type any. Hopefully a future design removes this need
+
+// Create module watcher for jablko module reloading
+const module_watcher = new Worker("./source/module_watcher.ts", {type: "module", deno: true});
+module_watcher.onmessage = async function(message) {
+	console.log(message);
+	delete jablko_modules[message.data];
+	jablko_modules[message.data] = await import(`./jablko_modules/${message.data}/${message.data}.ts`);
+}
 
 
 console.log("Creating Middleware Handlers...");

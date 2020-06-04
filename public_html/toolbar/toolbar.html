@@ -1,0 +1,33 @@
+<div style="position: fixed; top: 0px; left: 0px; display: grid; grid-template-rows: 100%; grid-template-columns: 50px auto 50px; background-color: #40739e; width: 100vw; height: 50px; z-index: 1000">
+	<button onclick="$('#menu_dropdown').show()" style="grid-column: 1; background: url('/icons/menu_icon.svg'); background-size: contain; height: 100%; border-width: 0px;"></button>
+	<button onclick="change_theme()" style="grid-column: 3; background: url('/icons/theme_icon.svg'); background-size: contain; height: 100%; border-width: 0px;"></button>
+</div>
+
+<script>
+	// Hide dropdown when click is outside
+	$(document).mouseup(function(e) {
+		const container = $("#menu_dropdown");
+		if (!container.is(e.target)) {
+			container.hide();
+		}
+	});
+</script>
+
+<style>
+.dropdown_item {
+	display: block;
+	height: 50px;	
+	width: 100%;
+	color: #f5f6fa;
+	font-size: 25px;
+	font-weight: bold;
+	padding-left: 60px;
+	padding-right: 15px;
+	border-width: 0px;
+}
+</style>
+
+<div id="menu_dropdown" style="position: fixed; top: 50px; left: 0px; background-color: #40739e; display: none;">
+	<button class="dropdown_item" onclick="location.replace('/')" style="background: url('/icons/dashboard_icon.svg') left; background-size: contain; background-repeat: no-repeat">Dashboard</button>
+	<button class="dropdown_item" onclick="console.log('Implement Logout')" style="background: url('/icons/logout_icon.svg'); background-size: contain; background-repeat: no-repeat;">Logout</button>
+</div>
