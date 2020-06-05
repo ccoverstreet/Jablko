@@ -10,7 +10,10 @@ import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 const app = new Application();
 const router = new Router();
 
-
+app.addEventListener("error", (evt) => {
+  // Will log the thrown error to the console.
+  console.log(evt.error);
+});
 
 // Important Paths
 const web_root = "public_html";
@@ -49,13 +52,9 @@ module_watcher.onmessage = async function(message) {
 
 console.log("Creating Middleware Handlers...");
 
-app.addEventListener("error", (evt) => {
-  // Will log the thrown error to the console.
-  console.log(evt.error);
-});
-
+// Timer Middleware
 app.use(async (context, next) => {
-	// Timer Middleware. Logs how much time it takes to handle a request. Uses a evolving average for a certain window of requests.
+	// Logs how much time it takes to handle a request. Uses a evolving average for a certain window of requests.
 	const request_start_time = new Date().getTime();	
 	await next();
 	
@@ -70,6 +69,10 @@ app.use(async (context, next) => {
 
 	request_handling_times.current_average = request_handling_times.current_average * (size - 1) / size + (new Date().getTime() - request_start_time) / (size);
 }); 
+
+const user_authentication = await import("./source/user_authentication.ts");
+console.log(user_authentication);
+app.use(user_authentication.check_authentication);
 
 // Defining Server Routes
 console.log("Defining Server Routes...");
