@@ -46,6 +46,13 @@ async function create_database() {
 					phone_carrier TEXT NOT NULL,
 					wakeup_time TEXT NOT NULL
 				)`);
+
+				db.query(`CREATE TABLE IF NOT EXISTS login_sessions (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					session_cookie TEXT NOT NULL,
+					username TEXT NOT NULL,
+					creation_time TEXT NOT NULL
+				)`);
 				return;
 			} else {
 				break;
