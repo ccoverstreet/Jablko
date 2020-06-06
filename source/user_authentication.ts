@@ -4,17 +4,15 @@ import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 import Random from "https://deno.land/x/random/Random.js";
 
 /***
- *	Checks if request is authenticated and handles accordingly 
- *	@param context: Oak Context
- *	@param next: Handle for next function in Oak middleware
+ *	@description Checks if request is authenticated and handles accordingly 
+ *	@parameter context: Oak Context
+ *	@parameter next: Handle for next function in Oak middleware
  */
 export async function check_authentication(context: any, next: any) {
+	// Create SQLite database connection
 	const db = new DB("database/primary.db");
 
-
-	if (context.cookies.get("key_1") == null) {
-		context.response.body = "fart";
-	} else if (context.request.url.pathname == "/login") {
+	if (context.request.url.pathname == "/login") {
 		const login_data = (await context.request.body()).value;
 
 		// Query database for user data to compare hash and add info to context
@@ -44,6 +42,13 @@ export async function check_authentication(context: any, next: any) {
 		}
 
 		return;
+	} else if (context.cookies.get("key_1") == null) {
+		// Client has no corresponding cookies. Prevents from erroring out
+		const decoder = new TextDecoder("utf-8");
+		const data = decoder.decode(await Deno.readFile("./public_html/login_page/login.html"));
+
+		context.response.type = "html";
+		context.response.body = data;
 	} else {
 		// Check if user wishes to logout
 		if (context.request.url.pathname == "/logout") {
@@ -61,11 +66,12 @@ export async function check_authentication(context: any, next: any) {
 
 		// Check if session was found or exists
 		if (session_data.length === 0) {
-			// User is not authenticaed
+			// User is not authenticated
 			context.response.type = "html";
 			context.response.body = data;
 			return;
 		} else {
+			// Cookie is in login_sessions table
 			if (new Date().getTime() - parseInt(session_data[0][2]) > 259200000) {
 				// User is no longer authenticated, cookie expired
 				db.query("DELETE FROM login_sessions WHERE session_cookie=(?) AND creation_time=(?)", [session_data[0][0], session_data[0][2]]);
