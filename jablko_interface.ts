@@ -71,7 +71,6 @@ app.use(async (context, next) => {
 }); 
 
 const user_authentication = await import("./source/user_authentication.ts");
-console.log(user_authentication);
 app.use(user_authentication.check_authentication);
 
 // Defining Server Routes

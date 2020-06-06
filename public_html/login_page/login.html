@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script>
+			function login() {
+				const submitted_username = document.getElementById("username").value;
+				const submitted_password = document.getElementById("password").value;
+
+				$.ajax({
+					type: "POST",
+					url: "/login",
+					dataType: "json",
+					contentType: "application/json",
+					data: JSON.stringify({
+						username: submitted_username, 
+						password: submitted_password
+					}),
+					success: function(data) {
+						if (data.status == "good") {
+							document.location.replace("/");
+						} else {
+							document.getElementById("status").textContent = "Invalid Login";
+						}
+					}
+				});
+			}
+
+			$(document).on("keypress", function(e) {
+				if (e.key == "Enter") {
+					login();
+				}
+			});
+		</script>
+
+		<style>
+body {
+	margin: 0px;
+	background-color: #2f3640;
+	color: #f5f6fa;
+	outline: none;
+	font-family: Arial;
+}
+
+#login_box {
+	position: absolute;
+	left: calc((100vw - 290px) / 2);
+	top: calc(33vh);
+	display: grid;
+	width: 250px;
+	grid-row-gap: 5px;
+	padding: 20px;
+	border-radius: 5px;
+	background-color: #353b48;
+}
+
+.field {
+	display: flex;
+	justify-content: flex-end;
+	width: 250px;	
+}
+
+button {
+	border-width: 0px;
+	border-radius: 5px;
+	padding: 5px;
+}
+
+input {
+	width: 150px;
+}
+
+#status {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: #c23616;
+}
+
+.field_label {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	padding-right: 10px;
+}
+
+#submission_box {
+	display: grid;
+	grid-template-columns: auto 100px;
+}
+		</style>
+	</head>
+	<body>
+		<div id="login_box">
+			<div class="field">
+				<div class="field_label">Username:</div>
+				<input id="username"></input>
+			</div>
+			<div class="field">
+				<div class="field_label">Password:</div>
+				<input id="password" type="password"></input>
+			</div>
+				
+			<div id="submission_box">
+				<div id="status"></div>
+				<button id="login_button" onclick="login()" style="background-color: #44bd32; color: #f5f6fa;">Login</button>
+			</div>
+		</div>
+	</body>
+</html>
+

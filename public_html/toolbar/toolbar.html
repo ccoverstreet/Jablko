@@ -11,6 +11,12 @@
 			container.hide();
 		}
 	});
+
+	function logout() {
+		$.post("/logout", function(data) {
+			document.location.replace("/");
+		});
+	}
 </script>
 
 <style>
@@ -29,5 +35,5 @@
 
 <div id="menu_dropdown" style="position: fixed; top: 50px; left: 0px; background-color: #40739e; display: none;">
 	<button class="dropdown_item" onclick="location.replace('/')" style="background: url('/icons/dashboard_icon.svg') left; background-size: contain; background-repeat: no-repeat">Dashboard</button>
-	<button class="dropdown_item" onclick="console.log('Implement Logout')" style="background: url('/icons/logout_icon.svg'); background-size: contain; background-repeat: no-repeat;">Logout</button>
+	<button class="dropdown_item" onclick="logout()" style="background: url('/icons/logout_icon.svg'); background-size: contain; background-repeat: no-repeat;">Logout</button>
 </div>

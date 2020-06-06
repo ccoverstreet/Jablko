@@ -138,8 +138,7 @@ async function create_user() {
 	}
 
 	// Create Password Hash	
-	const salt = bcrypt.genSaltSync(8);
-	const hash= bcrypt.hashSync(user_data.password_1, salt);
+	const hash = bcrypt.hashSync(user_data.password_1);
 
 	// Create Database connection
 	const db = new DB(`${await database_name.replace(".db", "")}.db`);
