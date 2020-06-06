@@ -6,9 +6,11 @@
 export function generate_card() {
 	return `
 <script>
+
 </script>
 <div class="jablko_module_card">
 	<div class="card_title">Test Module 2</div>
+	<button onclick="login()">Login</button>
 </div>
 `
 }

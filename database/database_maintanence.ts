@@ -46,6 +46,13 @@ async function create_database() {
 					phone_carrier TEXT NOT NULL,
 					wakeup_time TEXT NOT NULL
 				)`);
+
+				db.query(`CREATE TABLE IF NOT EXISTS login_sessions (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					session_cookie TEXT NOT NULL,
+					username TEXT NOT NULL,
+					creation_time TEXT NOT NULL
+				)`);
 				return;
 			} else {
 				break;
@@ -131,8 +138,7 @@ async function create_user() {
 	}
 
 	// Create Password Hash	
-	const salt = bcrypt.genSaltSync(8);
-	const hash= bcrypt.hashSync(user_data.password_1, salt);
+	const hash = bcrypt.hashSync(user_data.password_1);
 
 	// Create Database connection
 	const db = new DB(`${await database_name.replace(".db", "")}.db`);
