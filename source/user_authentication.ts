@@ -29,7 +29,6 @@ export async function check_authentication(context: any, next: any) {
 
 		// Use bcrypt to compare submitted password to database hash
 		if (await bcrypt.compare(login_data.password, user_data[0][2]) == true) {
-			console.log("Login is Correct");
 
 			// Create cookie string and add to login_sessions table
 			const cookie_string = new Random().string(64);
@@ -72,7 +71,6 @@ export async function check_authentication(context: any, next: any) {
 				db.query("DELETE FROM login_sessions WHERE session_cookie=(?) AND creation_time=(?)", [session_data[0][0], session_data[0][2]]);
 				context.response.type = "html";
 				context.response.body = data;
-				console.log("cookie is expired");
 			} else {
 				// User is authenticated, add to context and pass to next()
 				context.user_data = session_data;
