@@ -1,5 +1,4 @@
-// Jablko Modules: Server Status Module
-// Cale Overstreet
+// Jablko Modules: Server Status Module // Cale Overstreet
 // May 3, 2020
 // This module serves as an example for creating custom modules and provides information on the smart home dashboard related to the run condition, uptime, temperature, and memory usage
 
@@ -36,10 +35,10 @@ export function generate_card() {
 				interface_values[i].textContent = response[response_keys[i]];
 			}
 		}
-
 	}	
+
+	document.addEventListener("DOMContentLoaded", server_status.check_status);
 	
-	setTimeout(server_status.check_status, 1000);
 	setInterval(server_status.check_status, 15000);
 </script>
 <div id="server_status_card" class="jablko_module_card">
