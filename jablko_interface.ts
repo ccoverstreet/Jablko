@@ -41,14 +41,6 @@ async function load_jablko_modules() {
 
 var jablko_modules: any = await load_jablko_modules(); // Only bit that needs to use type any. Hopefully a future design removes this need
 
-// Create module watcher for jablko module reloading
-const module_watcher = new Worker("./source/module_watcher.ts", {type: "module", deno: true});
-module_watcher.onmessage = async function(message) {
-	console.log(message);
-	delete jablko_modules[message.data];
-	jablko_modules[message.data] = await import(`./jablko_modules/${message.data}/${message.data}.ts`);
-}
-
 
 console.log("Creating Middleware Handlers...");
 
@@ -70,8 +62,8 @@ app.use(async (context, next) => {
 	request_handling_times.current_average = request_handling_times.current_average * (size - 1) / size + (new Date().getTime() - request_start_time) / (size);
 }); 
 
-const user_authentication = await import("./source/user_authentication.ts");
-app.use(user_authentication.check_authentication);
+// User authentication middleware. 
+app.use((await import("./source/user_authentication.ts")).check_authentication);
 
 // Defining Server Routes
 console.log("Defining Server Routes...");
@@ -79,6 +71,11 @@ console.log("Defining Server Routes...");
 router.get("/", async (context) => {
 	var dashboard_string: string = await readFileStr(`${web_root}/dashboard/dashboard_template.html`);
 	var module_string = "";
+
+	// Read in toolbar and string replace into dashboard_string
+	const toolbar_string = await readFileStr(`${web_root}/toolbar/toolbar.html`);
+	dashboard_string = await dashboard_string.replace("$TOOLBAR", toolbar_string);
+
 
 	// Go through all modules and generate module string
 	for (var module_name in jablko_modules) {
@@ -93,6 +90,7 @@ router.get("/", async (context) => {
 	context.response.body = dashboard_string;
 });
 
+// Routes requests sent by client to correct jablko module
 router.post('/jablko_modules/:module_name/:function_name', async (context) => {
 	if (context.params.module_name !== undefined && context.params.function_name !== undefined) {
 		await jablko_modules[context.params.module_name][context.params.function_name](context);

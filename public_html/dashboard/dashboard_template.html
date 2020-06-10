@@ -5,7 +5,6 @@
 		<link rel"shortcut icon" type="image/png" href="/assets/logo.png"/>
 		<link rel="stylesheet" href="/dashboard/dashboard.css"/>
 
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script>
 			function change_theme() {
 				document.body.classList.toggle("theme_light");
@@ -22,19 +21,14 @@
 				}
 			}
 
-
-			$(document).ready(function() {
+			document.addEventListener("DOMContentLoaded", (event) => {
 				time_check();
-				console.log("ASDAS");
-				$("#toolbar").load("/toolbar/toolbar.html", function() {
-					console.log("Toolbar loaded");
-				});
 			});
 		</script>
 	</head>
 	
 	<body class="theme_light">
-		<div id="toolbar"></div>
+		$TOOLBAR
 
 		<div id="module_container">
 			$JABLKO_MODULES

@@ -12,10 +12,9 @@
 		}
 	});
 
-	function logout() {
-		$.post("/logout", function(data) {
-			document.location.replace("/");
-		});
+	async function logout() {
+		await fetch("/logout", {method: "POST"});
+		document.location.replace("/");
 	}
 </script>
 
