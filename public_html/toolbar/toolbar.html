@@ -1,16 +1,26 @@
-<div style="position: fixed; top: 0px; left: 0px; display: grid; grid-template-rows: 100%; grid-template-columns: 50px auto 50px; background-color: #40739e; width: 100vw; height: 50px; z-index: 1000">
-	<button onclick="$('#menu_dropdown').show()" style="grid-column: 1; background: url('/icons/menu_icon.svg'); background-size: contain; height: 100%; border-width: 0px;"></button>
+<div id="toolbar" style="position: fixed; top: 0px; left: 0px; display: grid; grid-template-rows: 100%; grid-template-columns: 50px auto 50px; background-color: #40739e; width: 100vw; height: 50px; z-index: 1000">
+	<button onclick="toggle_dropdown()" style="grid-column: 1; background: url('/icons/menu_icon.svg'); background-size: contain; height: 100%; border-width: 0px;"></button>
 	<button onclick="change_theme()" style="grid-column: 3; background: url('/icons/theme_icon.svg'); background-size: contain; height: 100%; border-width: 0px;"></button>
 </div>
 
 <script>
-	// Hide dropdown when click is outside
-	$(document).mouseup(function(e) {
-		const container = $("#menu_dropdown");
-		if (!container.is(e.target)) {
-			container.hide();
+	document.addEventListener("click", function(event) {
+		const dropdown = document.getElementById("menu_dropdown");
+		const toolbar = document.getElementById("toolbar");
+		if (!dropdown.contains(event.target) && !toolbar.contains(event.target)) {
+			dropdown.style.display = "none";
 		}
-	});
+	}); 
+
+	function toggle_dropdown() {
+		const dropdown = document.getElementById("menu_dropdown");
+
+		if (dropdown.style.display == "block") {
+			dropdown.style.display = "none";
+		} else {
+			dropdown.style.display = "block";
+		}
+	}
 
 	async function logout() {
 		await fetch("/logout", {method: "POST"});
