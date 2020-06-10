@@ -93,9 +93,9 @@ router.get("/", async (context) => {
 	context.response.body = dashboard_string;
 });
 
-router.post('/jablko_modules/:module_name/:function_name', (context) => {
+router.post('/jablko_modules/:module_name/:function_name', async (context) => {
 	if (context.params.module_name !== undefined && context.params.function_name !== undefined) {
-		jablko_modules[context.params.module_name][context.params.function_name](context);
+		await jablko_modules[context.params.module_name][context.params.function_name](context);
 	}
 });
 

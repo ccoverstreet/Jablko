@@ -14,55 +14,36 @@ export function generate_card() {
 	return `
 <script> 
 	server_status = {
-		check_status: function() {
-			$.post("/jablko_modules/server_status/check_status", function(data) {
-				console.log(data);
-				const interface_status_element = document.getElementById("interface_status");
-				const interface_uptime_element = document.getElementById("interface_uptime");
-				const interface_response_time_element = document.getElementById("interface_response_time");
-
-				interface_status_element.textContent = data.interface_status;
-				const hour = Math.floor(data.interface_uptime / 3600);
-				const minute = Math.floor((data.interface_uptime - hour * 3600) / 60);
-				const second = Math.floor((data.interface_uptime - hour * 3600 - minute * 60));
-				interface_uptime_element.textContent = hour + " h " + minute + " m " + second + " s";
-				interface_response_time_element.textContent = data.interface_response_time.toFixed(3) + " ms";
-
-				switch (data.interface_status) {
-					case "good":
-						interface_status_element.style.color = "#44bd32";
-						interface_uptime_element.style.color = "#44bd32";
-						interface_response_time.style.color = "#44bd32";
- 						break;
-					case "fail":
-						interface_status_element.style.color = "#c23616";
-						break;
-					default:
-						interface_status_element.style.color = "#e1b12c";
+		check_status: async function() {
+			const interface_values = document.querySelectorAll("#server_status_card>div>.value");
+			const response = await (await fetch("/jablko_modules/server_status/check_status", {method: "POST"})
+			.catch(error => {
+				console.log(error);
+				for (var i = 0; i < interface_values.length; i++) {
+					interface_values[i].style.color = "#c23616";
+					interface_values[i].textContent = "N/A";
 				}
-			})
-				.fail(function() {
-					const interface_status_element = document.getElementById("interface_status")
-					const interface_uptime_element = document.getElementById("interface_uptime")
-					const interface_response_time_element = document.getElementById("interface_response_time");
+				return;
+			})).json();
 
-					interface_status_element.textContent = "fail"
-					interface_status_element.style.color = "#c23616"
+			const response_keys = Object.keys(response);
+			console.log(interface_values);
 
-					interface_uptime_element.textContent = "Server Down"
-					interface_uptime_element.style.color = "#c23616"
+			console.log(response);
 
-					interface_response_time_element.textContent = "Server Down";
-					interface_response_time_element.style.color = "#c23616";
-				});
+			for (var i = 0; i < interface_values.length; i++) {
+				interface_values[i].style.color = "#44bd32";
+				interface_values[i].textContent = response[response_keys[i]];
+			}
 		}
+
 	}	
 	
-	server_status.check_status();
+	setTimeout(server_status.check_status, 1000);
 	setInterval(server_status.check_status, 15000);
 </script>
-<div class="jablko_module_card">
-<div class="card_title" style="background: url('/icons/server_status_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Server Status</div>
+<div id="server_status_card" class="jablko_module_card">
+	<div class="card_title" style="background: url('/icons/server_status_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Server Status</div>
 	<hr>
 	<div class="label_value_pair">
 		<div class="label">Interface Status:</div>
@@ -76,15 +57,41 @@ export function generate_card() {
 		<div class="label">Response Time:</div>
 		<div id="interface_response_time" class="value">N/A</div>
 	</div>
+	<div class="label_value_pair">
+		<div class="label">CPU Temperature:</div>
+		<div id="cpu_temperature" class="value">N/A</div>
+	</div>
+	<div class="label_value_pair">
+		<div class="label">Memory Usage:</div>
+		<div id="memory_usage" class="value">N/A</div>
+	</div>
 </div>
 `
 }
 
-export function check_status(context: Context) {
+
+export async function check_status(context: Context) {
+	// This function reads necessary data and sends results back to client
+	
+	// Read CPU temp
+	const temperature = parseFloat(new TextDecoder().decode(await Deno.readFile("/sys/class/thermal/thermal_zone0/temp"))) / 1000;
+
+	const meminfo = new TextDecoder().decode(await Deno.readFile("/proc/meminfo")).split("\n");
+	const total_mem = (parseFloat(meminfo[0].split(/[ ]+/)[1]) / 1000000);
+	const meminfo_summary = `${(total_mem - parseFloat(meminfo[1].split(/[ ]+/)[1]) / 1000000).toFixed(2)} / ${total_mem.toFixed(2)} GB`;
+
+	const raw_uptime = (new Date().getTime() - server_start_time) / 1000;
+	const hours = Math.floor(raw_uptime / 3600);
+	const minutes = Math.floor((raw_uptime - hours) / 60);
+	const seconds = Math.floor(raw_uptime - hours - minutes);
+	const formatted_uptime = `${hours} h ${minutes} m ${seconds}`;
+   
 	context.response.type = "json";
 	context.response.body = {
 		interface_status: "good",
-		interface_uptime: (new Date().getTime() - server_start_time) / 1000,
-		interface_response_time: request_handling_times.current_average
+		interface_uptime: formatted_uptime,
+		interface_response_time: request_handling_times.current_average.toFixed(3) + " ms",
+		cpu_temperature: temperature + " C",
+		memory_usage: meminfo_summary
 	};
 }
