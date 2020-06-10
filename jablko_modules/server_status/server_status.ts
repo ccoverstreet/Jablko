@@ -26,9 +26,6 @@ export function generate_card() {
 			})).json();
 
 			const response_keys = Object.keys(response);
-			console.log(interface_values);
-
-			console.log(response);
 
 			for (var i = 0; i < interface_values.length; i++) {
 				interface_values[i].style.color = "#44bd32";
