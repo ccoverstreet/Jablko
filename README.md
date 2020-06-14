@@ -12,3 +12,7 @@ This can be done interactivelly through a startup script ("setup_jablko.sh").
           "sms_email": "jablkohome@gmail.com",
           "sms_password": "mypassword"
         }
+
+## Starting Jablko
+
+Run the command `./start_jablko.sh`. Make sure to make the bash script executable beforehand.
