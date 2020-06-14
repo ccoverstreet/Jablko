@@ -63,7 +63,7 @@ app.use(async (context, next) => {
 }); 
 
 // User authentication middleware. 
-app.use((await import("./source/user_authentication.ts")).check_authentication);
+app.use((await import("./src/user_authentication.ts")).check_authentication);
 
 // Defining Server Routes
 console.log("Defining Server Routes...");
