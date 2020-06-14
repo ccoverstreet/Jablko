@@ -45,7 +45,7 @@ export async function check_authentication(context: any, next: any) {
 	} else if (context.cookies.get("key_1") == null) {
 		// Client has no corresponding cookies. Prevents from erroring out
 		const decoder = new TextDecoder("utf-8");
-		const data = decoder.decode(await Deno.readFile("./public_html/login_page/login.html"));
+		const data = decoder.decode(await Deno.readFile("./public_html/login/login.html"));
 
 		context.response.type = "html";
 		context.response.body = data;
@@ -62,7 +62,7 @@ export async function check_authentication(context: any, next: any) {
 		const session_data = [...db.query("SELECT session_cookie, username, creation_time FROM login_sessions WHERE session_cookie=(?)", [context.cookies.get("key_1")])];
 
 		const decoder = new TextDecoder("utf-8");
-		const data = decoder.decode(await Deno.readFile("./public_html/login_page/login.html"));
+		const data = decoder.decode(await Deno.readFile("./public_html/login/login.html"));
 
 		// Check if session was found or exists
 		if (session_data.length === 0) {
