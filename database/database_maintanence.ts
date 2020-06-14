@@ -51,7 +51,7 @@ async function create_database() {
 					id INTEGER PRIMARY KEY AUTOINCREMENT,
 					session_cookie TEXT NOT NULL,
 					username TEXT NOT NULL,
-					creation_time TEXT NOT NULL
+					creation_time INTEGER NOT NULL
 				)`);
 				return;
 			} else {

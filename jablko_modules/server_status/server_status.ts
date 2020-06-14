@@ -74,7 +74,7 @@ export async function check_status(context: Context) {
 
 	const meminfo = new TextDecoder().decode(await Deno.readFile("/proc/meminfo")).split("\n");
 	const total_mem = (parseFloat(meminfo[0].split(/[ ]+/)[1]) / 1000000);
-	const meminfo_summary = `${(total_mem - parseFloat(meminfo[1].split(/[ ]+/)[1]) / 1000000).toFixed(2)} / ${total_mem.toFixed(2)} GB`;
+	const meminfo_summary = `${(total_mem - parseFloat(meminfo[2].split(/[ ]+/)[1]) / 1000000).toFixed(2)} / ${total_mem.toFixed(2)} GB`;
 
 	const raw_uptime = (new Date().getTime() - server_start_time) / 1000;
 	const hours = Math.floor(raw_uptime / 3600);

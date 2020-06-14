@@ -72,9 +72,10 @@ export async function check_authentication(context: any, next: any) {
 			return;
 		} else {
 			// Cookie is in login_sessions table
-			if (new Date().getTime() - parseInt(session_data[0][2]) > 259200000) {
+			const min_time = new Date().getTime() - 259200000;
+			if (min_time > session_data[0][2]) {
 				// User is no longer authenticated, cookie expired
-				db.query("DELETE FROM login_sessions WHERE session_cookie=(?) AND creation_time=(?)", [session_data[0][0], session_data[0][2]]);
+				db.query("DELETE FROM login_sessions WHERE creation_time<(?)", [min_time]);
 				context.response.type = "html";
 				context.response.body = data;
 			} else {
