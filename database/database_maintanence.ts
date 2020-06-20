@@ -36,7 +36,7 @@ async function create_database() {
 		console.log(`Is the name "${database_name}" correct? <y/n>:`)
 		for await (const line of readLines(Deno.stdin)) { 
 			if (line == "y") {
-				const db = new DB(`${await database_name.replace(".db", "")}.db`);
+				const db = new DB(`database/${await database_name.replace(".db", "")}.db`);
 				db.query(`CREATE TABLE IF NOT EXISTS users (
 					id INTEGER PRIMARY KEY AUTOINCREMENT, 
 					username TEXT NOT NULL,
@@ -141,7 +141,7 @@ async function create_user() {
 	const hash = bcrypt.hashSync(user_data.password_1);
 
 	// Create Database connection
-	const db = new DB(`${await database_name.replace(".db", "")}.db`);
+	const db = new DB(`database/${await database_name.replace(".db", "")}.db`);
 	db.query(`INSERT INTO users (username, password, first_name, phone_number, phone_carrier, wakeup_time) VALUES (
 		?, ?, ?, ?, ?, ?
 	)`, [user_data.username, hash, user_data.first_name, user_data.phone_number, user_data.phone_carrier, user_data.wakeup_time]);
