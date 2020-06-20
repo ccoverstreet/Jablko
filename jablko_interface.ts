@@ -19,19 +19,12 @@ app.addEventListener("error", (evt) => {
 // Important Paths. Possible not needed
 const web_root = "public_html";
 
+export const server_start_time = new Date().getTime();
+
 // Initialize SMTP system
 console.log("Initializing SMTP system...")
 const smtp_system = await import("./src/messaging_system.ts");
 await smtp_system.init();
-
-// Keep an average for a frame of 100 requests. Once 100 is reached, clear the average and reset the size counter
-export const server_start_time = new Date().getTime();
-
-export var request_handling_times = {
-	current_average: 0,
-	window_size: 100,
-	size_counter: 0
-}
 
 async function load_jablko_modules() {
 	// Creates an object containing jablko modules and all exported functions for server routing
@@ -51,22 +44,8 @@ var jablko_modules: any = await load_jablko_modules(); // Only bit that needs to
 console.log("Creating Middleware Handlers...");
 
 // Timer Middleware
-app.use(async (context, next) => {
-	// Logs how much time it takes to handle a request. Uses a evolving average for a certain window of requests.
-	const request_start_time = new Date().getTime();	
-	await next();
-	
-	if (request_handling_times.size_counter > request_handling_times.window_size) {
-		request_handling_times.size_counter = 1;
-		request_handling_times.current_average = 0;
-	} else {
-		request_handling_times.size_counter++;
-	}
-
-	const size = request_handling_times.size_counter;
-
-	request_handling_times.current_average = request_handling_times.current_average * (size - 1) / size + (new Date().getTime() - request_start_time) / (size);
-}); 
+const timing_module = await import("./src/timing.ts");
+app.use(timing_module.timing_middleware);
 
 // User authentication middleware. 
 app.use((await import("./src/user_authentication.ts")).check_authentication);

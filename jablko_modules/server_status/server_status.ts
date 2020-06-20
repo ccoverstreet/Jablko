@@ -3,7 +3,8 @@
 // This module serves as an example for creating custom modules and provides information on the smart home dashboard related to the run condition, uptime, temperature, and memory usage
 
 import { Context } from "https://deno.land/x/oak/mod.ts";
-import { request_handling_times, server_start_time } from "../../jablko_interface.ts"
+import { request_handling_times } from "../../src/timing.ts";
+import { server_start_time } from "../../jablko_interface.ts";
 
 export const info = {
 	permissions: "all"
