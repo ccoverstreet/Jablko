@@ -10,13 +10,19 @@ import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 const app = new Application();
 const router = new Router();
 
+// Error listener for Oak Server
 app.addEventListener("error", (evt) => {
   // Will log the thrown error to the console.
   console.log(evt.error);
 });
 
-// Important Paths
+// Important Paths. Possible not needed
 const web_root = "public_html";
+
+// Initialize SMTP system
+console.log("Initializing SMTP system...")
+const smtp_system = await import("./src/messaging_system.ts");
+await smtp_system.init();
 
 // Keep an average for a frame of 100 requests. Once 100 is reached, clear the average and reset the size counter
 export const server_start_time = new Date().getTime();
