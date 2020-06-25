@@ -27,9 +27,6 @@ const smtp_module = await import("./src/messaging_system.ts");
 export const smtp_client = await smtp_module.Jablko_Smtp_Initialize();
 console.log(smtp_client);
 
-const test_module = await import("./src/test_module.ts");
-console.log(test_module);
-
 async function load_jablko_modules() {
 	// Creates an object containing jablko modules and all exported functions for server routing
 	var loaded_modules: any = new Object();
@@ -48,8 +45,7 @@ var jablko_modules: any = await load_jablko_modules(); // Only bit that needs to
 console.log("Creating Middleware Handlers...");
 
 // Timer Middleware
-const timing_module = await import("./src/timing.ts");
-app.use(timing_module.timing_middleware);
+app.use((await import("./src/timing.ts")).timing_middleware);
 
 // User authentication middleware. 
 app.use((await import("./src/user_authentication.ts")).check_authentication);
