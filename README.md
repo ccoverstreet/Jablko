@@ -19,8 +19,9 @@ Run the command `./start_jablko.sh`. Make sure to make the bash script executabl
 The smart home interface communicates to other devices on the network through requests using a JSON API that I will flesh out in the future (Can't test in current place due to horrible apartment internet configuration). Inside the root directory of Jablko is a "jablko_modules" folder. Modules should be created with the following convention:
 
 - Main TypeScript file: /jablko_modules/module_name/module_name.ts
-  - Must have a generate_card(context) function that returns a string that contains the HTML for the module's card on the interface.
+  - Must have a generate_card() function that returns a string that contains the HTML for the module's card on the interface.
   - Routes intended for the module should be formatted as /jablko_modules/module_name/exported_function name. Jablko will identify requests formatted this way and call the requested Jablko Module Function.
+    - Routes should take an Oak Context as an argument and must handle the context correctly.
 - Auxiliary files: Placed in /jablko_modules/module_name
 
-Jablko automatically loads 
+Jablko automatically loads any modules with the above structure on startup. This means that any changes to the module_name/module_name.ts file will not take effect until Jablko is restarted. 
