@@ -13,10 +13,10 @@ export const info = {
 export function generate_card() {
 	return `
 <script> 
-	server_status = {
+	interface_status = {
 		check_status: async function() {
-			const interface_values = document.querySelectorAll("#server_status_card>div>.value");
-			const response = await (await fetch("/jablko_modules/server_status/check_status", {method: "POST"})
+			const interface_values = document.querySelectorAll("#interface_status_card>div>.value");
+			const response = await (await fetch("/jablko_modules/interface_status/check_status", {method: "POST"})
 			.catch(error => {
 				console.log(error);
 				for (var i = 0; i < interface_values.length; i++) {
@@ -35,12 +35,12 @@ export function generate_card() {
 		}
 	}	
 
-	document.addEventListener("DOMContentLoaded", server_status.check_status);
+	document.addEventListener("DOMContentLoaded", interface_status.check_status);
 	
-	setInterval(server_status.check_status, 15000);
+	setInterval(interface_status.check_status, 15000);
 </script>
-<div id="server_status_card" class="jablko_module_card">
-	<div class="card_title" style="background: url('/icons/server_status_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Server Status</div>
+<div id="interface_status_card" class="jablko_module_card">
+	<div class="card_title" style="background: url('/icons/interface_status_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Interface Status</div>
 	<hr>
 	<div class="label_value_pair">
 		<div class="label">Interface Status:</div>

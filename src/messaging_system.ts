@@ -29,7 +29,6 @@ export async function Jablko_Smtp_Initialize() {
 	await client.client.connectTLS(connect_config);
 
 	console.log("Created Client");
-	console.log(client);
 
 	return client;
 }
