@@ -1,14 +1,16 @@
 // Jablko: Messaging System
 // Cale Overstreet
 // June 19th, 2020
-// This file contains the setup and functions for sending sms messages to Smart Home users. Uses the Deno-smtp module. Be wary of updates to the Deno-smtp repo as development is still ongoing and the only branch currently working is master, which can change at any time. As soon as possible, use a standard branch tag for Deno-smtp to avoid system breaking changes
+// This file contains the setup and functions for sending sms messages to Smart Home users. 
+// Uses the Deno-smtp module. Be wary of updates to the Deno-smtp repo as development is 
+// still ongoing and the only branch currently working is master, which can change at any 
+// time. As soon as possible, use a standard branch tag for Deno-smtp to avoid system 
+// breaking changes
 
 import { SmtpClient } from "https://deno.land/x/smtp/mod.ts";
 
-export const client = new SmtpClient();
-
-export async function init() {
-	// Initializes the SMTP client for Jablko. Uses username and password stored in environement variables prepended to start script. Need to think of more secure method for getting the password into the program. Possible a file located in the user's home directory called ".jablko_config" or something. 
+export async function Jablko_Smtp_Initialize() {
+	const client = new Jablko_Smtp();
 
 	const environment_vars = Deno.env.toObject();
 
@@ -24,14 +26,27 @@ export async function init() {
 		password: environment_vars.JABLKO_SMTP_PASSWORD
 	};
 
-	await client.connectTLS(connect_config);
+	await client.client.connectTLS(connect_config);
+
+	console.log("Created Client");
+	console.log(client);
+
+	return client;
 }
 
-export async function send_message(username: string, message: string) {
-	await client.send({
-		from: "jablkohome@gmail.com",
-		to: "7578975969@vtext.com",
-		subject: "",
-		content: message
-	});
+class Jablko_Smtp {
+	client: SmtpClient;
+
+	constructor() {
+		this.client = new SmtpClient();
+	}
+
+	async send_message(username: string, message: string) {
+		await this.client.send({
+			from: "jablkohome@gmail.com",
+			to: "7578975969@vtext.com",
+			subject: "",
+			content: message
+		});	
+	}
 }
