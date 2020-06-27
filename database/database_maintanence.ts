@@ -44,7 +44,8 @@ async function create_database() {
 					first_name TEXT NOT NULL,
 					phone_number TEXT NOT NULL,
 					phone_carrier TEXT NOT NULL,
-					wakeup_time TEXT NOT NULL
+					wakeup_time TEXT NOT NULL,
+					permissions TEXT NOT NULL
 				)`);
 
 				db.query(`CREATE TABLE IF NOT EXISTS login_sessions (
@@ -77,7 +78,8 @@ async function create_user() {
 		first_name: "",
 		phone_number: "",
 		phone_carrier: "",
-		wakeup_time: ""
+		wakeup_time: "",
+		permissions: ""
 	};
 
 	console.log("Enter Username:");
@@ -137,14 +139,24 @@ async function create_user() {
 		console.log("Incorrect Format");
 	}
 
+	console.log("Enter permissions for user (admin/guest):");
+	for await (const line of readLines(Deno.stdin)) {
+		user_data.permissions = line.trim();
+
+		break;
+		console.log("Incorrect Format");
+	}
+
+
+
 	// Create Password Hash	
 	const hash = bcrypt.hashSync(user_data.password_1);
 
 	// Create Database connection
 	const db = new DB(`database/${await database_name.replace(".db", "")}.db`);
-	db.query(`INSERT INTO users (username, password, first_name, phone_number, phone_carrier, wakeup_time) VALUES (
-		?, ?, ?, ?, ?, ?
-	)`, [user_data.username, hash, user_data.first_name, user_data.phone_number, user_data.phone_carrier, user_data.wakeup_time]);
+	db.query(`INSERT INTO users (username, password, first_name, phone_number, phone_carrier, wakeup_time, permissions) VALUES (
+		?, ?, ?, ?, ?, ?, ?
+	)`, [user_data.username, hash, user_data.first_name, user_data.phone_number, user_data.phone_carrier, user_data.wakeup_time, user_data.permissions]);
 }
 
 // Start Mainloop

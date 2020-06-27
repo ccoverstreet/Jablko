@@ -61,12 +61,12 @@ export async function check_authentication(context: any, next: any) {
 		// Query login session database to see if user session exists
 		const session_data = [...db.query("SELECT session_cookie, username, creation_time FROM login_sessions WHERE session_cookie=(?)", [context.cookies.get("key_1")])];
 
-		const decoder = new TextDecoder("utf-8");
-		const data = decoder.decode(await Deno.readFile("./public_html/login/login.html"));
 
 		// Check if session was found or exists
 		if (session_data.length === 0) {
 			// User is not authenticated
+			const decoder = new TextDecoder("utf-8");
+			const data = decoder.decode(await Deno.readFile("./public_html/login/login.html"));
 			context.response.type = "html";
 			context.response.body = data;
 			return;
@@ -76,15 +76,33 @@ export async function check_authentication(context: any, next: any) {
 			if (min_time > session_data[0][2]) {
 				// User is no longer authenticated, cookie expired
 				db.query("DELETE FROM login_sessions WHERE creation_time<(?)", [min_time]);
+				const decoder = new TextDecoder("utf-8");
+				const data = decoder.decode(await Deno.readFile("./public_html/login/login.html"));
+
 				context.response.type = "html";
 				context.response.body = data;
 			} else {
 				// User is authenticated, add to context and pass to next()
-				context.user_data = session_data;
+				context.json_data = (await context.request.body()).value;
+				context.session_data = session_data;
+				context.user_data = await get_user_data(session_data[0][1]);
 				await next();
 			}
 		}
 	}
 
 	db.close();
+}
+
+async function get_user_data(username: any) {
+	const db = new DB("database/primary.db");
+	const raw_user_data = [...db.query("SELECT username, first_name, phone_number, phone_carrier, wakeup_time, permissions FROM users WHERE username=(?)", [username])];
+	return {
+		username: raw_user_data[0][0],
+		first_name: raw_user_data[0][1],
+		phone_number: raw_user_data[0][2],
+		phone_carrier: raw_user_data[0][3],
+		wakeup_time: raw_user_data[0][4],
+		permissions: raw_user_data[0][5]
+	};
 }

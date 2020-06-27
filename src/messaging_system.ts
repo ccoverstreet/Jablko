@@ -33,6 +33,11 @@ export async function Jablko_Smtp_Initialize() {
 	return client;
 }
 
+const carrier_list: any = {
+	"verizon": "vtext.com",
+	"att": "txt.att.net"
+};
+
 class Jablko_Smtp {
 	client: SmtpClient;
 
@@ -40,12 +45,13 @@ class Jablko_Smtp {
 		this.client = new SmtpClient();
 	}
 
-	async send_message(username: string, message: string) {
+	async send_message(user_data: any, message: string) {
 		await this.client.send({
 			from: "jablkohome@gmail.com",
-			to: "7578975969@vtext.com",
+			to: `${user_data.phone_number}@${carrier_list[user_data.phone_carrier]}`,
 			subject: "",
 			content: message
 		});	
 	}
 }
+

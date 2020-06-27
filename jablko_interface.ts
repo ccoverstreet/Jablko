@@ -76,7 +76,6 @@ router.get("/", async (context) => {
 
 // Routes requests sent by client to correct jablko module
 router.post('/jablko_modules/:module_name/:function_name', async (context) => {
-	console.log("JABLKOO MODULES");
 	if (context.params.module_name !== undefined && context.params.function_name !== undefined) {
 		await jablko_modules[context.params.module_name][context.params.function_name](context);
 	}

@@ -4,27 +4,26 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script>
-			function login() {
+			async function login() {
 				const submitted_username = document.getElementById("username").value;
 				const submitted_password = document.getElementById("password").value;
 
-				$.ajax({
-					type: "POST",
-					url: "/login",
-					dataType: "json",
-					contentType: "application/json",
-					data: JSON.stringify({
-						username: submitted_username, 
-						password: submitted_password
-					}),
-					success: function(data) {
-						if (data.status == "good") {
-							document.location.replace("/");
-						} else {
-							document.getElementById("status").textContent = "Invalid Login";
-						}
-					}
+				const raw_response = await fetch("/login", {
+					method: "POST",
+					headers: {
+						"Accept": "application/json",
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({username: submitted_username, password: submitted_password})
 				});
+
+				const response = await raw_response.json();
+				console.log(response);
+				if (response.status == "good") {
+					document.location.replace("/");
+				} else {
+					document.getElementById("status").textContent = "Invalid Login";
+				}
 			}
 
 			$(document).on("keypress", function(e) {
