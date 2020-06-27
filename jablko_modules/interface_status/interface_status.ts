@@ -5,67 +5,15 @@
 import { Context } from "https://deno.land/x/oak/mod.ts";
 import { request_handling_times } from "../../src/timing.ts";
 import { server_start_time } from "../../jablko_interface.ts";
+import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 
 export const info = {
 	permissions: "all"
 }
 
-export function generate_card() {
-	return `
-<script> 
-	interface_status = {
-		check_status: async function() {
-			const interface_values = document.querySelectorAll("#interface_status_card>div>.value");
-			const response = await (await fetch("/jablko_modules/interface_status/check_status", {method: "POST"})
-			.catch(error => {
-				console.log(error);
-				for (var i = 0; i < interface_values.length; i++) {
-					interface_values[i].style.color = "#c23616";
-					interface_values[i].textContent = "N/A";
-				}
-				return;
-			})).json();
-
-			const response_keys = Object.keys(response);
-
-			for (var i = 0; i < interface_values.length; i++) {
-				interface_values[i].style.color = "#44bd32";
-				interface_values[i].textContent = response[response_keys[i]];
-			}
-		}
-	}	
-
-	document.addEventListener("DOMContentLoaded", interface_status.check_status);
-	
-	setInterval(interface_status.check_status, 15000);
-</script>
-<div id="interface_status_card" class="jablko_module_card">
-	<div class="card_title" style="background: url('/icons/interface_status_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Interface Status</div>
-	<hr>
-	<div class="label_value_pair">
-		<div class="label">Interface Status:</div>
-		<div id="interface_status" class="value">N/A</div>
-	</div>
-	<div class="label_value_pair">
-		<div class="label">Interface Uptime:</div>
-		<div id="interface_uptime" class="value">N/A</div>
-	</div>
-	<div class="label_value_pair">
-		<div class="label">Response Time:</div>
-		<div id="interface_response_time" class="value">N/A</div>
-	</div>
-	<div class="label_value_pair">
-		<div class="label">CPU Temperature:</div>
-		<div id="cpu_temperature" class="value">N/A</div>
-	</div>
-	<div class="label_value_pair">
-		<div class="label">Memory Usage:</div>
-		<div id="memory_usage" class="value">N/A</div>
-	</div>
-</div>
-`
+export async function generate_card() {
+	return await readFileStr("jablko_modules/interface_status/interface_status.html");
 }
-
 
 export async function check_status(context: Context) {
 	// This function reads necessary data and sends results back to client

@@ -8,6 +8,7 @@
 // breaking changes
 
 import { SmtpClient } from "https://deno.land/x/smtp/mod.ts";
+import { DB } from "https://deno.land/x/sqlite/mod.ts";
 
 export async function Jablko_Smtp_Initialize() {
 	const client = new Jablko_Smtp();
@@ -45,10 +46,19 @@ class Jablko_Smtp {
 		this.client = new SmtpClient();
 	}
 
-	async send_message(user_data: any, message: string) {
+	async send_message(username: string, message: string) {
+		const db = new DB("database/primary.db");
+		const user_phone_data = [...db.query("SELECT phone_number, phone_carrier FROM users WHERE username=(?)", [username])];
+
+
+		if (user_phone_data.length == 0) {
+			// If user not found
+			return false;
+		}
+
 		await this.client.send({
 			from: "jablkohome@gmail.com",
-			to: `${user_data.phone_number}@${carrier_list[user_data.phone_carrier]}`,
+			to: `${user_phone_data[0][0]}@${carrier_list[user_phone_data[0][1]]}`,
 			subject: "",
 			content: message
 		});	

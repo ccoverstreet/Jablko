@@ -63,7 +63,7 @@ router.get("/", async (context) => {
 
 	// Go through all modules and generate module string
 	for (var module_name in jablko_modules) {
-		module_string += jablko_modules[module_name]["generate_card"]();
+		module_string += await jablko_modules[module_name]["generate_card"]();
 	}
 
 	// Replace placeholder in template file
