@@ -23,7 +23,7 @@ export const server_start_time = new Date().getTime();
 
 // Initialize SMTP system
 console.log("Initializing SMTP system...")
-const smtp_module = await import("./src/messaging_system.ts");
+const smtp_module = await import("./src/smtp_module.ts");
 export const smtp_client = await smtp_module.Jablko_Smtp_Initialize();
 
 async function load_jablko_modules() {
