@@ -29,7 +29,7 @@ export async function check_status(context: Context) {
 	const hours = Math.floor(raw_uptime / 3600);
 	const minutes = Math.floor((raw_uptime - hours) / 60);
 	const seconds = Math.floor(raw_uptime - hours - minutes);
-	const formatted_uptime = `${hours} h ${minutes} m ${seconds}`;
+	const formatted_uptime = `${hours} h ${minutes} m ${seconds}s`;
    
 	context.response.type = "json";
 	context.response.body = {
