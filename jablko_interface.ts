@@ -29,6 +29,8 @@ export const smtp_client = await smtp_module.Jablko_Smtp_Initialize();
 const raw_module_list = (await readFileStr("./jablko_modules.config"));
 const module_list = await raw_module_list.split("\n");
 
+console.log("Reading \"jablko_modules.config\"...");
+
 async function load_jablko_modules() {
 	// Creates an object containing jablko modules and all exported functions for server routing
 	var loaded_modules: any = new Object();
@@ -44,6 +46,9 @@ async function load_jablko_modules() {
 }
 
 export const jablko_modules: any = await load_jablko_modules(); // Only bit that needs to use type any. Hopefully a future design removes this need
+for (var name in jablko_modules) {
+	console.log(`\t${name}`);
+}
 
 
 
