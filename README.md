@@ -24,4 +24,11 @@ The smart home interface communicates to other devices on the network through re
     - Routes should take an Oak Context as an argument and must handle the context correctly.
 - Auxiliary files: Placed in /jablko_modules/module_name
 
-Jablko automatically loads any modules with the above structure on startup. This means that any changes to the module_name/module_name.ts file will not take effect until Jablko is restarted. 
+Jablko automatically loads any modules with the above structure from their name in the jablko_modules.config file. This means that any changes to the module_name/module_name.ts file will not take effect until Jablko is restarted. The jablko_modules.config file should have the modules you wish to load in the order in which you want to load them.
+
+Example jablko_modules.config file
+```
+interface_status
+mymodule
+module_2
+```
