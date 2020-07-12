@@ -26,19 +26,25 @@ console.log("Initializing SMTP system...")
 const smtp_module = await import("./src/smtp_module.ts");
 export const smtp_client = await smtp_module.Jablko_Smtp_Initialize();
 
+const raw_module_list = (await readFileStr("./jablko_modules.config"));
+const module_list = await raw_module_list.split("\n");
+
 async function load_jablko_modules() {
 	// Creates an object containing jablko modules and all exported functions for server routing
 	var loaded_modules: any = new Object();
 
 	console.log("Loading Jablko Modules...");
-	for await (const dirEntry of Deno.readDir("./jablko_modules")) {
-		loaded_modules[dirEntry.name] = await import(`./jablko_modules/${dirEntry.name}/${dirEntry.name}.ts`);
+	for (var i = 0; i < module_list.length; i++) {
+		if (module_list[i] != "") {
+			loaded_modules[module_list[i]] = await import(`./jablko_modules/${module_list[i]}/${module_list[i]}.ts`);
+		}
 	}
 
 	return loaded_modules;
 }
 
-var jablko_modules: any = await load_jablko_modules(); // Only bit that needs to use type any. Hopefully a future design removes this need
+export const jablko_modules: any = await load_jablko_modules(); // Only bit that needs to use type any. Hopefully a future design removes this need
+
 
 
 console.log("Creating Middleware Handlers...");

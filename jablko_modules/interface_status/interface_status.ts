@@ -9,7 +9,7 @@ import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 
 export const info = {
 	permissions: "all"
-}
+};
 
 export async function generate_card() {
 	return await readFileStr("jablko_modules/interface_status/interface_status.html");
@@ -27,8 +27,8 @@ export async function check_status(context: Context) {
 
 	const raw_uptime = (new Date().getTime() - server_start_time) / 1000;
 	const hours = Math.floor(raw_uptime / 3600);
-	const minutes = Math.floor((raw_uptime - hours) / 60);
-	const seconds = Math.floor(raw_uptime - hours - minutes);
+	const minutes = Math.floor((raw_uptime - 3600 * hours) / 60);
+	const seconds = Math.floor(raw_uptime - 3600 * hours - 60 * minutes);
 	const formatted_uptime = `${hours} h ${minutes} m ${seconds}s`;
    
 	context.response.type = "json";
