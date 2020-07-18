@@ -4,6 +4,7 @@
 // This file is the main entrypoint for the server that runs the web interface for Jablko. This server is response for handling user interactions and sending requests to the correct Jablko component.
 
 console.log("Starting Jablko Interface...");
+
 import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
 import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 
@@ -16,18 +17,20 @@ app.addEventListener("error", (evt) => {
   console.log(evt.error);
 });
 
+export const server_start_time = new Date().getTime(); // Used for measuring server uptime
+
 // Important Paths. Possible not needed
 const web_root = "public_html";
 
-export const server_start_time = new Date().getTime();
+// Load configuration file and export it so modules have access to config data
+console.log("Loading \"jablko_config.json\"...")
+export const jablko_config = await JSON.parse(await readFileStr("./jablko_config.json"));
 
-// Initialize SMTP system
-console.log("Initializing SMTP system...")
-const smtp_module = await import("./src/smtp_module.ts");
-export const smtp_client = await smtp_module.Jablko_Smtp_Initialize();
 
-const raw_module_list = (await readFileStr("./jablko_modules.config"));
-const module_list = await raw_module_list.split("\n");
+// Initialize the messaging system
+console.log("Initializing messaging system (GroupMe Bot)...")
+export const messaging_system = await import("./src/messaging.ts");
+
 
 console.log("Reading \"jablko_modules.config\"...");
 
@@ -36,23 +39,20 @@ async function load_jablko_modules() {
 	var loaded_modules: any = new Object();
 
 	console.log("Loading Jablko Modules...");
-	for (var i = 0; i < module_list.length; i++) {
-		if (module_list[i] != "") {
-			loaded_modules[module_list[i]] = await import(`./jablko_modules/${module_list[i]}/${module_list[i]}.ts`);
-		}
+	for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
+		loaded_modules[jablko_config.jablko_modules[i]] = await import(`./jablko_modules/${jablko_config.jablko_modules[i]}/${jablko_config.jablko_modules[i]}.ts`);
 	}
 
 	return loaded_modules;
 }
 
 export const jablko_modules: any = await load_jablko_modules(); // Only bit that needs to use type any. Hopefully a future design removes this need
-for (var name in jablko_modules) {
+
+for (var name in jablko_modules) { // Print for startup info
 	console.log(`\t${name}`);
 }
 
-
-
-console.log("Creating Middleware Handlers...");
+console.log("Loading Middleware...");
 
 // Timer Middleware
 app.use((await import("./src/timing.ts")).timing_middleware);

@@ -5,7 +5,9 @@
 
 import { readFileStr } from 'https://deno.land/std/fs/mod.ts';
 
-const smtp_client = (await import("../../jablko_interface.ts")).smtp_client;
+const interface_exports = (await import("../../jablko_interface.ts"));
+const messaging_system = interface_exports.messaging_system;
+
 
 export const info = {
 	permissions: "All"
@@ -16,17 +18,8 @@ export async function generate_card() {
 }
 
 export async function send_message(context: any) {
-	const send_status = await smtp_client.send_message(context.json_data.username, context.json_data.message);
-
-	if (send_status == false) {
-		context.response.type = "json";
-		context.response.body = {
-			status: "fail"
-		};
-	} else {
-		context.response.type = "json";
-		context.response.body = {
-			status: "good"
-		};
-	}
+	//const raw_response = await fetch(`https://api.groupme.com/v3/groups/60780309?token=${groupme_config.access_token}`);
+	// const response_json = await raw_response.json();
+	//console.log(response_json);
+	messaging_system.send_message(`Message to @${context.json_data.username}: ${context.json_data.message}`);
 }
