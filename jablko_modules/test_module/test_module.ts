@@ -21,5 +21,7 @@ export async function send_message(context: any) {
 	//const raw_response = await fetch(`https://api.groupme.com/v3/groups/60780309?token=${groupme_config.access_token}`);
 	// const response_json = await raw_response.json();
 	//console.log(response_json);
-	messaging_system.send_message(`Message to @${context.json_data.username}: ${context.json_data.message}`);
+	messaging_system.send_message(`Test Module: ${context.json_data.message}`);
+	context.response.header = "json";
+	context.response.body = {status: "good", message: "sent message"};
 }

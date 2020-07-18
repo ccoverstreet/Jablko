@@ -1,8 +1,6 @@
-<script>
-	const test_module = {
+<script> const test_module = {
 		send_message: async function() {
 			const message_text = document.getElementById("test_module_input").value;
-			const message_username = document.getElementById("test_module_username").value;
 
 			const raw_response = await fetch("/jablko_modules/test_module/send_message", {
 				method: "POST",
@@ -10,7 +8,7 @@
 					"Accept": "application/json",
 					"Content-Type": "application/json"
 				},
-				body: JSON.stringify({message: message_text, username: message_username})
+				body: JSON.stringify({message: message_text})
 			})
 				.catch(error => {
 					console.log(error);
@@ -26,11 +24,11 @@
 </script>
 <div id="test_module" class="jablko_module_card">
 	<div class="card_title">Test Module</div>
-	<input id="test_module_username">
-	<div style="display: grid; grid-template-columns: 50% 50%">
+	<div style="display: grid; grid-template-columns: 50% 50%;">
 		<div class="label">Send Message:</div>
-		<input id="test_module_input">
+		<input id="test_module_input" style="margin-right: 20px">
 	</div>
 	<button onclick="test_module.send_message()">Send</button>
+	<p>Used to test messaging bot.</p>
 </div>
 `
