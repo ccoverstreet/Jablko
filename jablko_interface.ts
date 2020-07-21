@@ -2,6 +2,7 @@
 // Cale Overstreet
 // May 27, 2020
 // This file is the main entrypoint for the server that runs the web interface for Jablko. This server is response for handling user interactions and sending requests to the correct Jablko component.
+// Exports: server_start_time, jablko_config, messaging_system, jablko_modules
 
 console.log("Starting Jablko Interface...");
 
@@ -13,7 +14,7 @@ const router = new Router();
 
 // Error listener for Oak Server
 app.addEventListener("error", (evt) => {
-  // Will log the thrown error to the console.
+  // Will log the thrown error to the console. WHY IS THIS NOT DEFAULT?
   console.log(evt.error);
 });
 
@@ -92,7 +93,7 @@ router.post('/jablko_modules/:module_name/:function_name', async (context) => {
 	}
 });
 
-// Adding router to middleware
+// Adding router to application
 app.use(router.routes());
 app.use(router.allowedMethods());
 
