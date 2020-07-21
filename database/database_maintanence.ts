@@ -74,8 +74,6 @@ async function create_user() {
 		password_1: "",
 		password_2: "",
 		first_name: "",
-		phone_number: "",
-		phone_carrier: "",
 		wakeup_time: "",
 		permissions: ""
 	};
@@ -135,9 +133,9 @@ async function create_user() {
 
 	// Create Database connection
 	const db = new DB(`database/${await database_name.replace(".db", "")}.db`);
-	db.query(`INSERT INTO users (username, password, first_name, phone_number, phone_carrier, wakeup_time, permissions) VALUES (
-		?, ?, ?, ?, ?, ?, ?
-	)`, [user_data.username, hash, user_data.first_name, user_data.phone_number, user_data.phone_carrier, user_data.wakeup_time, user_data.permissions]);
+	db.query(`INSERT INTO users (username, password, first_name, wakeup_time, permissions) VALUES (
+		?, ?, ?, ?, ?
+	)`, [user_data.username, hash, user_data.first_name, user_data.wakeup_time, user_data.permissions]);
 }
 
 // Start Mainloop
