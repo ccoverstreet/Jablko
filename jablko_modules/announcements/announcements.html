@@ -1,8 +1,8 @@
-<script> const test_module = {
+<script> const announcements = {
 		send_message: async function() {
-			const message_text = document.getElementById("test_module_input").value;
+			const message_text = document.getElementById("announcements_input").value;
 
-			const raw_response = await fetch("/jablko_modules/test_module/send_message", {
+			const raw_response = await fetch("/jablko_modules/announcements/send_message", {
 				method: "POST",
 				headers: {
 					"Accept": "application/json",
@@ -22,13 +22,13 @@
 		}
 	}
 </script>
-<div id="test_module" class="jablko_module_card">
-	<div class="card_title">Test Module</div>
+<div id="announcements" class="jablko_module_card">
+	<div class="card_title">Announcements</div>
 	<div style="display: grid; grid-template-columns: 50% 50%;">
 		<div class="label">Send Message:</div>
-		<input id="test_module_input" style="margin-right: 20px">
+		<input id="announcements_input" style="margin-right: 20px">
 	</div>
-	<button onclick="test_module.send_message()">Send</button>
-	<p>Used to test messaging bot.</p>
+	<button onclick="announcements.send_message()">Send</button>
+	<p>Send messages using GroupMe bot</p>
 </div>
 `
