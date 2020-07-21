@@ -9,23 +9,26 @@ import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 
 
 async function mainloop() {
-	console.log("Mode Selection:\n\t1. Create Database\n\t2. Add User");
+	console.log("Mode Selection:\n\t1. Create Database\n\t2. Add User\n\t3. Exit");
 
 	for await (const line of readLines(Deno.stdin)) {
 		switch (line.trim()) {
 			case "1":
 				console.log("Database Creation Selected.");
-			await create_database();
-			break;
+				await create_database();
+				break;
 			case "2":
 				console.log("User Creation Selected");
-			await create_user();
-			break;
+				await create_user();
+				break;
+			case "3":
+				console.log("Exit");
+				return 0;
 			default:
 				console.log("Invalid Input");
 		}
 
-		console.log("\nMode Selection:\n\t1. Create Database\n\t2. Add User");
+		console.log("\nMode Selection:\n\t1. Create Database\n\t2. Add User\n\t3. Exit");
 	}
 }
 
