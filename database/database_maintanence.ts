@@ -42,8 +42,6 @@ async function create_database() {
 					username TEXT NOT NULL,
 					password TEXT NOT NULL,
 					first_name TEXT NOT NULL,
-					phone_number TEXT NOT NULL,
-					phone_carrier TEXT NOT NULL,
 					wakeup_time TEXT NOT NULL,
 					permissions TEXT NOT NULL
 				)`);
@@ -108,23 +106,6 @@ async function create_user() {
 	console.log("Enter First Name:");
 	for await (const line of readLines(Deno.stdin)) {
 		user_data.first_name = line.trim();
-		break;
-	}
-
-	console.log("Enter Phone Number ##########:");
-	for await (const line of readLines(Deno.stdin)) {
-		const regex = /[0-9]{10}/;
-		if (regex.test(line.trim())) {
-			user_data.phone_number = line.trim();
-			break;
-		}
-
-		console.log("Incorrect Format");
-	}
-
-	console.log("Enter Phone Carrier (eg. verizon, att, tmobile):");
-	for await (const line of readLines(Deno.stdin)) {
-		user_data.phone_carrier = line.trim();
 		break;
 	}
 
