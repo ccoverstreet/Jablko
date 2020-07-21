@@ -18,6 +18,11 @@ body {
 	--font-color: #f5f6fa;
 }
 
+button {
+	border-width: 0px;
+	border-radius: 5px;
+	padding: 5px;
+}
 
 #module_container {
 	columns: 3 350px;
