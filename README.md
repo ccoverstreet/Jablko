@@ -8,11 +8,7 @@ The Jablko Module system is designed to make adding devices as painless as trans
 
 Windows compatibility is not considered for now as accessing devices and file paths differences unnecessarily increases complexity for this project. Adding Windows compatitbility in the future may be nice if some users have a main "media" computer. 
 
-## Starting Jablko
-
-Before running Jablko for the first time, make sure to run `./setup_jablko.sh`. This script will prompt the user to create the database Jablko uses.
-
-Run the command `./start_jablko.sh`. Make sure to make the bash script executable beforehand.
+## [Getting Started](docs/getting_started.md)
 
 ## Jablko Modules
 
