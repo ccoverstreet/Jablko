@@ -8,7 +8,8 @@ The Jablko Module system is designed to make adding devices as painless as trans
 
 Windows compatibility is not considered for now as accessing devices and file paths differences unnecessarily increases complexity for this project. Adding Windows compatitbility in the future may be nice if some users have a main "media" computer. 
 
-## [Getting Started](docs/getting_started.md)
+## Getting Started
+[Documentation](docs/getting_started.md)
 
 ## Jablko Modules
 
