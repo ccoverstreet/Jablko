@@ -23,12 +23,12 @@
 	}
 </script>
 <div id="announcements" class="jablko_module_card">
-	<div class="card_title">Announcements</div>
-	<div style="display: grid; grid-template-columns: 50% 50%;">
-		<div class="label">Send Message:</div>
-		<input id="announcements_input" style="margin-right: 20px">
+	<div class="card_title" style="background: url('/icons/announcements_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Announcements</div>
+	<hr>
+	<div style="display: grid; grid-template-columns: 80% 20%;">
+		<input id="announcements_input" style="margin-right: 10px; margin-left: 10px">
+		<button onclick="announcements.send_message()" style="background-color: #44bd32; color: #f5f6fa; margin-right: 10px; margin-left: 10px;">Send</button>
 	</div>
-	<button onclick="announcements.send_message()">Send</button>
-	<p>Send messages using GroupMe bot</p>
+	<br>
 </div>
 `

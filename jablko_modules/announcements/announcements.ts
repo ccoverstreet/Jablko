@@ -10,7 +10,7 @@ const messaging_system = interface_exports.messaging_system;
 
 
 export const info = {
-	permissions: "All"
+	permission_level: 0
 };
 
 export async function generate_card() {

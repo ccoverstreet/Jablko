@@ -8,7 +8,7 @@ import { server_start_time } from "../../jablko_interface.ts";
 import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 
 export const info = {
-	permissions: "all"
+	permission_level: 0
 };
 
 export async function generate_card() {
