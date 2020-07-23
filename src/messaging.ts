@@ -28,6 +28,10 @@ async function create_attachments(message: String) {
 			for (var j = 0; j < response_json.response.members.length; j++) {
 				if ("@" + response_json.response.members[j].nickname == await split_message[i].replace(":", "")) {
 					attachments.push({"type": "mentions", "user_ids": [response_json.response.members[j].user_id], "loci": [[0, 0]]});
+				} else if (split_message[i] == "@all") {
+					for (var k = 0; k < response_json.response.members.length; k++) {
+						attachments.push({"type": "mentions", "user_ids": [response_json.response.members[k].user_id], "loci": [[0, 0]]});
+					}		
 				}
 			}
 		}
