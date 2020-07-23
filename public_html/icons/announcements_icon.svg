@@ -27,9 +27,9 @@
      inkscape:document-rotation="0"
      inkscape:current-layer="layer1"
      inkscape:document-units="mm"
-     inkscape:cy="69.689411"
-     inkscape:cx="75.623497"
-     inkscape:zoom="5.6"
+     inkscape:cy="75"
+     inkscape:cx="75"
+     inkscape:zoom="5.4066667"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
@@ -53,15 +53,16 @@
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
     <ellipse
-       style="fill:#f5f6fa;stroke:#0097e6;stroke-width:7.67069;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:10.0157;stroke-opacity:1;paint-order:stroke fill markers"
+       transform="matrix(0.99988475,0.01518193,-0.01449166,0.99989499,0,0)"
+       style="fill:#f5f6fa;fill-opacity:0;stroke:#0097e6;stroke-width:4.92437;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:10.0157;stroke-opacity:1;paint-order:normal"
        id="path833"
-       cx="19.450903"
-       cy="16.658298"
-       rx="10.204251"
-       ry="9.4885292" />
+       cx="20.182678"
+       cy="17.265528"
+       rx="12.514888"
+       ry="11.910963" />
     <path
        style="fill:none;stroke:#0097e6;stroke-width:3.96875;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 8.3971136,21.841001 7.094627,31.039335 13.901001,27.005791"
+       d="M 8.1876625,22.187935 6.8851759,31.386269 13.69155,27.352725"
        id="path835" />
   </g>
 </svg>
