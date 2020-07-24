@@ -2,6 +2,10 @@
 
 Jablko Modules can be made by creating the required typescript file with external functions thay the main interface can call. Below is a list of items that **MUST** be defined in a module.
 
+## Contents
+
+- [Overview](#overview)
+
 ## Overview
 
 Required components:
@@ -23,3 +27,4 @@ Required components:
       </div>
       `
     ```
+    
