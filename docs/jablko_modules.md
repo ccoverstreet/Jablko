@@ -5,6 +5,7 @@ Jablko Modules can be made by creating the required typescript file with externa
 ## Contents
 
 - [Overview](#overview)
+- [Export: Info](#export:-info)
 
 ## Overview
 
@@ -27,4 +28,4 @@ Required components:
       </div>
       `
     ```
-    
+## Export: Info
