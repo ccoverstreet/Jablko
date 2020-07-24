@@ -2,6 +2,7 @@ import { Context, helpers } from "https://deno.land/x/oak/mod.ts";
 import { DB } from "https://deno.land/x/sqlite/mod.ts" ;
 import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 import Random from "https://deno.land/x/random/Random.js";
+const messaging_system = (await import("../jablko_interface.ts")).messaging_system; 
 
 /***
  *	@description Checks if request is authenticated and handles accordingly 
@@ -42,6 +43,9 @@ export async function check_authentication(context: any, next: any) {
 		}
 
 		return;
+	} else if (context.request.url.pathname == "/bot_callback") {
+		context.json_content = (await context.request.body()).value;
+		await next();
 	} else if (context.cookies.get("key_1") == null) {
 		// Client has no corresponding cookies. Prevents from erroring out
 		const decoder = new TextDecoder("utf-8");

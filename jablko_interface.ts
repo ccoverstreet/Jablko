@@ -96,6 +96,8 @@ router.post('/jablko_modules/:module_name/:function_name', async (context: any) 
 	}
 });
 
+router.post("/bot_callback", (await import("./src/bot_brain.ts")).handle_message);
+
 // Adding router to application
 app.use(router.routes());
 app.use(router.allowedMethods());
