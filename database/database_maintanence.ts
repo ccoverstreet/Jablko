@@ -46,7 +46,7 @@ async function create_database() {
 					password TEXT NOT NULL,
 					first_name TEXT NOT NULL,
 					wakeup_time TEXT NOT NULL,
-					permissions TEXT NOT NULL
+					permission_level INTEGER NOT NULL
 				)`);
 
 				db.query(`CREATE TABLE IF NOT EXISTS login_sessions (
@@ -78,7 +78,7 @@ async function create_user() {
 		password_2: "",
 		first_name: "",
 		wakeup_time: "",
-		permissions: ""
+		permission_level: 0
 	};
 
 	console.log("Enter Username:");
@@ -121,12 +121,10 @@ async function create_user() {
 		console.log("Incorrect Format");
 	}
 
-	console.log("Enter permissions for user (admin/guest):");
+	console.log("Enter permission level for user (0: guest, 1: family, 2: admin):");
 	for await (const line of readLines(Deno.stdin)) {
-		user_data.permissions = line.trim();
-
+		user_data.permission_level = parseInt(line.trim());
 		break;
-		console.log("Incorrect Format");
 	}
 
 
@@ -136,9 +134,9 @@ async function create_user() {
 
 	// Create Database connection
 	const db = new DB(`database/${await database_name.replace(".db", "")}.db`);
-	db.query(`INSERT INTO users (username, password, first_name, wakeup_time, permissions) VALUES (
+	db.query(`INSERT INTO users (username, password, first_name, wakeup_time, permission_level) VALUES (
 		?, ?, ?, ?, ?
-	)`, [user_data.username, hash, user_data.first_name, user_data.wakeup_time, user_data.permissions]);
+	)`, [user_data.username, hash, user_data.first_name, user_data.wakeup_time, user_data.permission_level]);
 }
 
 // Start Mainloop

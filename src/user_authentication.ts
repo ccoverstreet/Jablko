@@ -96,13 +96,13 @@ export async function check_authentication(context: any, next: any) {
 
 async function get_user_data(username: any) {
 	const db = new DB("database/primary.db");
-	const raw_user_data = [...db.query("SELECT username, first_name, wakeup_time, permissions FROM users WHERE username=(?)", [username])];
+	const raw_user_data = [...db.query("SELECT username, first_name, wakeup_time, permission_level FROM users WHERE username=(?)", [username])];
 
 	return {
 		username: raw_user_data[0][0],
 		first_name: raw_user_data[0][1],
 		wakeup_time: raw_user_data[0][4],
-		permissions: raw_user_data[0][5]
+		permission_level: parseInt(raw_user_data[0][5])
 	};
 
 	db.close();
