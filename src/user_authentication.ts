@@ -101,8 +101,8 @@ async function get_user_data(username: any) {
 	return {
 		username: raw_user_data[0][0],
 		first_name: raw_user_data[0][1],
-		wakeup_time: raw_user_data[0][4],
-		permission_level: parseInt(raw_user_data[0][5])
+		wakeup_time: raw_user_data[0][2],
+		permission_level: parseInt(raw_user_data[0][3])
 	};
 
 	db.close();

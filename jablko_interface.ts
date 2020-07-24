@@ -87,8 +87,11 @@ router.get("/", async (context) => {
 });
 
 // Routes requests sent by client to correct jablko module
-router.post('/jablko_modules/:module_name/:function_name', async (context) => {
-	if (context.params.module_name !== undefined && context.params.function_name !== undefined) {
+router.post('/jablko_modules/:module_name/:function_name', async (context: any) => {
+	if (context.user_data.permission_level < jablko_modules[context.params.module_name].permission_level()) {
+		context.response.type = "json";
+		context.response.body = {status: "fail", message: "Insufficient permissions"};
+	} else if (context.params.module_name !== undefined && context.params.function_name !== undefined) {
 		await jablko_modules[context.params.module_name][context.params.function_name](context);
 	}
 });

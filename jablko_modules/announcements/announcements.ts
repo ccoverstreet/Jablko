@@ -9,9 +9,9 @@ const interface_exports = (await import("../../jablko_interface.ts"));
 const messaging_system = interface_exports.messaging_system;
 
 
-export const info = {
-	permission_level: 0
-};
+export function permission_level() {
+	return 2;
+}
 
 export async function generate_card() {
 	return await readFileStr("jablko_modules/announcements/announcements.html");

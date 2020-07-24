@@ -7,9 +7,9 @@ import { request_handling_times } from "../../src/timing.ts";
 import { server_start_time } from "../../jablko_interface.ts";
 import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 
-export const info = {
-	permission_level: 0
-};
+export function permission_level() {
+	return 0;
+}
 
 export async function generate_card() {
 	return await readFileStr("jablko_modules/interface_status/interface_status.html");
