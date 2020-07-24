@@ -1,6 +1,8 @@
 <script> const announcements = {
 		send_message: async function() {
-			const message_text = document.getElementById("announcements_input").value;
+			const input_box = document.getElementById("announcements_input");
+			const message_text = input_box.value;
+			input_box.value = "";
 
 			const raw_response = await fetch("/jablko_modules/announcements/send_message", {
 				method: "POST",
