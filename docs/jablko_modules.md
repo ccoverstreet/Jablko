@@ -5,7 +5,7 @@ Jablko Modules can be made by creating the required typescript file with externa
 ## Contents
 
 - [Overview](#overview)
-- [Export: Info](#export:-info)
+- [Info](#info)
 
 ## Overview
 
@@ -28,4 +28,13 @@ Required components:
       </div>
       `
     ```
-## Export: Info
+## Info
+
+The info object is exported and provides the main interface or other modules information on the security level and other parameters in the future. The only critical component for now is the `permission_level` and must be included for a module to work. Permission levels: 0 all, 1 slightly elevated, 2 administrator.
+```Javascript
+export const info = {
+  permission_level: 0
+}
+```
+
+## Generate Card
