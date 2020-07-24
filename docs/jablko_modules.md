@@ -7,6 +7,7 @@ Jablko Modules can be made by creating the required typescript file with externa
 - [Overview](#overview)
 - [Info](#info)
 - [Generate Card](#generate-card)
+- [Card Design](#card-design)
 
 ## Overview
 
@@ -51,3 +52,13 @@ export async function generate_card() {
     </div>
     `
 ```
+
+## Card Design
+
+In Jablko there is a general CSS file that contains class definitions for certain module components. The goal of this is to unify the appearance of modules and make it easy to adjust the overall look of Jablko.
+
+| CSS Selector | CSS Content|
+| --- | --- |
+| `.jablko_module_card` | display: inline-block;<br>margin: 10px;<br>border-radius: 5px;<br>width: calc(100% - 20px);<br>color: var(--font-color);<br>background-color: var(--color-card-background);|
+| button | border-width: 0px;<br>border-radius: 5px;<br>padding: 5px;|
+
