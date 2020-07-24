@@ -6,6 +6,7 @@ Jablko Modules can be made by creating the required typescript file with externa
 
 - [Overview](#overview)
 - [Info](#info)
+- [Generate Card](#generate-card)
 
 ## Overview
 
@@ -38,3 +39,15 @@ export const info = {
 ```
 
 ## Generate Card
+
+This function is required if you want your module to display on the dashboard. This function must return a string that contains the html of the modules display card. If you want to look at available CSS to unify the appearance, look in the [Card Design](#card-design) section.
+```Javascript
+export async function generate_card() {
+  return `
+    <div id="mymodule_card" class="jablko_module_card">
+      <div class="card_title" background: url('/icons/interface_status_icon.svg') right; background-size: contain; background-repeat: no-repeat;">MyModule</div>
+      <hr>
+      <p>*Your Content*</p>
+    </div>
+    `
+```
