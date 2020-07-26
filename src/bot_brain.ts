@@ -14,7 +14,6 @@ export async function handle_message(context: any) {
 		await determine_response(context);
 	}
 
-
 	context.response.type = "html"
 	context.response.body = "";
 }
