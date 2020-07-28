@@ -35,12 +35,33 @@ const messaging_system = (await import("../jablko_interface.ts")).messaging_syst
 
 // -------------------- Begining of action definitions -------------------- 
 function greeting() {
-	return "Hello";
+	const available_responses = [
+		"Hi!",
+		"Hello!",
+		"What's up my homie?",
+		"Dzien Dobry!",
+		"Top of the morning to ya!",
+		"How's it hanging?"
+	]
+
+	return available_responses[Math.floor(Math.random() * 100) % available_responses.length];
 }
 
 function test_fun() {
 	messaging_system.send_message("Testing parser");
-	return "Ran test function";
+	return "Ran test function.";
+}
+
+function rude() {
+	const available_responses = [
+		"Well ok then.",
+		"Your mom.",
+		"Do I sense a small pp?",
+		"Hoe.",
+		"Hoe-bitch."
+	]
+
+	return available_responses[Math.floor(Math.random() * 100) % available_responses.length];
 }
 
 const actions: any = [
@@ -53,6 +74,11 @@ const actions: any = [
 		name: "Test",
 		activation_phrase: "Send hello announcement",
 		function: test_fun
+	},
+	{
+		name: "Rude",
+		activation_phrase: "Stupid",
+		function: rude
 	}
 ];
 // -------------------- End of action definitions --------------------
@@ -84,7 +110,7 @@ async function determine_intent(phrase: string) {
 		}
 	}
 
-	return intent_vector
+	return intent_vector;
 }
 
 
@@ -99,13 +125,45 @@ await parse_actions(actions);
 console.log(actions)
 
 async function create_response(message: string) {
-	
+	// Create intent vector
+	const message_intent = await determine_intent(message);
+
+	// Create required action list
+	var action_list = []
+	for (var i = 0; i < actions.length; i++) {
+		var should_continue = false;
+		var abs_diff = 0
+		for (var j = 0; j < message_intent.length; j++) {
+			abs_diff += Math.abs(message_intent[j] - actions[i].activation[j]);
+			if (message_intent[j] < actions[i].activation[j]) {
+				should_continue = true;
+				break;
+			}
+		}
+
+		if (abs_diff < 5 && should_continue == false) {
+			action_list.push(i);
+		}
+	}
+
+	// Create response and call appropriate functions
+	var response = "";
+
+	for (var i = 0; i < action_list.length; i++) {
+		response += await actions[action_list[i]].function() + " ";
+	}
+
+	return response;
 }
 
 
 export async function handle_message(context: any) {
-	context.json_content.text = context.json_content.text.toLowerCase();
-	console.log(context.json_content.text);
+	var message = await context.json_content.text.toLowerCase();
+
+	if (message.includes("jablko")) {
+		const generated_response = await create_response(context.json_content.text);
+		messaging_system.send_message(generated_response);
+	}
 
 	context.response.type = "html"
 	context.response.body = "";
