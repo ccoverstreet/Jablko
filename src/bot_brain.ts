@@ -153,6 +153,20 @@ async function create_response(message: string) {
 		response += await actions[action_list[i]].function() + " ";
 	}
 
+	const confused_responses = [
+		"Not quite sure what you said there.",
+		"I don't think I know enough to respond.",
+		"Maybe you should add some words to my dictionary?",
+		"Nani?",
+		":/",
+		"#dontunderstand",
+		"Well tak."
+	];
+
+	if (action_list.length == 0) {
+		return confused_responses[Math.floor(Math.random() * 100) % confused_responses.length];
+	}
+
 	return response;
 }
 
