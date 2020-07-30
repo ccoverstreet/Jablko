@@ -42,7 +42,7 @@ function greeting() {
 		"Dzien Dobry!",
 		"Top of the morning to ya!",
 		"How's it hanging?"
-	]
+	];
 
 	return available_responses[Math.floor(Math.random() * 100) % available_responses.length];
 }
@@ -59,7 +59,18 @@ function rude() {
 		"Do I sense a small pp?",
 		"Hoe.",
 		"Hoe-bitch."
-	]
+	];
+
+	return available_responses[Math.floor(Math.random() * 100) % available_responses.length];
+}
+
+function get_weather() {
+	const available_responses = [
+		"I'm getting the weather for you!",
+		"Here's the weather.",
+		"Coming right up."
+	];
+
 
 	return available_responses[Math.floor(Math.random() * 100) % available_responses.length];
 }
@@ -79,6 +90,11 @@ const actions: any = [
 		name: "Rude",
 		activation_phrase: "Stupid",
 		function: rude
+	},
+	{
+		name: "Get Weather",
+		activation_phrase: "What is the weather?",
+		function: get_weather
 	}
 ];
 // -------------------- End of action definitions --------------------
@@ -94,7 +110,8 @@ function add_vector(v1: any, v2: any) {
 
 async function determine_intent(phrase: string) {
 	phrase = await phrase.toLowerCase();
-	phrase = await phrase.replace(/[,.?:;!$#@]/, "");
+	phrase = await phrase.replace(/[^\w\s]/g, "");
+	console.log(phrase);
 	const split_phrase = await phrase.split(" ");
 	var intent_vector = []
 
@@ -117,12 +134,15 @@ async function determine_intent(phrase: string) {
 async function parse_actions(actions: any) {
 	for (var i = 0; i < actions.length; i++) {
 		actions[i].activation = await determine_intent(actions[i].activation_phrase)		
+		for (var j = 0; j < actions[i].activation.length; j++) {
+			if (actions[i].activation[j] > 1) {
+				actions[i].activation[j] = 1;
+			}
+		}
 	}
 }
 
 await parse_actions(actions);
-
-console.log(actions)
 
 async function create_response(message: string) {
 	// Create intent vector
