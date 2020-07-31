@@ -7,6 +7,9 @@
 import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 import { exec } from "https://deno.land/x/exec/mod.ts";
 
+const jablko_config = (await import("../jablko_interface.ts")).jablko_config;
+console.log(jablko_config);
+
 const dictionary_path = "src/dictionary.csv";
 
 // Parses designed dictionary file creates a dictionary object
@@ -30,6 +33,7 @@ async function parse_dictionary(filename: string) {
 
 	return new_dictionary;
 }
+
 
 const dictionary = await parse_dictionary(dictionary_path);
 const messaging_system = (await import("../jablko_interface.ts")).messaging_system;
@@ -65,15 +69,23 @@ function rude() {
 	return available_responses[Math.floor(Math.random() * 100) % available_responses.length];
 }
 
-function get_weather() {
+async function get_weather() {
 	const available_responses = [
 		"I'm getting the weather for you!",
 		"Here's the weather.",
 		"Coming right up."
 	];
 
+	const raw_weather_data = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${jablko_config.weather.city}&appid=${jablko_config.weather.key}`);
+	const json_weather_data = await raw_weather_data.json();
 
-	return available_responses[Math.floor(Math.random() * 100) % available_responses.length];
+	const temp_in_c = json_weather_data.main.temp - 273.15;
+	const feels_in_c = json_weather_data.main.feels_like - 273.15;
+
+	const weather_summary = `\nRight now it is ${(temp_in_c * 9/5 + 32).toFixed(2)} F (${temp_in_c.toFixed(2)} C) but feels like ${(feels_in_c * 9/5 + 32).toFixed(2)} (${feels_in_c.toFixed(2)} C).\nThe weather is "${json_weather_data.weather[0].description}" with a humidity of ${json_weather_data.main.humidity}%. \nThe wind is ${json_weather_data.wind.speed} m/s at ${json_weather_data.wind.deg} degrees from East."`;
+
+		
+	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + weather_summary;
 }
 
 const actions: any = [
@@ -175,10 +187,10 @@ async function create_response(message: string) {
 
 	const confused_responses = [
 		"Not quite sure what you said there.",
+		"I don't know what you mean.",
 		"I don't think I know enough to respond.",
 		"Maybe you should add some words to my dictionary?",
 		"Nani?",
-		":/",
 		"#dontunderstand",
 		"Well tak."
 	];
