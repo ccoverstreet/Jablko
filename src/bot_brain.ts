@@ -5,6 +5,7 @@
 // Exports: handle_message
 
 import { readFileStr } from "https://deno.land/std/fs/mod.ts";
+import { exec } from "https://deno.land/x/exec/mod.ts";
 
 const dictionary_path = "src/dictionary.csv";
 
@@ -111,7 +112,6 @@ function add_vector(v1: any, v2: any) {
 async function determine_intent(phrase: string) {
 	phrase = await phrase.toLowerCase();
 	phrase = await phrase.replace(/[^\w\s]/g, "");
-	console.log(phrase);
 	const split_phrase = await phrase.split(" ");
 	var intent_vector = []
 
@@ -161,7 +161,7 @@ async function create_response(message: string) {
 			}
 		}
 
-		if (abs_diff < 5 && should_continue == false) {
+		if (abs_diff < 15 && should_continue == false) {
 			action_list.push(i);
 		}
 	}
@@ -184,11 +184,13 @@ async function create_response(message: string) {
 	];
 
 	if (action_list.length == 0) {
+		exec(`bash -c "echo ${message} >> src/unknown_phrases.txt"`);
 		return confused_responses[Math.floor(Math.random() * 100) % confused_responses.length];
 	}
 
 	return response;
 }
+
 
 
 export async function handle_message(context: any) {
