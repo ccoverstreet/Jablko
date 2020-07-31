@@ -18,6 +18,22 @@ body {
 	--font-color: #f5f6fa;
 }
 
+h1 {
+	font-size: 28px;
+	font-weight: bold;
+	padding: 5px;
+	padding-left: 15px;
+	margin: 0px;
+}
+
+h2 {
+	font-size: 20px;
+	font-weight: bold;
+	padding: 2.5px;
+	padding-left: 15px;
+	margin: 0px;
+}
+
 button {
 	border-width: 0px;
 	border-radius: 5px;
@@ -29,13 +45,6 @@ button {
 	margin-top: 50px;
 }
 
-.card_title {
-	font-size: 28px;
-	font-weight: bold;
-	padding: 5px;
-	padding-left: 15px;
-}
-
 .label_value_pair {
 	display: grid;
 	grid-template-columns: 50% 50%;
@@ -44,18 +53,18 @@ button {
 .label {
 	display: flex;
 	justify-content: flex-end;
-	padding: 5px;
+	padding: 2.5px;
 }
 
 .value {
-	padding: 5px;
+	padding: 2.5px;
 }
 
 hr {
 	margin: 0px;
 	margin-left: 10px;
 	margin-right: 10px;
-	margin-bottom: 10px;
+	margin-bottom: 5px;
 	border-color: #0097e6;
 }
 
@@ -64,6 +73,7 @@ hr {
 	margin: 10px;
 	border-radius: 5px;
 	width: calc(100% - 20px);
+	padding-bottom: 2.5px;
 	color: var(--font-color);
 	background-color: var(--color-card-background);
 }

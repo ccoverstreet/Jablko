@@ -86,6 +86,7 @@ router.get("/", async (context) => {
 	context.response.body = dashboard_string;
 });
 
+
 // Routes requests sent by client to correct jablko module
 router.post('/jablko_modules/:module_name/:function_name', async (context: any) => {
 	if (context.user_data.permission_level < jablko_modules[context.params.module_name].permission_level()) {

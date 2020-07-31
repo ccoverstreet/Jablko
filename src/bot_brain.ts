@@ -7,8 +7,9 @@
 import { readFileStr } from "https://deno.land/std/fs/mod.ts";
 import { exec } from "https://deno.land/x/exec/mod.ts";
 
+const weather = await import("./weather.ts");
+
 const jablko_config = (await import("../jablko_interface.ts")).jablko_config;
-console.log(jablko_config);
 
 const dictionary_path = "src/dictionary.csv";
 
@@ -29,7 +30,6 @@ async function parse_dictionary(filename: string) {
 			new_dictionary[line_split[0]] = word_vector;
 		}
 	}
-
 
 	return new_dictionary;
 }
@@ -76,14 +76,12 @@ async function get_weather() {
 		"Coming right up."
 	];
 
-	const raw_weather_data = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${jablko_config.weather.city}&appid=${jablko_config.weather.key}`);
-	const json_weather_data = await raw_weather_data.json();
+	const json_weather_data = await weather.get_current_weather();
 
 	const temp_in_c = json_weather_data.main.temp - 273.15;
 	const feels_in_c = json_weather_data.main.feels_like - 273.15;
 
 	const weather_summary = `\nRight now it is ${(temp_in_c * 9/5 + 32).toFixed(2)} F (${temp_in_c.toFixed(2)} C) but feels like ${(feels_in_c * 9/5 + 32).toFixed(2)} (${feels_in_c.toFixed(2)} C).\nThe weather is "${json_weather_data.weather[0].description}" with a humidity of ${json_weather_data.main.humidity}%. \nThe wind is ${json_weather_data.wind.speed} m/s at ${json_weather_data.wind.deg} degrees from East."`;
-
 		
 	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + weather_summary;
 }

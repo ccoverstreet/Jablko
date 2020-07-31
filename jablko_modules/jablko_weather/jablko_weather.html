@@ -1,0 +1,35 @@
+<script>
+	const jablko_weather = {
+		get_current_weather: async function() {
+			const raw_response = await fetch("/jablko_modules/jablko_weather/get_current_weather", {
+				method: "POST"
+			})
+				.catch(error => {
+					console.log(error);
+				});
+			const json_response = await raw_response.json();
+
+			const temp_value = document.getElementById("weather_temp");
+			const feels_like_value = document.getElementById("weather_feels_like");
+
+			temp_value.textContent = json_response.main.temp;
+			feels_like_value.textContent = json_response.main.feels_like;
+		}
+	}
+</script>
+<div id="jablko_weather" class="jablko_module_card">
+	<h1>Weather</h1>
+	<hr>
+	<h2>Current</h2>
+	<div>
+		<div class="label_value_pair">
+			<div class="label">Temp:</div>
+			<div id="weather_temp" class="value">N/A</div>
+		</div>
+
+		<div class="label_value_pair">
+			<div class="label">Feels Like:</div>
+			<div id="weather_feels_like" class="value">N/A</div>
+		</div>
+	</div>
+</div>
