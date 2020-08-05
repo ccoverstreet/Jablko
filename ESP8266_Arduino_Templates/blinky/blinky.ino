@@ -1,7 +1,7 @@
 #include <ESP8266WebServer.h>
 
-const char *ssid = "moviecouncil";
-const char *password = "RAAE!lectron11!";
+const char *ssid = "SSID";
+const char *password = "PASSWORD";
 
 const unsigned int timeout = 2000; // Timeout time that kills client response if taking too long. prevents hanging or soft resets.
 
