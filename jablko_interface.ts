@@ -72,7 +72,6 @@ router.get("/", async (context) => {
 	const toolbar_string = await readFileStr(`${web_root}/toolbar/toolbar.html`);
 	dashboard_string = await dashboard_string.replace("$TOOLBAR", toolbar_string);
 
-
 	// Go through all modules and generate module string
 	for (var module_name in jablko_modules) {
 		module_string += await jablko_modules[module_name]["generate_card"]();

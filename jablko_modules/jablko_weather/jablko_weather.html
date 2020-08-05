@@ -1,21 +1,72 @@
 <script>
 	const jablko_weather = {
-		get_current_weather: async function() {
+		update_weather: async function() {
 			const raw_response = await fetch("/jablko_modules/jablko_weather/get_current_weather", {
 				method: "POST"
 			})
 				.catch(error => {
 					console.log(error);
 				});
+
 			const json_response = await raw_response.json();
+
+			console.log(json_response);
+
+			const temp_in_c = json_response.main.temp - 273.15;
+			const feels_in_c = json_response.main.feels_like - 273.15;
+
+			const hot_color = [232, 65, 24];
+			const cold_color = [0, 151, 230];
+
+			const temp_color = jablko_weather.interpolate_color(hot_color, cold_color, 30, 0, temp_in_c);
+			const feels_color = jablko_weather.interpolate_color(hot_color, cold_color, 30, 0, feels_in_c);
 
 			const temp_value = document.getElementById("weather_temp");
 			const feels_like_value = document.getElementById("weather_feels_like");
+			const humidity_value = document.getElementById("weather_humidity");
+			const description_value = document.getElementById("weather_description");
+			const wind_value = document.getElementById("weather_wind");
 
-			temp_value.textContent = json_response.main.temp;
-			feels_like_value.textContent = json_response.main.feels_like;
+			temp_value.textContent = ((9 / 5 * temp_in_c) + 32).toFixed(1).toString() + " °F (" + temp_in_c.toFixed(1) + " °C)";
+			temp_value.style.color = "rgb(" + temp_color[0] + "," + temp_color[1] + "," + temp_color[2] + ")";
+
+			feels_like_value.textContent = ((9 / 5 * feels_in_c) + 32).toFixed(1).toString() + " °F (" + feels_in_c.toFixed(1) + " °C)";
+			feels_like_value.style.color = "rgb(" + feels_color[0] + "," + feels_color[1] + "," + feels_color[2] + ")";
+
+			const high_humidity_color = [0, 151, 230];
+			const low_humidity_color = [251, 197, 49];
+			const humidity_color = jablko_weather.interpolate_color(high_humidity_color, low_humidity_color, 100, 0, json_response.main.humidity);
+			humidity_value.textContent = json_response.main.humidity + "%";
+			humidity_value.style.color = "rgb(" + humidity_color[0] + "," + humidity_color[1] + "," + humidity_color[2] + ")";
+
+			description_value.textContent = json_response.weather[0].description;
+
+			const high_wind_color = [68, 189, 50];
+			const low_wind_color = [245, 246, 250];
+			const wind_color = jablko_weather.interpolate_color(high_wind_color, low_wind_color, 4, 0, json_response.wind.speed);
+			wind_value.textContent = json_response.wind.speed + " m/s from " + json_response.wind.deg + "° N";
+			wind_value.style.color = "rgb(" + wind_color[0] + "," + wind_color[1] + "," + wind_color[2] + ")";
+		},
+		interpolate_color(high_color, low_color, high_value, low_value, value) {
+			var interp = [0, 0, 0];
+
+			if (value < low_value) {
+				return low_color;
+			} else if (value > high_value) {
+				return high_color;
+			}
+
+			for (var i = 0; i < high_color.length; i++) {
+				interp[i] = (high_color[i] - low_color[i]) / (high_value - low_value) * (value - low_value) + low_color[i];
+			}
+
+			return interp;
 		}
 	}
+
+	document.addEventListener("DOMContentLoaded", jablko_weather.update_weather);
+
+	setInterval(jablko_weather.update_weather, 60000);
 </script>
 <div id="jablko_weather" class="jablko_module_card">
 	<h1>Weather</h1>
@@ -30,6 +81,21 @@
 		<div class="label_value_pair">
 			<div class="label">Feels Like:</div>
 			<div id="weather_feels_like" class="value">N/A</div>
+		</div>
+
+		<div class="label_value_pair">
+			<div class="label">Humidity:</div>
+			<div id="weather_humidity" class="value">N/A</div>
+		</div>
+
+		<div class="label_value_pair">
+			<div class="label">Description:</div>
+			<div id="weather_description" class="value">N/A</div>
+		</div>
+
+		<div class="label_value_pair">
+			<div class="label">Wind:</div>
+			<div id="weather_wind" class="value">N/A</div>
 		</div>
 	</div>
 </div>
