@@ -7,35 +7,35 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   sodipodi:docname="announcements_icon.svg"
-   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   id="svg3221"
-   version="1.1"
-   viewBox="0 0 39.687499 39.687501"
+   width="150"
    height="150"
-   width="150">
+   viewBox="0 0 39.687499 39.687501"
+   version="1.1"
+   id="svg3221"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="jablko_weather.icon.svg">
   <defs
      id="defs3215" />
   <sodipodi:namedview
-     inkscape:window-maximized="1"
-     inkscape:window-y="0"
-     inkscape:window-x="0"
-     inkscape:window-height="1006"
-     inkscape:window-width="1920"
-     units="px"
-     showgrid="false"
-     inkscape:document-rotation="0"
-     inkscape:current-layer="layer1"
-     inkscape:document-units="mm"
-     inkscape:cy="75"
-     inkscape:cx="75"
-     inkscape:zoom="5.4066667"
-     inkscape:pageshadow="2"
-     inkscape:pageopacity="0.0"
-     borderopacity="1.0"
-     bordercolor="#666666"
+     id="base"
      pagecolor="#ffffff"
-     id="base" />
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.4066667"
+     inkscape:cx="75"
+     inkscape:cy="75"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1006"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata3218">
     <rdf:RDF>
@@ -49,20 +49,20 @@
     </rdf:RDF>
   </metadata>
   <g
-     id="layer1"
+     inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     inkscape:label="Layer 1">
+     id="layer1">
     <ellipse
-       transform="matrix(0.99988475,0.01518193,-0.01449166,0.99989499,0,0)"
-       style="fill:#f5f6fa;fill-opacity:0;stroke:#0097e6;stroke-width:4.92437;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:10.0157;stroke-opacity:1;paint-order:normal"
-       id="path833"
-       cx="20.182678"
-       cy="17.265528"
+       ry="11.910963"
        rx="12.514888"
-       ry="11.910963" />
+       cy="16.404169"
+       cx="20.232229"
+       id="path833"
+       style="fill:#f5f6fa;fill-opacity:0;stroke:#0097e6;stroke-width:3.96875;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:10.0157;stroke-opacity:1;paint-order:normal"
+       transform="matrix(0.99988475,0.01518193,-0.01449166,0.99989499,0,0)" />
     <path
-       style="fill:none;stroke:#0097e6;stroke-width:3.96875;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 8.1876625,22.187935 6.8851759,31.386269 13.69155,27.352725"
-       id="path835" />
+       id="path835"
+       d="M 8.1511654,21.170537 7.1805556,30.368871 12.252649,26.335327"
+       style="fill:none;stroke:#0097e6;stroke-width:3.96875;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
   </g>
 </svg>

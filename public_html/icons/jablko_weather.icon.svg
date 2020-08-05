@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="jablko_weather.icon.svg"
+   version="1.1"
+   width="150"
+   viewBox="0 0 150 150"
+   height="150"
+   enable-background="new 0 0 512 512"
+   id="Capa_1">
+  <metadata
+     id="metadata12">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs10">
+    <marker
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="Arrow1Mstart"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Mstart">
+      <path
+         transform="scale(0.4) translate(10,0)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path843" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     inkscape:current-layer="Capa_1"
+     inkscape:window-maximized="1"
+     inkscape:window-y="0"
+     inkscape:window-x="0"
+     inkscape:cy="96.040421"
+     inkscape:cx="256"
+     inkscape:zoom="1.640625"
+     showgrid="false"
+     id="namedview8"
+     inkscape:window-height="1006"
+     inkscape:window-width="1920"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <g
+     style="stroke-width:55.2649;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
+     transform="matrix(0.22917994,0,0,0.27277139,15.696075,1.7777133)"
+     id="Cloud_1_">
+    <g
+       style="stroke-width:55.2649;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
+       id="g4">
+      <path
+         style="stroke-width:55.2649;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
+         id="path2"
+         d="M 421,406 H 91 C 66.95,406 44.206,396.673 26.958,379.736 9.574,362.667 0,340.031 0,316 0,291.969 9.574,269.333 26.958,252.264 40.572,238.896 57.61,230.269 76.012,227.226 76.004,226.82 76,226.411 76,226 c 0,-66.168 53.832,-120 120,-120 24.538,0 48.119,7.387 68.194,21.363 14.132,9.838 25.865,22.443 34.587,37.043 C 312.86,155.673 329.099,151 346,151 c 44.886,0 82.202,33.026 88.921,76.056 18.811,2.88 36.244,11.581 50.122,25.208 C 502.426,269.333 512,291.968 512,316 c 0,24.032 -9.574,46.667 -26.957,63.736 C 467.794,396.673 445.05,406 421,406 Z M 91,256 c -33.636,0 -61,26.916 -61,60 0,33.084 27.364,60 61,60 h 330 c 33.636,0 61,-26.916 61,-60 0,-33.084 -27.364,-60 -61,-60 h -15 v -15 c 0,-33.084 -26.916,-60 -60,-60 -15.766,0 -30.68,6.12 -41.995,17.233 l -16.146,15.858 -8.315,-21.049 C 265.855,158.391 233.062,136 196,136 c -49.626,0 -90,40.374 -90,90 0,3.544 0.556,7.349 1.144,11.378 L 109.831,256 Z" />
+    </g>
+  </g>
+</svg>
