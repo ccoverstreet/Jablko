@@ -14,8 +14,14 @@ const router = new Router();
 
 // Error listener for Oak Server
 app.addEventListener("error", (evt) => {
-  // Will log the thrown error to the console. WHY IS THIS NOT DEFAULT?
-  console.log(evt.error);
+	// Will log the thrown error to the console. WHY IS THIS NOT DEFAULT?
+	// Have to ignore SSL certificate errors as accessing from the same network prevents standard https protocol
+	if (evt.error.Message.version = "TLSv1_3") {
+
+	} else {
+		console.log(evt.error.payload);
+		console.log("ASDASDAS");
+	}
 });
 
 export const server_start_time = new Date().getTime(); // Used for measuring server uptime

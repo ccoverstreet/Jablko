@@ -10,8 +10,6 @@
 
 			const json_response = await raw_response.json();
 
-			console.log(json_response);
-
 			const temp_in_c = json_response.main.temp - 273.15;
 			const feels_in_c = json_response.main.feels_like - 273.15;
 
@@ -42,7 +40,7 @@
 			description_value.textContent = json_response.weather[0].description;
 
 			const high_wind_color = [68, 189, 50];
-			const low_wind_color = [245, 246, 250];
+			const low_wind_color = [0, 168, 255];
 			const wind_color = jablko_weather.interpolate_color(high_wind_color, low_wind_color, 4, 0, json_response.wind.speed);
 			wind_value.textContent = json_response.wind.speed + " m/s from " + json_response.wind.deg + "° N";
 			wind_value.style.color = "rgb(" + wind_color[0] + "," + wind_color[1] + "," + wind_color[2] + ")";
@@ -57,7 +55,7 @@
 			}
 
 			for (var i = 0; i < high_color.length; i++) {
-				interp[i] = (high_color[i] - low_color[i]) / (high_value - low_value) * (value - low_value) + low_color[i];
+				interp[i] = Math.floor((high_color[i] - low_color[i]) / (high_value - low_value) * (value - low_value) + low_color[i]);
 			}
 
 			return interp;
