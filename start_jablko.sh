@@ -1,3 +1,3 @@
 #!/bin/bash
 
-~/.deno/bin/deno run --allow-net --allow-run --allow-read --allow-write --unstable jablko_interface.ts
+/home/jablko/.deno/bin/deno run --allow-net --allow-run --allow-read --allow-write --unstable jablko_interface.ts

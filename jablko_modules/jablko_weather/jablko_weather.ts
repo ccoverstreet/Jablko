@@ -3,7 +3,7 @@
 // July 7, 2020
 // Dashboard implementation of Open Weather Map API interface.
 
-import { readFileStr } from "https://deno.land/std/fs/mod.ts";
+import { readFileStr } from "https://deno.land/std@0.61.0/fs/mod.ts";
 
 const weather = await import("../../src/weather.ts");
 

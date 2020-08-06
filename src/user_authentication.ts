@@ -14,7 +14,8 @@ export async function check_authentication(context: any, next: any) {
 	const db = new DB("database/primary.db");
 
 	if (context.request.url.pathname == "/login") {
-		const login_data = (await context.request.body()).value;
+		const raw_login = await context.request.body();
+		const login_data = await raw_login.value;
 
 		// Query database for user data to compare hash and add info to context
 		const user_data = [...db.query("SELECT * FROM users WHERE username=(?)", [login_data.username])];
@@ -44,7 +45,8 @@ export async function check_authentication(context: any, next: any) {
 
 		return;
 	} else if (context.request.url.pathname == "/bot_callback") {
-		context.json_content = (await context.request.body()).value;
+		const raw_json = await context.request.body();
+		context.json_content = await raw_json.value;
 		await next();
 	} else if (context.cookies.get("key_1") == null) {
 		// Client has no corresponding cookies. Prevents from erroring out
@@ -87,7 +89,8 @@ export async function check_authentication(context: any, next: any) {
 				context.response.body = data;
 			} else {
 				// User is authenticated, add to context and pass to next()
-				context.json_data = (await context.request.body()).value;
+				const raw_json = (await context.request.body());
+				context.json_data = await raw_json.value;
 				context.session_data = session_data;
 				context.user_data = await get_user_data(session_data[0][1]);
 				await next();

@@ -4,7 +4,7 @@
 // This file describes the behavior of the GroupMe bot. In the future it could use language comprehension to determine actions, but I'll just use some general rules for now.
 // Exports: handle_message
 
-import { readFileStr } from "https://deno.land/std/fs/mod.ts";
+import { readFileStr } from "https://deno.land/std@0.61.0/fs/mod.ts";
 import { exec } from "https://deno.land/x/exec/mod.ts";
 
 const weather = await import("./weather.ts");

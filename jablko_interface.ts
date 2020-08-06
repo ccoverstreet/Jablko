@@ -6,8 +6,8 @@
 
 console.log("Starting Jablko Interface...");
 
-import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
-import { readFileStr } from "https://deno.land/std/fs/mod.ts";
+import { Application, Router, send } from "https://deno.land/x/oak@v6.0.1/mod.ts";
+import { readFileStr } from "https://deno.land/std@0.61.0/fs/mod.ts";
 
 const app = new Application();
 const router = new Router();
@@ -110,4 +110,4 @@ app.use(async (context) => {
 });
 
 console.log("Jablko Interface Listening on Port 10230");
-await app.listen({port: 10230});
+await app.listen({port: 443, secure: true, certFile: "../cert.pem", keyFile: "../privkey.pem"});
