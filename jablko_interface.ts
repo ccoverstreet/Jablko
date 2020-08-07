@@ -116,4 +116,5 @@ app.use(async (context) => {
 });
 
 console.log("Jablko Interface Listening on Port 10230");
-await app.listen({port: 443, secure: true, certFile: "../cert.pem", keyFile: "../privkey.pem"});
+app.listen({port: 443, secure: true, certFile: "../cert.pem", keyFile: "../privkey.pem"});
+await app.listen({port: 80});
