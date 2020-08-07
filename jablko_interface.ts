@@ -16,8 +16,8 @@ const router = new Router();
 app.addEventListener("error", (evt) => {
 	// Will log the thrown error to the console. WHY IS THIS NOT DEFAULT?
 	// Have to ignore SSL certificate errors as accessing from the same network prevents standard https protocol
-	if (evt.error.Message.version = "TLSv1_3") {
-
+	if (evt.error.Message.version == "TLSv1_3") {
+		console.log("BANANA");
 	} else {
 		console.log(evt.error.payload);
 		console.log("ASDASDAS");
