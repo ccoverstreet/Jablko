@@ -9,7 +9,8 @@ import { exec } from "https://deno.land/x/exec/mod.ts";
 
 const weather = await import("./weather.ts");
 
-const jablko_config = (await import("../jablko_interface.ts")).jablko_config;
+const jablko_interface = await import("../jablko_interface.ts");
+const jablko_config = jablko_interface.jablko_config;
 
 const dictionary_path = "src/dictionary.csv";
 
@@ -86,6 +87,17 @@ async function get_weather() {
 	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + weather_summary;
 }
 
+function uptime() {
+	const available_responses = [
+		"I've been alive for",
+		"I've been running for",
+		"I've been watching you for",
+		"This version of me has been up for"
+	]
+	const raw_time = new Date().getTime();	
+	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + (raw_time - jablko_interface.server_start_time).toString();
+}
+
 const actions: any = [
 	{
 		name: "Greeting",
@@ -104,8 +116,13 @@ const actions: any = [
 	},
 	{
 		name: "Get Weather",
-		activation_phrase: "What is the weather?",
+		activation_phrase: "weather",
 		function: get_weather
+	},
+	{
+		name: "Uptime",
+		activation_phrase: "uptime",
+		function: uptime
 	}
 ];
 // -------------------- End of action definitions --------------------
