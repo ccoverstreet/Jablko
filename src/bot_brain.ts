@@ -27,7 +27,7 @@ async function parse_dictionary(filename: string) {
 			for (var j = 1; j < line_split.length; j++) {
 				word_vector.push(parseInt(line_split[j]));
 			}
-			
+
 			new_dictionary[line_split[0]] = word_vector;
 		}
 	}
@@ -83,7 +83,7 @@ async function get_weather() {
 	const feels_in_c = json_weather_data.main.feels_like - 273.15;
 
 	const weather_summary = `\nRight now it is ${(temp_in_c * 9/5 + 32).toFixed(2)} F (${temp_in_c.toFixed(2)} C) but feels like ${(feels_in_c * 9/5 + 32).toFixed(2)} (${feels_in_c.toFixed(2)} C).\nThe weather is "${json_weather_data.weather[0].description}" with a humidity of ${json_weather_data.main.humidity}%. \nThe wind is ${json_weather_data.wind.speed} m/s at ${json_weather_data.wind.deg} degrees from East."`;
-		
+
 	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + weather_summary;
 }
 
@@ -94,34 +94,51 @@ function uptime() {
 		"I've been watching you for",
 		"This version of me has been up for"
 	]
-	const raw_time = new Date().getTime();	
-	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + (raw_time - jablko_interface.server_start_time).toString();
+	const raw_uptime = (new Date().getTime() - jablko_interface.server_start_time) / 1000;	
+	const hours = Math.floor(raw_uptime / 3600);
+	const minutes = Math.floor((raw_uptime - 3600 * hours) / 60);
+	const seconds = Math.floor(raw_uptime - 3600 * hours - 60 * minutes);
+	const formatted_uptime = `${hours} h ${minutes} m ${seconds}s`;
+
+
+	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + formatted_uptime;
 }
 
 const actions: any = [
 	{
 		name: "Greeting",
-		activation_phrase: "Hi",
+		activation_phrases: [
+			"Hi"
+		],
 		function: greeting
 	},
 	{
 		name: "Test",
-		activation_phrase: "Send hello announcement",
+		activation_phrases: [
+			"Send hello announcement"
+		],
 		function: test_fun
 	},
 	{
 		name: "Rude",
-		activation_phrase: "Stupid",
+		activation_phrases: [
+			"Stupid"
+		],
 		function: rude
 	},
 	{
 		name: "Get Weather",
-		activation_phrase: "weather",
+		activation_phrases: [
+			"weather"
+		],
 		function: get_weather
 	},
 	{
 		name: "Uptime",
-		activation_phrase: "uptime",
+		activation_phrases: [
+			"uptime",
+			"running time"
+		],
 		function: uptime
 	}
 ];
@@ -160,10 +177,13 @@ async function determine_intent(phrase: string) {
 
 async function parse_actions(actions: any) {
 	for (var i = 0; i < actions.length; i++) {
-		actions[i].activation = await determine_intent(actions[i].activation_phrase)		
-		for (var j = 0; j < actions[i].activation.length; j++) {
-			if (actions[i].activation[j] > 1) {
-				actions[i].activation[j] = 1;
+		actions[i].activations = []
+		for (var j = 0; j < actions[i].activation_phrases.length; j++) {
+			actions[i].activations.push(await determine_intent(actions[i].activation_phrases[j]));
+			for (var k = 0; k < actions[i].activations[j].length; k++) {
+				if (actions[i].activations[j][k] > 1) {
+					actions[i].activations[j][k] = 1;
+				}
 			}
 		}
 	}
@@ -178,19 +198,23 @@ async function create_response(message: string) {
 	// Create required action list
 	var action_list = []
 	for (var i = 0; i < actions.length; i++) {
-		var should_continue = false;
-		var abs_diff = 0
-		for (var j = 0; j < message_intent.length; j++) {
-			abs_diff += Math.abs(message_intent[j] - actions[i].activation[j]);
-			if (message_intent[j] < actions[i].activation[j]) {
-				should_continue = true;
-				break;
+		for (var k = 0; k < actions[i].activations.length; k++) {
+
+			var should_continue = false;
+			var abs_diff = 0
+			for (var j = 0; j < message_intent.length; j++) {
+				abs_diff += Math.abs(message_intent[j] - actions[i].activations[k][j]);
+				if (message_intent[j] < actions[i].activations[k][j]) {
+					should_continue = true;
+					break;
+				}
+			}
+
+			if (abs_diff < 15 && should_continue == false) {
+				action_list.push(i);
 			}
 		}
 
-		if (abs_diff < 15 && should_continue == false) {
-			action_list.push(i);
-		}
 	}
 
 	// Create response and call appropriate functions
@@ -217,8 +241,6 @@ async function create_response(message: string) {
 
 	return response;
 }
-
-
 
 export async function handle_message(context: any) {
 	var message = await context.json_content.text.toLowerCase();
