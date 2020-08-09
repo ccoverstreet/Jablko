@@ -1,8 +1,9 @@
 import { Context, helpers } from "https://deno.land/x/oak/mod.ts";
-import { DB } from "https://deno.land/x/sqlite/mod.ts" ;
 import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 import Random from "https://deno.land/x/random/Random.js";
-const messaging_system = (await import("../jablko_interface.ts")).messaging_system; 
+const jablko_interface = await import("../jablko_interface.ts");
+const messaging_system = jablko_interface.messaging_system;
+const db = jablko_interface.database;
 
 /***
  *	@description Checks if request is authenticated and handles accordingly 
@@ -10,9 +11,6 @@ const messaging_system = (await import("../jablko_interface.ts")).messaging_syst
  *	@parameter next: Handle for next function in Oak middleware
  */
 export async function check_authentication(context: any, next: any) {
-	// Create SQLite database connection
-	const db = new DB("database/primary.db");
-
 	if (context.request.url.pathname == "/login") {
 		const raw_login = await context.request.body();
 		const login_data = await raw_login.value;
@@ -97,12 +95,9 @@ export async function check_authentication(context: any, next: any) {
 			}
 		}
 	}
-
-	db.close();
 }
 
 async function get_user_data(username: any) {
-	const db = new DB("database/primary.db");
 	const raw_user_data = [...db.query("SELECT username, first_name, wakeup_time, permission_level FROM users WHERE username=(?)", [username])];
 
 	return {
@@ -111,6 +106,4 @@ async function get_user_data(username: any) {
 		wakeup_time: raw_user_data[0][2],
 		permission_level: parseInt(raw_user_data[0][3])
 	};
-
-	db.close();
 }

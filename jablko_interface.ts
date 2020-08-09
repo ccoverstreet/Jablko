@@ -7,6 +7,7 @@
 self.postMessage("Starting Jablko Interface...");
 
 import { Application, Router, send } from "https://deno.land/x/oak@v6.0.1/mod.ts";
+import { DB } from "https://deno.land/x/sqlite/mod.ts" ;
 import { readFileStr } from "./src/util.ts";
 
 const app = new Application();
@@ -28,11 +29,12 @@ const web_root = "public_html";
 self.postMessage("Loading \"jablko_config.json\"...")
 export const jablko_config = await JSON.parse(await readFileStr("./jablko_config.json"));
 
+// Load sqlite database and export connection
+export const database = new DB("./database/primary.db");
 
 // Initialize the messaging system
 self.postMessage("Initializing messaging system (GroupMe Bot)...")
 export const messaging_system = await import("./src/messaging.ts");
-
 
 self.postMessage("Reading \"jablko_modules.config\"...");
 
