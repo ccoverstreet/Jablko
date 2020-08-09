@@ -90,6 +90,14 @@ router.get("/", async (context) => {
 	context.response.body = dashboard_string;
 });
 
+router.get("/restart", async (context: any) => {
+	if (context.user_data.permission_level > 1) {
+		messaging_system.send_message("@all: Restart message received. Restarting in 5 seconds");
+		context.response.type = "json";
+		context.response.body = {status: "good", message: "Restarting server"};
+		setTimeout(function() {self.postMessage("restart");}, 5000);
+	}
+});
 
 // Routes requests sent by client to correct jablko module
 router.post('/jablko_modules/:module_name/:function_name', async (context: any) => {
