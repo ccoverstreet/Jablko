@@ -3,7 +3,7 @@
 // June 26, 2020
 // This is a testbed for new Jablko Modules features
 
-import { readFileStr } from 'https://deno.land/std@0.61.0/fs/mod.ts';
+import { readFileStr } from '../../src/util.ts';
 
 const interface_exports = (await import("../../jablko_interface.ts"));
 const messaging_system = interface_exports.messaging_system;

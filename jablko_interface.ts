@@ -7,7 +7,7 @@
 console.log("Starting Jablko Interface...");
 
 import { Application, Router, send } from "https://deno.land/x/oak@v6.0.1/mod.ts";
-import { readFileStr } from "https://deno.land/std@0.61.0/fs/mod.ts";
+import { readFileStr } from "./src/util.ts";
 
 const app = new Application();
 const router = new Router();
