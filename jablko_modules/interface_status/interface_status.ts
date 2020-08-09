@@ -5,7 +5,7 @@
 import { Context } from "https://deno.land/x/oak/mod.ts";
 import { request_handling_times } from "../../src/timing.ts";
 import { server_start_time } from "../../jablko_interface.ts";
-import { readFileStr } from "https://deno.land/std@0.61.0/fs/mod.ts";
+import { readFileStr } from "../../src/util.ts";
 
 export function permission_level() {
 	return 0;
