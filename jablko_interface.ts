@@ -4,7 +4,7 @@
 // This file is the main entrypoint for the server that runs the web interface for Jablko. This server is response for handling user interactions and sending requests to the correct Jablko component.
 // Exports: server_start_time, jablko_config, messaging_system, jablko_modules
 
-console.log("Starting Jablko Interface...");
+self.postMessage("Starting Jablko Interface...");
 
 import { Application, Router, send } from "https://deno.land/x/oak@v6.0.1/mod.ts";
 import { readFileStr } from "./src/util.ts";
@@ -16,8 +16,7 @@ const router = new Router();
 app.addEventListener("error", (evt) => {
 	// Will log the thrown error to the console. WHY IS THIS NOT DEFAULT?
 	// Have to ignore SSL certificate errors as accessing from the same network prevents standard https protocol
-	console.log(evt.error);
-	console.log("ASDASDAS");
+	self.postMessage(evt.error);
 });
 
 export const server_start_time = new Date().getTime(); // Used for measuring server uptime
@@ -26,22 +25,22 @@ export const server_start_time = new Date().getTime(); // Used for measuring ser
 const web_root = "public_html";
 
 // Load configuration file and export it so modules have access to config data
-console.log("Loading \"jablko_config.json\"...")
+self.postMessage("Loading \"jablko_config.json\"...")
 export const jablko_config = await JSON.parse(await readFileStr("./jablko_config.json"));
 
 
 // Initialize the messaging system
-console.log("Initializing messaging system (GroupMe Bot)...")
+self.postMessage("Initializing messaging system (GroupMe Bot)...")
 export const messaging_system = await import("./src/messaging.ts");
 
 
-console.log("Reading \"jablko_modules.config\"...");
+self.postMessage("Reading \"jablko_modules.config\"...");
 
 async function load_jablko_modules() {
 	// Creates an object containing jablko modules and all exported functions for server routing
 	var loaded_modules: any = new Object();
 
-	console.log("Loading Jablko Modules...");
+	self.postMessage("Loading Jablko Modules...");
 	for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
 		loaded_modules[jablko_config.jablko_modules[i]] = await import(`./jablko_modules/${jablko_config.jablko_modules[i]}/${jablko_config.jablko_modules[i]}.ts`);
 	}
@@ -51,11 +50,13 @@ async function load_jablko_modules() {
 
 export const jablko_modules: any = await load_jablko_modules(); // Only bit that needs to use type any. Hopefully a future design removes this need
 
+var module_list_output: string = "";
 for (var name in jablko_modules) { // Print for startup info
-	console.log(`\t${name}`);
+	module_list_output += `\n\t${name}`;
 }
+self.postMessage(`Loaded Modules:${module_list_output}`);
 
-console.log("Loading Middleware...");
+self.postMessage("Loading Middleware...");
 
 // Timer Middleware
 app.use((await import("./src/timing.ts")).timing_middleware);
@@ -64,7 +65,7 @@ app.use((await import("./src/timing.ts")).timing_middleware);
 app.use((await import("./src/user_authentication.ts")).check_authentication);
 
 // Defining Server Routes
-console.log("Defining Server Routes...");
+self.postMessage("Defining Server Routes...");
 
 router.get("/", async (context) => {
 	var dashboard_string: string = await readFileStr(`${web_root}/dashboard/dashboard_template.html`);
@@ -111,6 +112,6 @@ app.use(async (context) => {
 	});
 });
 
-console.log("Jablko Interface Listening on Port 10230");
+self.postMessage("Jablko Interface Listening on Port 80 and 443");
 app.listen({port: 443, secure: true, certFile: "../cert.pem", keyFile: "../privkey.pem"});
 await app.listen({port: 80});
