@@ -2,8 +2,8 @@
 
 while true
 do
-	/home/jablko/.deno/bin/deno run --allow-net --allow-run --allow-read --allow-write --unstable jablko.ts
-	if [$? -ne 240]
+	/home/jablko/.deno/bin/deno run --allow-net --allow-run --allow-read --allow-write --unstable jablko_manager.ts
+	if (($? != 240))
 	then
 		exit $?
 	fi

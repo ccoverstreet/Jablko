@@ -95,7 +95,7 @@ router.get("/restart", async (context: any) => {
 		messaging_system.send_message("@all: Restart message received. Restarting in 5 seconds");
 		context.response.type = "json";
 		context.response.body = {status: "good", message: "Restarting server"};
-		setTimeout(function() {self.postMessage("restart");}, 5000);
+		self.postMessage("restart");
 	}
 });
 

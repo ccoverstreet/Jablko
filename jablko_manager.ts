@@ -21,10 +21,14 @@ function create_jablko_interface() {
 	jablko_interface.addEventListener("message", function(event: any) {
 		if (typeof(event.data) == "string") {
 			if (event.data == "restart") {
-				jablko_interface.terminate();
-				Deno.exit(240);
-			}
+				jablko_log(`Manager [${new Date().toLocaleString("en-CA", {timeZone: "America/New_York"})}]`, "Restarting Interface")
+				setTimeout(function() {
+					jablko_interface.terminate();
+					Deno.exit(240);
+				}, 5000)
+			} else {
 				jablko_log(`Interface [${new Date().toLocaleString("en-CA", {timeZone: "America/New_York"})}]`, event.data.toString());
+			}
 		} else {
 			console.log(event.data)	;
 		}
