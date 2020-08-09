@@ -19,3 +19,18 @@ export async function get_current_weather(context: any) {
 	context.response.type = "json";
 	context.response.body = await weather.get_current_weather();
 }
+
+export async function get_hourly_weather(context: any) {
+	context.response.type = "json";
+	context.response.body = await weather.get_daily_weather();
+}
+
+export async function get_daily_weather(context: any) {
+	context.response.type = "json";
+	context.response.body = await weather.get_daily_weather();
+}
+
+export async function get_all_weather(context: any) {
+	context.response.type = "json";
+	context.response.body = await weather.get_all_weather();
+}

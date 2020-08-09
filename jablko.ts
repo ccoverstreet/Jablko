@@ -11,9 +11,9 @@ async function jablko_log(prefix: any, input: any) {
 
 const jablko_interface = new Worker(new URL("jablko_interface.ts", import.meta.url).href, {type: "module", deno: true});
 jablko_interface.addEventListener("message", function(event: any) {
-	if (event.data.type != "string") {
-		jablko_log(`Interface [${new Date().toLocaleString("en-CA", {timeZone: "America/New_York"})}]`, event.data);
-	} else {
-		console.log(event.type);
-	}
+	if (typeof(event.data) == "string") {
+		jablko_log(`Interface [${new Date().toLocaleString("en-CA", {timeZone: "America/New_York"})}]`, event.data.toString());
+	} else if (event.data.type == "error") {
+		console.log("ADASDASDDSA")	;
+	} 
 });

@@ -17,7 +17,7 @@ const router = new Router();
 app.addEventListener("error", (evt) => {
 	// Will log the thrown error to the console. WHY IS THIS NOT DEFAULT?
 	// Have to ignore SSL certificate errors as accessing from the same network prevents standard https protocol
-	self.postMessage(evt.error);
+	console.log(evt.error);
 });
 
 export const server_start_time = new Date().getTime(); // Used for measuring server uptime

@@ -79,10 +79,10 @@ async function get_weather() {
 
 	const json_weather_data = await weather.get_current_weather();
 
-	const temp_in_c = json_weather_data.main.temp - 273.15;
-	const feels_in_c = json_weather_data.main.feels_like - 273.15;
+	const temp_in_c = json_weather_data.current.temp - 273.15;
+	const feels_in_c = json_weather_data.current.feels_like - 273.15;
 
-	const weather_summary = `\nRight now it is ${(temp_in_c * 9/5 + 32).toFixed(2)} F (${temp_in_c.toFixed(2)} C) but feels like ${(feels_in_c * 9/5 + 32).toFixed(2)} (${feels_in_c.toFixed(2)} C).\nThe weather is "${json_weather_data.weather[0].description}" with a humidity of ${json_weather_data.main.humidity}%. \nThe wind is ${json_weather_data.wind.speed} m/s at ${json_weather_data.wind.deg} degrees from East."`;
+	const weather_summary = `\nRight now it is ${(temp_in_c * 9/5 + 32).toFixed(2)} F (${temp_in_c.toFixed(2)} C) but feels like ${(feels_in_c * 9/5 + 32).toFixed(2)} (${feels_in_c.toFixed(2)} C).\nThe weather is "${json_weather_data.current.weather[0].description}" with a humidity of ${json_weather_data.current.humidity}%. \nThe wind is ${json_weather_data.current.wind_speed} m/s from ${json_weather_data.current.wind_deg} degrees from N."`;
 
 	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + weather_summary;
 }
