@@ -18,6 +18,15 @@
 				interface_values[i].style.color = "#44bd32";
 				interface_values[i].textContent = response[response_keys[i]];
 			}
+		},
+		restart: async function() {
+			const response = await (await fetch("/restart")
+				.catch(error => {
+					console.log(error);
+					return;
+				})).json()
+			
+			alert(response.message);
 		}
 	}	
 
@@ -47,5 +56,8 @@
 	<div class="label_value_pair">
 		<div class="label">Memory Usage:</div>
 		<div id="memory_usage" class="value">N/A</div>
+	</div>
+	<div style="display: flex; justify-content: center; padding: 5px">
+		<button onclick="interface_status.restart()" style="color: #f5f6fa; background-color: #0097e6">Restart</button>
 	</div>
 </div>

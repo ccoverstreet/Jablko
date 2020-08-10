@@ -1,7 +1,7 @@
 // jablko.ts: Jablko Runtime Manager
 // Cale Overstreet
 // August 9, 2020
-// This script creates the interface worker and restarts it when it either fails or recieves a reset command
+// This script creates the interface worker and handles meta-process management. Formats output of interface and handles communications with system level components
 
 async function jablko_log(prefix: any, input: any) {
 	const prefix_length = prefix.length + 2;

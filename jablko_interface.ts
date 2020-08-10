@@ -92,7 +92,7 @@ router.get("/", async (context) => {
 
 router.get("/restart", async (context: any) => {
 	if (context.user_data.permission_level > 1) {
-		messaging_system.send_message("Interface: Restart message received. Restarting in 5 seconds.");
+		messaging_system.send_message("Restart message received. Restarting in 5 seconds.");
 		context.response.type = "json";
 		context.response.body = {status: "good", message: "Restarting server"};
 		self.postMessage("restart");
