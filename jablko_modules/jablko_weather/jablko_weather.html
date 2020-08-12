@@ -58,7 +58,7 @@
 				const hourly_temp = jablko_weather.kelvin_to_temp(json_response.hourly[i].temp);
 				const hourly_feels = jablko_weather.kelvin_to_temp(json_response.hourly[i].feels_like);
 
-				row.insertCell(0).innerHTML = "<p>" + x.getHours() + "</p>";
+				row.insertCell(0).innerHTML = "<p>" + x.getHours() + ":00</p>";
 				row.insertCell(1).innerHTML = "<p>" + hourly_temp.f.toFixed(0) + " °F<br>" + hourly_temp.c.toFixed(0) + " °C</p>";
 				row.insertCell(2).innerHTML = "<p>" + hourly_feels.f.toFixed(0) + " °F<br>" + hourly_feels.c.toFixed(0) + " °C</p>";
 				row.insertCell(3).innerHTML = "<p>" + json_response.hourly[i].weather[0].description + "</p>";
