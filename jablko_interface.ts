@@ -17,7 +17,7 @@ const router = new Router();
 app.addEventListener("error", (evt) => {
 	// Will log the thrown error to the console. WHY IS THIS NOT DEFAULT?
 	// Have to ignore SSL certificate errors as accessing from the same network prevents standard https protocol
-	console.log(evt.error);
+	self.postMessage(evt.error);
 });
 
 export const server_start_time = new Date().getTime(); // Used for measuring server uptime
@@ -123,5 +123,5 @@ app.use(async (context) => {
 });
 
 self.postMessage("Jablko Interface Listening on Port 80 and 443");
-app.listen({port: 443, secure: true, certFile: "../cert.pem", keyFile: "../privkey.pem"});
+app.listen({port: 443, secure: true, certFile: "../Certs/cert.pem", keyFile: "../Certs/privkey.pem"});
 await app.listen({port: 80});
