@@ -47,13 +47,24 @@
 			wind_value.style.color = "rgb(" + wind_color[0] + "," + wind_color[1] + "," + wind_color[2] + ")";
 
 			const hourly_table = document.getElementById("weather_hourly_table");
-			const row = hourly_table.insertRow(1);
-			row.insertCell(0).innerHTML = "1";
-			row.insertCell(1).innerHTML = "86";
-			row.insertCell(2).innerHTML = "90";
-			row.insertCell(3).innerHTML = "clear skies";
+			for (var i = 1; i < 13; i++) {
+				var x = new Date(json_response.hourly[i].dt * 1000);
+				console.log(x.getHours());
+
+				if (hourly_table.rows[i]) {
+					hourly_table.deleteRow(i);
+				}
+				const row = hourly_table.insertRow(i);
+				const hourly_temp = jablko_weather.kelvin_to_temp(json_response.hourly[i].temp);
+				const hourly_feels = jablko_weather.kelvin_to_temp(json_response.hourly[i].feels_like);
+
+				row.insertCell(0).innerHTML = "<p>" + x.getHours() + "</p>";
+				row.insertCell(1).innerHTML = "<p>" + hourly_temp.f.toFixed(0) + " °F<br>" + hourly_temp.c.toFixed(0) + " °C</p>";
+				row.insertCell(2).innerHTML = "<p>" + hourly_feels.f.toFixed(0) + " °F<br>" + hourly_feels.c.toFixed(0) + " °C</p>";
+				row.insertCell(3).innerHTML = "<p>" + json_response.hourly[i].weather[0].description + "</p>";
+			}
 		},
-		interpolate_color(high_color, low_color, high_value, low_value, value) {
+		interpolate_color: async function(high_color, low_color, high_value, low_value, value) {
 			var interp = [0, 0, 0];
 
 			if (value < low_value) {
@@ -65,8 +76,15 @@
 			for (var i = 0; i < high_color.length; i++) {
 				interp[i] = Math.floor((high_color[i] - low_color[i]) / (high_value - low_value) * (value - low_value) + low_color[i]);
 			}
-
 			return interp;
+		},
+		kelvin_to_temp: function(temp) {
+			const temp_in_c = temp - 273.15;
+			const temp_in_f = (9 / 5 * temp_in_c) + 32;
+			return  {
+				c: temp_in_c,
+				f: temp_in_f
+			}
 		}
 	}
 
@@ -74,6 +92,20 @@
 
 	setInterval(jablko_weather.update_weather, 10 * 60000);
 </script>
+<style>
+td > p {
+	display: flex;
+	justify-content: center;
+	margin-block-start: 0px;
+	margin-block-end: 0px;
+	padding: 5px;
+	margin: 0px;
+}
+th {
+	border-bottom: 2px solid #0097e6;
+	margin-bottom: 2px;
+}
+</style>
 <div id="jablko_weather" class="jablko_module_card">
 	<h1>Weather</h1>
 	<hr>
@@ -108,13 +140,15 @@
 	<h2>Forecast</h2>
 
 	<div style="display: flex; justify-content: center">
-		<table id="weather_hourly_table" style="width: 90%;"> 
-			<tr>
+		<table id="weather_hourly_table" style="width: 90%; border-collapse: separate; border-spacing: 0px" cellpadding="0" cellspacing="0" border="0"> 
+			<thead>
 				<th>Hr</th>
 				<th>Temp</th>
 				<th>Feels</th>
 				<th>Description</th>
-			</tr>
+			</thead>
+			<tbody>
+			</tbody>
 		</table>
 	</div>
 </div>
