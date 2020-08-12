@@ -47,7 +47,7 @@ void loop() {
 
 void get_status() {
   Serial.println("ONLINE");
-  server.send(200, "text/plain", "GOOD");
+  server.send(200, "application/json", "{\"status\": \"good\", \"message\": \"Module on\"}");
 }
 
 void toggle_light() {
@@ -59,5 +59,5 @@ void toggle_light() {
     light_status = 1;
   }
 
-  server.send(200, "text/plain", "Toggled Light");
+  server.send(200, "application/json", "{\"status\": \"good\", \"message\": \"toggled light\"}");
 }
