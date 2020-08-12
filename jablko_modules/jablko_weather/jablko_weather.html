@@ -46,15 +46,15 @@
 			wind_value.textContent = json_response.current.wind_speed + " m/s from " + json_response.current.wind_deg + "° N";
 			wind_value.style.color = "rgb(" + wind_color[0] + "," + wind_color[1] + "," + wind_color[2] + ")";
 
-			const hourly_table = document.getElementById("weather_hourly_table");
+			const hourly_table = document.getElementById("weather_hourly_table").getElementsByTagName("tbody")[0];
 			for (var i = 1; i < 13; i++) {
 				var x = new Date(json_response.hourly[i].dt * 1000);
 				console.log(x.getHours());
 
 				if (hourly_table.rows[i]) {
-					hourly_table.deleteRow(i);
+					hourly_table.deleteRow(i - 1);
 				}
-				const row = hourly_table.insertRow(i);
+				const row = hourly_table.insertRow(i - 1);
 				const hourly_temp = jablko_weather.kelvin_to_temp(json_response.hourly[i].temp);
 				const hourly_feels = jablko_weather.kelvin_to_temp(json_response.hourly[i].feels_like);
 
@@ -139,13 +139,15 @@ th {
 
 	<h2>Forecast</h2>
 
-	<div style="display: flex; justify-content: center">
+	<div style="display: flex; justify-content: center; height: 200px; overflow-y: scroll;">
 		<table id="weather_hourly_table" style="width: 90%; border-collapse: separate; border-spacing: 0px" cellpadding="0" cellspacing="0" border="0"> 
 			<thead>
+				<tr>
 				<th>Hr</th>
 				<th>Temp</th>
 				<th>Feels</th>
 				<th>Description</th>
+				</tr>
 			</thead>
 			<tbody>
 			</tbody>
