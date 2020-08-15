@@ -4,7 +4,7 @@
 // This file is the main entrypoint for the server that runs the web interface for Jablko. This server is response for handling user interactions and sending requests to the correct Jablko component.
 // Exports: server_start_time, jablko_config, messaging_system, jablko_modules
 
-self.postMessage("Starting Jablko Interface...");
+console.log("Starting Jablko Interface...");
 
 import { Application, Router, send } from "https://deno.land/x/oak@v6.0.1/mod.ts";
 import { DB } from "https://deno.land/x/sqlite/mod.ts" ;
@@ -17,7 +17,7 @@ const router = new Router();
 app.addEventListener("error", (evt) => {
 	// Will log the thrown error to the console. WHY IS THIS NOT DEFAULT?
 	// Have to ignore SSL certificate errors as accessing from the same network prevents standard https protocol
-	self.postMessage(evt.error);
+	console.log(evt.error);
 });
 
 export const server_start_time = new Date().getTime(); // Used for measuring server uptime
@@ -26,23 +26,23 @@ export const server_start_time = new Date().getTime(); // Used for measuring ser
 const web_root = "public_html";
 
 // Load configuration file and export it so modules have access to config data
-self.postMessage("Loading \"jablko_config.json\"...")
+console.log("Loading \"jablko_config.json\"...")
 export const jablko_config = await JSON.parse(await readFileStr("./jablko_config.json"));
 
 // Load sqlite database and export connection
 export const database = new DB("./database/primary.db");
 
 // Initialize the messaging system
-self.postMessage("Initializing messaging system (GroupMe Bot)...")
+console.log("Initializing messaging system (GroupMe Bot)...")
 export const messaging_system = await import("./src/messaging.ts");
 
-self.postMessage("Reading \"jablko_modules.config\"...");
+console.log("Reading \"jablko_modules.config\"...");
 
 async function load_jablko_modules() {
 	// Creates an object containing jablko modules and all exported functions for server routing
 	var loaded_modules: any = new Object();
 
-	self.postMessage("Loading Jablko Modules...");
+	console.log("Loading Jablko Modules...");
 	for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
 		loaded_modules[jablko_config.jablko_modules[i]] = await import(`./jablko_modules/${jablko_config.jablko_modules[i]}/${jablko_config.jablko_modules[i]}.ts`);
 	}
@@ -56,9 +56,9 @@ var module_list_output: string = "";
 for (var name in jablko_modules) { // Print for startup info
 	module_list_output += `\n\t${name}`;
 }
-self.postMessage(`Loaded Modules:${module_list_output}`);
+console.log(`Loaded Modules:${module_list_output}`);
 
-self.postMessage("Loading Middleware...");
+console.log("Loading Middleware...");
 
 // Timer Middleware
 app.use((await import("./src/timing.ts")).timing_middleware);
@@ -67,7 +67,7 @@ app.use((await import("./src/timing.ts")).timing_middleware);
 app.use((await import("./src/user_authentication.ts")).check_authentication);
 
 // Defining Server Routes
-self.postMessage("Defining Server Routes...");
+console.log("Defining Server Routes...");
 
 router.get("/", async (context) => {
 	var dashboard_string: string = await readFileStr(`${web_root}/dashboard/dashboard_template.html`);
@@ -95,7 +95,7 @@ router.get("/restart", async (context: any) => {
 		messaging_system.send_message("Restart message received. Restarting in 5 seconds.");
 		context.response.type = "json";
 		context.response.body = {status: "good", message: "Restarting server"};
-		self.postMessage("restart");
+		console.log("restart");
 	}
 });
 
@@ -122,6 +122,10 @@ app.use(async (context) => {
 	});
 });
 
-self.postMessage("Jablko Interface Listening on Port 80 and 443");
-app.listen({port: 443, secure: true, certFile: "../Certs/cert.pem", keyFile: "../Certs/privkey.pem"});
-await app.listen({port: 80});
+// Open 
+console.log(`Jablko Interface listening on port ${jablko_config.http.port} (HTTP) and ${jablko_config.https.port} (HTTPS)`);
+
+if (jablko_config.https.port != null) {
+	app.listen({port: jablko_config.https.port, secure: true, certFile: jablko_config.https.cert_file, keyFile: jablko_config.https.key_file});
+}
+await app.listen({port: jablko_config.http.port});

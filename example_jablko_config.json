@@ -1,4 +1,12 @@
 {
+	"http": {
+		"port": 8080
+	},
+	"https": {
+		"port": null,
+		"cert_file": "../Certs/cert.pem",
+		"key_file": "../Certs/privkey.pem"
+	},
 	"GroupMe": {
 		"access_token": "",
 		"group_name": "",
@@ -6,7 +14,12 @@
 		"bot_id": ""
 	},
 	"jablko_modules": [
-		"",
-		""
-	]
+		"interface_status",
+		"announcements"
+	],
+	"weather": {
+		"key": "MY_OWM_KEY",
+        "city": "Atlantis"
+	}
+}
 }

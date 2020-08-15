@@ -6,7 +6,7 @@
 
 const jablko_config = (await import("../jablko_interface.ts")).jablko_config;
 
-self.postMessage("Getting lattitude and longitude for weather data...");
+console.log("Getting lattitude and longitude for weather data...");
 const raw_location_fetch = await fetch("http://ip-api.com/json");
 const location = await raw_location_fetch.json();
 

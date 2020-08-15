@@ -22,11 +22,13 @@ export async function set_rgba(context: any) {
 
 		});
 	
+		/*
 	if (raw_response.status < 200 && raw_response.status >= 300) {
 		// Error in contacting controller
 		context.response.type = "json";
 		context.response.body = {status: "fail", message: `Error contacting controller (HTTP ERROR ${raw_response.status})`}
 	}
+   */
 	//console.log(await raw_response.json());
 	context.response.type = "json";
 	context.response.body = {status: "good", message: "Tried to update RGB"};
