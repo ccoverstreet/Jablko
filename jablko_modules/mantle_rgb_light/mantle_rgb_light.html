@@ -1,0 +1,74 @@
+<script>
+	const mantle_rgb_light = {
+		set_rgba: async function() {
+			if (Date.now() < mantle_rgb_light.last_update) {
+				return;
+			}
+
+			setTimeout(async function() {
+				mantle_rgb_light.last_update = Date.now();
+				const r = document.getElementById("r").value;
+				const g = document.getElementById("g").value;
+				const b = document.getElementById("b").value;
+				const a = document.getElementById("a").value;
+				const raw_response = await fetch("/jablko_modules/mantle_rgb_light/set_rgba", {
+					method: "POST",
+					headers: {
+						"Accept": "application/json",
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({r, g, b, a})
+				})
+					.catch(error => {
+						console.log(error);
+					})
+			}, 100);
+
+			mantle_rgb_light.last_update = Date.now() + 100;
+			/*
+			if (response.status == "fail") {
+				alert("Unable to send message");
+			}
+			 */
+		},
+	}
+
+	setTimeout(function() {
+		const r_slider = document.getElementById("r");
+		const g_slider = document.getElementById("g");
+		const b_slider = document.getElementById("b");
+		const a_slider = document.getElementById("a");
+		r_slider.oninput = function() {
+			mantle_rgb_light.set_rgba();
+		};
+
+		g_slider.oninput = function() {
+			mantle_rgb_light.set_rgba();
+		}
+
+		b_slider.oninput = function() {
+			mantle_rgb_light.set_rgba();
+		}
+
+		a_slider.oninput = function() {
+			mantle_rgb_light.set_rgba();
+		}
+	}, 2000);
+</script>
+<style>
+#rgb_mantle_light > div > input {
+	-webkit-appearance: slider-vertical;
+	width: 20%;
+	height: 40vh;
+}	
+</style>
+<div id="rgb_mantle_light" class="jablko_module_card">
+	<h1>Mantle RGB</h1>
+	<div style="display: flex; justify-content: center">
+		<input id="r" type="range" min="0" max="255" style=""></input>
+		<input id="g" type="range" min="0" max="255" style="-webkit-appearance: slider-vertical"></input>
+		<input id="b" type="range" min="0" max="255" style="-webkit-appearance: slider-vertical"></input>
+		<input id="a" type="range" min="0" max="1" step="0.01" style="-webkit-appearance: slider-vertical"></input>
+	</div>
+	<button onclick="mantle_rgb_light.set_rgba()">SET</button>
+</div>
