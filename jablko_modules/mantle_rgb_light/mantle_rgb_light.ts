@@ -1,5 +1,10 @@
 import { readFileStr } from "../../src/util.ts";
 import { module_config } from "./config.ts";
+/* Should contain:
+ * export const module_config = {
+ *     controller_ip: 10.0.0.2
+ * }
+ */
 
 export function permission_level() {
 	return 1;
@@ -18,18 +23,20 @@ export async function set_rgba(context: any) {
 		},
 		body: JSON.stringify(context.json_data)
 	})
+		.then(async function(data) {
+			if (data.status == 200) {
+				context.response.type = "json";
+				context.response.body = {status: "good", message: "Set RGBA"};
+			} else {
+				throw new Error("Error communicating with controller");
+			}
+		})
 		.catch(function(error) {
+			console.log("Mantle RGB: Error communicating with controller");
+			console.log(error);
 
+			context.response.type = "json";
+			context.response.body = {status: "fail", message: `Error contacting controller (HTTP ERROR)`}
+			return;
 		});
-	
-		/*
-	if (raw_response.status < 200 && raw_response.status >= 300) {
-		// Error in contacting controller
-		context.response.type = "json";
-		context.response.body = {status: "fail", message: `Error contacting controller (HTTP ERROR ${raw_response.status})`}
-	}
-   */
-	//console.log(await raw_response.json());
-	context.response.type = "json";
-	context.response.body = {status: "good", message: "Tried to update RGB"};
 }

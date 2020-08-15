@@ -1,5 +1,8 @@
 <script>
 	const mantle_rgb_light = {
+		get_status: async function() {
+
+		}
 		set_rgba: async function() {
 			if (Date.now() < mantle_rgb_light.last_update) {
 				return;
@@ -19,21 +22,33 @@
 					},
 					body: JSON.stringify({r, g, b, a})
 				})
+					.then(async function(data) {
+						const json_response = await data.json();
+						if (json_response.status == "good") {
+							const rgb_status = document.getElementById("mantle_rgb_light_status");
+							rgb_status.style.backgroundColor = "var(--color-green)";
+							rgb_status.textContent = "Online";
+						} else {
+							throw new Error("Unable to set RGBA");
+						}
+					})
 					.catch(error => {
 						console.log(error);
-					})
+						const rgb_status = document.getElementById("mantle_rgb_light_status");
+						rgb_status.style.backgroundColor = "var(--color-red)";
+						rgb_status.textContent = "Offline";
+						return;
+					});
+
+
 			}, 100);
 
 			mantle_rgb_light.last_update = Date.now() + 100;
-			/*
-			if (response.status == "fail") {
-				alert("Unable to send message");
-			}
-			 */
 		},
+		last_update: Date.now()
 	}
 
-	setTimeout(function() {
+	document.addEventListener("DOMContentLoaded", function(event) {
 		const r_slider = document.getElementById("r");
 		const g_slider = document.getElementById("g");
 		const b_slider = document.getElementById("b");
@@ -53,22 +68,29 @@
 		a_slider.oninput = function() {
 			mantle_rgb_light.set_rgba();
 		}
-	}, 2000);
+	});
 </script>
 <style>
-#rgb_mantle_light > div > input {
+#mantle_rgb_light > div > input {
 	-webkit-appearance: slider-vertical;
 	width: 20%;
 	height: 40vh;
 }	
 </style>
-<div id="rgb_mantle_light" class="jablko_module_card">
-	<h1>Mantle RGB</h1>
+<div id="mantle_rgb_light" class="module_card">
+	<div class="module_header">
+		<h1>Mantle RGB</h1>
+		<div id="mantle_rgb_light_status" class="status_indicator">N/A</div>
+	</div>
+	<div class="label_value_pair">
+		<div class="label">Status</div>
+		<div class="value">ASDSA</div>
+	</div>
 	<div style="display: flex; justify-content: center">
-		<input id="r" type="range" min="0" max="255" style=""></input>
-		<input id="g" type="range" min="0" max="255" style="-webkit-appearance: slider-vertical"></input>
-		<input id="b" type="range" min="0" max="255" style="-webkit-appearance: slider-vertical"></input>
-		<input id="a" type="range" min="0" max="1" step="0.01" style="-webkit-appearance: slider-vertical"></input>
+		<input id="r" type="range" min="0" max="255"></input>
+		<input id="g" type="range" min="0" max="255"></input>
+		<input id="b" type="range" min="0" max="255"></input>
+		<input id="a" type="range" min="0" max="1" step="0.01"></input>
 	</div>
 	<button onclick="mantle_rgb_light.set_rgba()">SET</button>
 </div>
