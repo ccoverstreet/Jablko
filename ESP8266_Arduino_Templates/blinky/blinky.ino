@@ -23,8 +23,7 @@ void setup() {
 	pinMode(5, OUTPUT);
 	pinMode(13, OUTPUT);
   delay(500);
-	analogWrite(13, 506);
-  
+	analogWrite(13, 0);
 }
 
 void init_wifi() {

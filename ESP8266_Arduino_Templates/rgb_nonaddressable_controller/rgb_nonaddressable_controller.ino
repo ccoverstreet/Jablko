@@ -9,8 +9,8 @@ const char *password = WIFI_PASSWORD;
 ESP8266WebServer server;
 
 #define RED_PIN 13
-#define BLUE_PIN 12
-#define GREEN_PIN 16
+#define BLUE_PIN 16
+#define GREEN_PIN 12
 
 void setup() {
   Serial.begin(9600);
@@ -22,7 +22,7 @@ void setup() {
 
   server.on("/", [](){server.send(200, "text/plain","RGB Non-Addressable Controller");});
   //server.on("/status", get_status);
-  server.on("/set_rgb", set_rgb);
+  server.on("/set_rgba", set_rgba);
   server.begin();
   
 
@@ -31,8 +31,7 @@ void setup() {
   pinMode(GREEN_PIN, OUTPUT);
   pinMode(5, OUTPUT);
   digitalWrite(5, LOW);
-  digitalWrite(13, HIGH);
-  //analogWrite(13, 0);
+  analogWrite(RED_PIN, 0);
   analogWrite(BLUE_PIN, 0);
   analogWrite(GREEN_PIN, 0);
 }
@@ -80,7 +79,7 @@ void loop() {
   delay(1);
 }
 
-void set_rgb() {
+void set_rgba() {
   String data = server.arg("plain");
   StaticJsonDocument<200> doc;
 
@@ -88,9 +87,17 @@ void set_rgb() {
   if (error) {
     Serial.println("ERROR");
     return;
+
   }
-  int red = doc["r"];
+  
+  int brightness = float(doc["a"]) * 1023;
+  int red = int(float(doc["r"]) / 255 * brightness);
+  int green = int(float(doc["g"]) / 255 * brightness);
+  int blue = int(float(doc["b"]) / 255 * brightness);
+  
   Serial.println(red);
-  analogWrite(RED_PIN, red * 4);
-  server.send(200, "text/html", "Set Red Color");
+  analogWrite(RED_PIN, red);
+  analogWrite(BLUE_PIN, blue);
+  analogWrite(GREEN_PIN, green);
+  server.send(200, "text/html", "Set RGBA Color");
 }
