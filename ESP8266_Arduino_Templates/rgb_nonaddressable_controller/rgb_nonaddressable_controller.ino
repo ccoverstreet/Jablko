@@ -5,6 +5,10 @@
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
+unsigned int r = 255;
+unsigned int g = 255;
+unsigned int b = 255;
+float a = 0.1;
 
 ESP8266WebServer server;
 
@@ -21,7 +25,7 @@ void setup() {
 
 
   server.on("/", [](){server.send(200, "text/plain","RGB Non-Addressable Controller");});
-  //server.on("/status", get_status);
+  server.on("/status", status);
   server.on("/set_rgba", set_rgba);
   server.begin();
   
@@ -29,11 +33,15 @@ void setup() {
   pinMode(RED_PIN, OUTPUT);
   pinMode(BLUE_PIN, OUTPUT);
   pinMode(GREEN_PIN, OUTPUT);
-  pinMode(5, OUTPUT);
-  digitalWrite(5, LOW);
-  analogWrite(RED_PIN, 0);
-  analogWrite(BLUE_PIN, 0);
-  analogWrite(GREEN_PIN, 0);
+  
+  int brightness = a * 1023;
+  int red = int(float(r) / 255 * brightness);
+  int green = int(float(g) / 255 * brightness);
+  int blue = int(float(b) / 255 * brightness);
+ 
+  analogWrite(RED_PIN, red);
+  analogWrite(BLUE_PIN, blue);
+  analogWrite(GREEN_PIN, green);
 }
 
 void init_wifi() {
@@ -79,6 +87,13 @@ void loop() {
   delay(1);
 }
 
+void status() {
+  char output[200];
+  sprintf(output, "{\"status\": \"good\", \"message\": \"status\", \"r\": %d, \"g\": %d, \"b\": %d, \"a\": %.2f}", r, g, b, a);
+  
+  server.send(200, "application/json", output); 
+}
+
 void set_rgba() {
   String data = server.arg("plain");
   StaticJsonDocument<200> doc;
@@ -89,15 +104,19 @@ void set_rgba() {
     return;
 
   }
-  
-  int brightness = float(doc["a"]) * 1023;
-  int red = int(float(doc["r"]) / 255 * brightness);
-  int green = int(float(doc["g"]) / 255 * brightness);
-  int blue = int(float(doc["b"]) / 255 * brightness);
+
+  a = doc["a"];
+  r = doc["r"];
+  g = doc["g"];
+  b = doc["b"];
+  int brightness = a * 1023;
+  int red = int(float(r) / 255 * brightness);
+  int green = int(float(g) / 255 * brightness);
+  int blue = int(float(b) / 255 * brightness);
   
   Serial.println(red);
   analogWrite(RED_PIN, red);
   analogWrite(BLUE_PIN, blue);
   analogWrite(GREEN_PIN, green);
-  server.send(200, "text/html", "Set RGBA Color");
+  server.send(200, "application/json", "{\"status\": \"good\", \"message\": \"Set RGBA\"}");
 }

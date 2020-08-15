@@ -4,7 +4,7 @@ sudo ./setup_iptables.sh
 echo Running as user \"$(whoami)\"
 while true
 do
-	/home/jablko/.deno/bin/deno run --allow-net --allow-run --allow-read --allow-write --unstable jablko_interface.ts
+	/home/coverstreet/.deno/bin/deno run $@ --allow-net --allow-run --allow-read --allow-write --unstable jablko_interface.ts
 	if (($? != 240))
 	then
 		exit $?
