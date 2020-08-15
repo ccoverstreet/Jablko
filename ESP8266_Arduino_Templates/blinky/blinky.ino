@@ -1,30 +1,29 @@
 #include <ESP8266WebServer.h>
+#include "config.h"
 
-const char *ssid = "SSID";
-const char *password = "PASSWORD";
-
-const unsigned int timeout = 2000; // Timeout time that kills client response if taking too long. prevents hanging or soft resets.
-
-
-//WiFiServer server(80); // Create and instance of WiFiServer open on Port 80.
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASSWORD;
 
 ESP8266WebServer server;
 
-int light_status = 0;
+int light_status = 1;
 
 void setup() {
 	Serial.begin(9600);
 	delay(1);
 	Serial.print("Starting up...\n");
-	
+
 	init_wifi();
 
-  server.on("/", [](){server.send(200, "text/plain","Hello World");});
-  server.on("/status", get_status);
-  server.on("/toggle_light", toggle_light);
-  server.begin();
+	server.on("/", [](){server.send(200, "text/plain","Hello World");});
+	server.on("/status", get_status);
+	server.on("/toggle_light", toggle_light);
+	server.begin();
 
-  pinMode(5, OUTPUT);
+	pinMode(5, OUTPUT);
+	pinMode(13, OUTPUT);
+  delay(500);
+	analogWrite(13, 0);
 }
 
 void init_wifi() {
@@ -38,26 +37,35 @@ void init_wifi() {
 	}
 
 	Serial.print("SUCCESS: Connected to WiFi.\n");
-  Serial.println(WiFi.localIP());
+	Serial.println(WiFi.localIP());
 }
 
+unsigned int led_brightness = 0;
 void loop() {
-  server.handleClient();
+	server.handleClient();
+  delay(1);
+  if (light_status == 1 && led_brightness < 1024) {
+    led_brightness += 4;
+    analogWrite(13, led_brightness);
+  } else if (light_status == 0 && led_brightness > 0) {
+    led_brightness -= 4;
+    analogWrite(13, led_brightness);
+  }
 }
 
 void get_status() {
-  Serial.println("ONLINE");
-  server.send(200, "application/json", "{\"status\": \"good\", \"message\": \"Module on\"}");
+	Serial.println("ONLINE");
+	server.send(200, "application/json", "{\"status\": \"good\", \"message\": \"Module on\"}");
 }
 
 void toggle_light() {
-  if (light_status) {
-    digitalWrite(5, LOW);
-    light_status = 0;
-  } else {
-    digitalWrite(5, HIGH);
-    light_status = 1;
-  }
+	if (light_status) {
+		digitalWrite(5, LOW);
+		light_status = 0;
+	} else {
+		digitalWrite(5, HIGH);
+		light_status = 1;
+	}
 
-  server.send(200, "application/json", "{\"status\": \"good\", \"message\": \"toggled light\"}");
+	server.send(200, "application/json", "{\"status\": \"good\", \"message\": \"toggled light\"}");
 }
