@@ -4,3 +4,4 @@ jablko_config.json
 /database/*.db
 /public_html/dashboard/dashboard.html
 /ESP*/*/config.h
+/jablko_modules/*/config.ts
