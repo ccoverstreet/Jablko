@@ -97,6 +97,8 @@ router.get("/restart", async (context: any) => {
 		context.response.body = {status: "good", message: "Restarting server"};
 		console.log("restart");
 	}
+
+	setTimeout(function() { Deno.exit(240); }, 5000);
 });
 
 // Routes requests sent by client to correct jablko module
