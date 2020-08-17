@@ -17,7 +17,7 @@ export async function generate_card() {
 		}
 	}
 	</script>
-	<div class="jablko_module_card">
+	<div class="module_card">
 	<h1>Test</h1>
 	<hr>
 	<button onclick="test.toggle_light()">Toggle Light</button>

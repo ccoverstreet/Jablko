@@ -9,6 +9,11 @@ body {
 	--color-inverted-background: #2f3640;
 	--color-card-background: #f5f6fa;
 	--font-color: #000000;
+	--color-red: #c23616;
+	--color-green: #44bd32;
+	--color-light-blue: #0097e6;
+	--color-blue: #273c75;
+	--color-white: #f5f6fa;
 }
 
 .theme_dark {
@@ -16,6 +21,11 @@ body {
 	--color-background: #2f3640;
 	--color-card-background: #353b48;
 	--font-color: #f5f6fa;
+	--color-red: #c23616;
+	--color-green: #44bd32;
+	--color-light-blue: #0097e6;
+	--color-blue: #273c75;
+	--color-white: #f5f6fa;
 }
 
 h1 {
@@ -55,6 +65,7 @@ button {
 	display: flex;
 	justify-content: flex-end;
 	padding: 2.5px;
+	font-weight: bold;
 }
 
 .value {
@@ -69,7 +80,7 @@ hr {
 	border-color: #0097e6;
 }
 
-.jablko_module_card {
+.module_card {
 	display: inline-block;
 	margin: 10px;
 	border-radius: 5px;
@@ -77,4 +88,20 @@ hr {
 	padding-bottom: 2.5px;
 	color: var(--font-color);
 	background-color: var(--color-card-background);
+}
+
+.module_header {
+	display: flex;
+	align-items: center;
+}
+
+.status_indicator {
+	display: flex;
+	justify-content: center;
+	color: var(--color-white);
+	padding: 3px 10px 3px 10px;
+	border-radius: 5px;
+	font-size: 20px;
+	margin-left: 20px;
+	background-color: var(--color-blue);
 }

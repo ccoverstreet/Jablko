@@ -4,7 +4,7 @@
 // Used for creating the database used by Jablko. Can be used to add users and modify user data.
 
 import { DB } from "https://deno.land/x/sqlite/mod.ts"; // SQLite3 module
-import { readLines } from "https://deno.land/std/io/bufio.ts";
+import { readLines } from "https://deno.land/std@0.61.0/io/bufio.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt/mod.ts";
 
 

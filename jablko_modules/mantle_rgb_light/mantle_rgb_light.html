@@ -1,17 +1,53 @@
 <script>
 	const mantle_rgb_light = {
+		status: async function() {
+			await fetch("/jablko_modules/mantle_rgb_light/status", {method: "POST"})
+				.then(async function(data) {
+					const response = await data.json();
+					if (response.status == "good") {
+						document.getElementById("r").value = response.r;
+						document.getElementById("g").value = response.g;
+						document.getElementById("b").value = response.b;
+						document.getElementById("a").value = response.a;
+
+						document.getElementById("mantle_rgb_light_preview").style.backgroundColor = `rgb(${parseInt(response.r / 255 * a)}, ${parseInt(response.g / 255 * a)}, ${parseInt(response.b / 255 * a)})`;
+						const rgb_status = document.getElementById("mantle_rgb_light_status");
+						rgb_status.style.backgroundColor = "var(--color-green)";
+						rgb_status.textContent = "Online";
+					} else {
+						throw new Error("Unable to set RGBA");
+					}
+				})
+				.catch(function(error) {
+					console.log(error);
+					const rgb_status = document.getElementById("mantle_rgb_light_status");
+					rgb_status.style.backgroundColor = "var(--color-red)";
+					rgb_status.textContent = "Offline";
+				});
+		},
 		set_rgba: async function() {
+			var values0 = []
+			values0.push(parseInt(document.getElementById("r").value));
+			values0.push(parseInt(document.getElementById("g").value));
+			values0.push(parseInt(document.getElementById("b").value));
+			const hsl0 = mantle_rgb_light.rgb2hsl(values0[0], values0[1], values0[2]);
+
+			document.getElementById("mantle_rgb_light_preview").style.backgroundColor = `hsl(${Math.floor(hsl0[0])}, ${100}%, ${50}%)`;
+
 			if (Date.now() < mantle_rgb_light.last_update) {
 				return;
 			}
 
 			setTimeout(async function() {
 				mantle_rgb_light.last_update = Date.now();
+
 				const r = document.getElementById("r").value;
 				const g = document.getElementById("g").value;
 				const b = document.getElementById("b").value;
 				const a = document.getElementById("a").value;
+
 				const raw_response = await fetch("/jablko_modules/mantle_rgb_light/set_rgba", {
+
 					method: "POST",
 					headers: {
 						"Accept": "application/json",
@@ -19,21 +55,119 @@
 					},
 					body: JSON.stringify({r, g, b, a})
 				})
+					.then(async function(data) {
+						const json_response = await data.json();
+						if (json_response.status == "good") {
+							const rgb_status = document.getElementById("mantle_rgb_light_status");
+							rgb_status.style.backgroundColor = "var(--color-green)";
+							rgb_status.textContent = "Online";
+						} else {
+							throw new Error("Unable to set RGBA");
+						}
+					})
 					.catch(error => {
 						console.log(error);
-					})
+						const rgb_status = document.getElementById("mantle_rgb_light_status");
+						rgb_status.style.backgroundColor = "var(--color-red)";
+						rgb_status.textContent = "Offline";
+						return;
+					});
+
+
 			}, 100);
 
 			mantle_rgb_light.last_update = Date.now() + 100;
-			/*
-			if (response.status == "fail") {
-				alert("Unable to send message");
-			}
-			 */
 		},
+		set_hsl: function() {
+			const H0 = document.getElementById("h").value;
+
+			document.getElementById("mantle_rgb_light_preview").style.backgroundColor = `hsl(${H0}, 100%, 50%)`;
+
+			if (Date.now() < mantle_rgb_light.last_update) {
+				return;
+			}
+
+			setTimeout(async function() {
+				mantle_rgb_light.last_update = Date.now();
+
+				const H = document.getElementById("h").value;
+				const S = document.getElementById("s").value;
+				const L = document.getElementById("l").value;
+
+				const rgb = mantle_rgb_light.hsl2rgb(H, S / 100, L / 100);
+				console.log(rgb);
+
+				const raw_response = await fetch("/jablko_modules/mantle_rgb_light/set_rgba", {
+
+					method: "POST",
+					headers: {
+						"Accept": "application/json",
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({r: rgb[0], g: rgb[1], b: rgb[2], a: L / 100})
+				})
+					.then(async function(data) {
+						const json_response = await data.json();
+						if (json_response.status == "good") {
+							const rgb_status = document.getElementById("mantle_rgb_light_status");
+							rgb_status.style.backgroundColor = "var(--color-green)";
+							rgb_status.textContent = "Online";
+						} else {
+							throw new Error("Unable to set RGBA");
+						}
+					})
+					.catch(error => {
+						console.log(error);
+						const rgb_status = document.getElementById("mantle_rgb_light_status");
+						rgb_status.style.backgroundColor = "var(--color-red)";
+						rgb_status.textContent = "Offline";
+						return;
+					});
+
+
+			}, 100);
+
+			mantle_rgb_light.last_update = Date.now() + 100;
+
+		},
+		hsl2rgb: function(h, s, l) {
+			let a=s*Math.min(l,1-l);
+			let f= (n,k=(n+h/30)%12) => l - a*Math.max(Math.min(k-3,9-k,1),-1);
+			return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
+		},
+		rgb2hsl: function(r, g, b) {
+			const r1 = r / 255;
+			const g1 = g / 255;
+			const b1 = b / 255;
+
+			const c_max = Math.max(r1, g1, b1);
+			const c_min = Math.min(r1, g1, b1);
+			const delta = c_max - c_min;
+
+			var H = 0;
+			if (delta == 0) {
+				H = 0;		
+			} else if (c_max == r1) {
+				H = 60 * (((g1 - b1) / delta) % 6);
+			} else if (c_max == g1) {
+				H = 60 * (((b1 - r1) / delta) + 2);
+			} else if (c_max == b1) {
+				H = 60 * (((r1 - g1) / delta) + 4);
+			}
+
+			const L = (c_max + c_min) / 2;
+			
+			var S = 0;
+			if (delta != 0) {
+				S = delta/ (1 - Math.abs(2 * L - 1));
+			}
+
+			return [H, S, L];
+		},
+		last_update: Date.now()
 	}
 
-	setTimeout(function() {
+	document.addEventListener("DOMContentLoaded", function(event) {
 		const r_slider = document.getElementById("r");
 		const g_slider = document.getElementById("g");
 		const b_slider = document.getElementById("b");
@@ -53,22 +187,125 @@
 		a_slider.oninput = function() {
 			mantle_rgb_light.set_rgba();
 		}
-	}, 2000);
+
+		mantle_rgb_light.status();
+
+		document.getElementById("mantle_rgb_light").addEventListener("mouseenter", function(event) {
+			mantle_rgb_light.status();
+		});
+
+		const h_slider = document.getElementById("h");
+		const s_slider = document.getElementById("s");
+		const l_slider = document.getElementById("l");
+
+		h_slider.oninput = function() {
+			mantle_rgb_light.set_hsl();
+		};
+
+		s_slider.oninput = function() {
+			mantle_rgb_light.set_hsl();
+		}
+
+		l_slider.oninput = function() {
+			mantle_rgb_light.set_hsl();
+		}
+
+		document.getElementById("mantle_rgb_light_mode").addEventListener("change", function(event) {
+			const value = event.target.value;
+			if (value == "rgba") {
+				document.getElementById("mantle_rgb_light_rgba").style.display = "block";
+				document.getElementById("mantle_rgb_light_hsl").style.display = "none";
+			} else if (value == "hsl") {
+				document.getElementById("mantle_rgb_light_rgba").style.display = "none";
+				document.getElementById("mantle_rgb_light_hsl").style.display = "block";
+			}
+			console.log(event.target.value);
+		});
+	});
+
 </script>
 <style>
-#rgb_mantle_light > div > input {
+#mantle_rgb_light_rgba > div > input {
 	-webkit-appearance: slider-vertical;
 	width: 20%;
 	height: 40vh;
 }	
+
+#mantle_rgb_light_rgba > div > div {
+	display: flex;
+	justify-content: center;
+	width: 20%;
+	margin: 2px;
+}
+#mantle_rgb_light > div > select {
+	border-radius: 2px;
+	font-size: 16px;
+	padding: 2px;
+	width: 80px;
+	height: 38px;
+	margin: 3px 0px 3px 0px;
+}
+
+#mantle_rgb_light_hsl > div > input {
+	-webkit-appearance: slider-vertical;
+	width: 30%;
+	height: 40vh;
+}
+#mantle_rgb_light_hsl > div > div {
+	display: flex;
+	justify-content: center;
+	width: 30%;
+	margin: 2px;
+}
+
+#mantle_rgb_light_preview {
+	background-color: rgba(1, 0, 0, 0.2);
+	width: 40px;
+	height: 38px;	
+	margin: 3px 0px 3px 0px; 
+}
 </style>
-<div id="rgb_mantle_light" class="jablko_module_card">
-	<h1>Mantle RGB</h1>
-	<div style="display: flex; justify-content: center">
-		<input id="r" type="range" min="0" max="255" style=""></input>
-		<input id="g" type="range" min="0" max="255" style="-webkit-appearance: slider-vertical"></input>
-		<input id="b" type="range" min="0" max="255" style="-webkit-appearance: slider-vertical"></input>
-		<input id="a" type="range" min="0" max="1" step="0.01" style="-webkit-appearance: slider-vertical"></input>
+<div id="mantle_rgb_light" class="module_card">
+	<div class="module_header">
+		<h1>Mantle RGB</h1>
+		<div id="mantle_rgb_light_status" class="status_indicator">N/A</div>
+	</div>
+	<hr>
+	<div style="display: flex">
+		<div style="display: flex; align-items: center; font-size: 20px; font-weight: bold; padding: 0px 5px 0px 15px;">Color:</div>
+		<div id="mantle_rgb_light_preview"></div>
+		<select id="mantle_rgb_light_mode" style="margin-left: auto; margin-right: 15px;">
+			<option value="rgba">RGBA</option>
+			<option value="hsl">HSL</option>
+		</select>
+	</div>
+
+	<div id="mantle_rgb_light_rgba" style="">
+		<div style="display: flex; justify-content: center;">
+			<div>Red</div>
+			<div>Blue</div>
+			<div>Green</div>
+			<div>Alpha</div>
+		</div>
+		<div style="display: flex; justify-content: center;">
+			<input id="r" type="range" min="0" max="255"></input>
+			<input id="g" type="range" min="0" max="255"></input>
+			<input id="b" type="range" min="0" max="255"></input>
+			<input id="a" type="range" min="0" max="1" step="0.01"></input>
+		</div>
+	</div>
+
+	<div id="mantle_rgb_light_hsl" style="display: none">
+		<div style="display: flex; justify-content: center;">
+			<div>Hue</div>
+			<div>Saturation</div>
+			<div>Lightness</div>
+		</div>
+		<div style="display: flex; justify-content: center;">
+			<input id="h" type="range" min="0" max="360"></input>
+			<input id="s" type="range" min="0" max="100"></input>
+			<input id="l" type="range" min="0" max="100"></input>
+		</div>
 	</div>
 	<button onclick="mantle_rgb_light.set_rgba()">SET</button>
 </div>

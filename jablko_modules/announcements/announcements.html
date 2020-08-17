@@ -1,4 +1,5 @@
-<script> const announcements = {
+<script> 
+	const announcements = {
 		send_message: async function() {
 			const input_box = document.getElementById("announcements_input");
 			const message_text = input_box.value;
@@ -24,8 +25,8 @@
 		}
 	}
 </script>
-<div id="announcements" class="jablko_module_card" style="padding-bottom: 10px">
-	<h1 class="card_title" style="background: url('/icons/announcements_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Announcements</h1>
+<div id="announcements" class="module_card" style="padding-bottom: 10px">
+	<h1 style="background: url('/icons/announcements_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Announcements</h1>
 	<hr>
 	<div style="display: grid; grid-template-columns: 80% 20%;">
 		<input id="announcements_input" style="margin-right: 10px; margin-left: 10px">

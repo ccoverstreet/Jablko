@@ -12,13 +12,14 @@ export function permission_level() {
 }
 
 export async function generate_card() {
-	return await readFileStr("jablko_modules/interface_status/interface_status.html");
+	return await readFileStr("./jablko_modules/interface_status/interface_status.html");
 }
 
 export async function check_status(context: Context) {
 	// This function reads necessary data and sends results back to client
 	
 	// Read CPU temp
+	
 	const temperature = parseFloat(new TextDecoder().decode(await Deno.readFile("/sys/class/thermal/thermal_zone0/temp"))) / 1000;
 
 	const meminfo = new TextDecoder().decode(await Deno.readFile("/proc/meminfo")).split("\n");
