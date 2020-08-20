@@ -8,5 +8,5 @@ const jablko = require("../jablko_interface.js");
 module.exports.timing_middleware = async function(req, res, next) {
 	const start_time = Date.now();
 	await next()
-	console.log(Date.now() - start_time);
+	console.log(`${Date.now() - start_time} ms`);
 }
