@@ -45,8 +45,9 @@ module.exports.user_authentication_middleware = async function(req, res, next) {
 		return;
 	} else {
 		const session_id = await jablko.user_db.get("SELECT * from login_sessions WHERE session_cookie=?", [req.cookies.key_1]);
-		if (session_id == undefined) {
-			// Invalid session id, send login page
+		console.log(session_id);
+		if (session_id == undefined || Date.now() - session_id.creation_time > jablko.jablko_config.database.session_lifetime) {
+			// Invalid session id or cookie is expired, send login page
 			res.sendFile(`${jablko.html_root}/login/login.html`);
 			return;
 		} 
