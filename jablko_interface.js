@@ -32,6 +32,7 @@ async function main() {
 	module.exports.jablko_config = jablko_config;
 	const html_root = `${__dirname}/public_html`;
 	module.exports.html_root = html_root;
+	module.exports.server_start_time = Date.now();
 
 	console.log(jablko_config);
 
@@ -42,16 +43,14 @@ async function main() {
 	function jablko_modules_load() {
 		var loaded_modules = {};
 
-		console.log("HAVENT FINISHED JABLKO MODULE LOADING");
 		for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
-			loaded_modules[jablko_config.jablko_modules[i]] = jablko_config.jablko_modules[i];
+			loaded_modules[jablko_config.jablko_modules[i]] = require(`./jablko_modules/${jablko_config.jablko_modules[i]}/${jablko_config.jablko_modules[i]}.js`);
 		}	
 
 		return loaded_modules;
 	} 
 
 	const jablko_modules = jablko_modules_load();
-	console.log(jablko_modules);
 
 	// -------------------- END Module Initialization --------------------
 
@@ -67,8 +66,27 @@ async function main() {
 	// -------------------- START End Routes --------------------
 
 	app.get("/", async (req, res) => {
-		const dashboard_template = await fs.readFile(`${html_root}/dashboard/dashboard_template.html`, "utf8");
+		var dashboard_template = await fs.readFile(`${html_root}/dashboard/dashboard_template.html`, "utf8");
+
+		// Load Jablko Module Cards
+		var module_string = "";
+		for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
+			module_string += await jablko_modules[jablko_config.jablko_modules[i]].generate_card();
+		}
+
+		dashboard_template = dashboard_template.replace("$JABLKO_MODULES", module_string);
+		dashboard_template = dashboard_template.replace("$TOOLBAR", await fs.readFile("./public_html/toolbar/toolbar.html"));
+		dashboard_template += "<style>" + await fs.readFile("./public_html/dashboard/dashboard.css") + "</style>";
+
 		res.send(dashboard_template);
+	});
+
+	app.post("/bot_callback", async (req, res) => {
+		console.log("Bot Callback");
+	});
+
+	app.post("/jablko_modules/:module_name/:handler", async (req, res) => {
+		await jablko_modules[req.params.module_name][req.params.handler](req, res);
 	});
 
 	// -------------------- END End Routes --------------------

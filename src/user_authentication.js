@@ -44,8 +44,9 @@ module.exports.user_authentication_middleware = async function(req, res, next) {
 		} 
 
 		if (req.originalUrl == "/logout") {
+			console.log("AASDASDASDASD")
 			jablko.user_db.exec("DELETE FROM login_sessions WHERE session_cookie=?", [req.cookies.key_1]);
-			res.sendFile(`${jablko.html_root}/login/login.html`);
+			res.json({status: "good", message: "Logged out"});
 		}  else {
 			await next();
 		}
