@@ -5,7 +5,7 @@
 			const message_text = input_box.value;
 			input_box.value = "";
 
-			const raw_response = await fetch("/jablko_modules/announcements/send_message", {
+			const raw_response = await fetch("/jablko_modules/$MODULE_NAME/send_announcement", {
 				method: "POST",
 				headers: {
 					"Accept": "application/json",
@@ -26,7 +26,14 @@
 	}
 </script>
 <div id="announcements" class="module_card" style="padding-bottom: 10px">
-	<h1 style="background: url('/icons/announcements_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Announcements</h1>
+	<div class="module_header">
+		<h1>Announcements</h1>
+		<svg class="module_icon" viewBox="0 0 150 150">
+			<ellipse cx="90" cy="60" rx="50" ry="30" fill="transparent" stroke="#0097e6" stroke-width="20px"/>
+			<circle cx="30" cy="103" r="15" fill="transparent" stroke="#0097e6" stroke-width="10px"/>
+			<circle cx="15" cy="135" r="10" fill="transparent" stroke="#0097e6" stroke-width="10px"/>
+		</svg>
+	</div>
 	<hr>
 	<div style="display: grid; grid-template-columns: 80% 20%;">
 		<input id="announcements_input" style="margin-right: 10px; margin-left: 10px">

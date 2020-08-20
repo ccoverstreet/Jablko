@@ -28,17 +28,24 @@ async function main() {
 	// -------------------- START Module Initialization --------------------
 
 	// Predefined config and paths (with exports)
+	console.log(`Loading Jablko Config from "jablko_config.json..."`);
 	const jablko_config = require("./jablko_config.json");
 	module.exports.jablko_config = jablko_config;
+	console.log(jablko_config);
+
 	const html_root = `${__dirname}/public_html`;
 	module.exports.html_root = html_root;
 	module.exports.server_start_time = Date.now();
 
-	console.log(jablko_config);
+	console.log("Intializing GroupMe messaging system...");
+	const messaging_system = require("./src/messaging.js");
+	module.exports.messaging_system = messaging_system;
 
+	console.log("Opening SQLite database...");
 	const user_db = await sqlite.open(jablko_config.database.path)
 	module.exports.user_db = user_db
 
+	console.log("Loading Jablko Modules...");
 	// Load and export jablko_modules
 	function jablko_modules_load() {
 		var loaded_modules = {};
@@ -56,6 +63,7 @@ async function main() {
 
 	// -------------------- START Middleware --------------------
 
+	console.log("Loading middleware...");
 	app.use(require("./src/timing.js").timing_middleware);
 	app.use(require("cookie-parser")())
 	app.use(express.json());
@@ -64,6 +72,8 @@ async function main() {
 	// -------------------- END Middleware --------------------
 
 	// -------------------- START End Routes --------------------
+
+	console.log("Establishing routes...");
 
 	app.get("/", async (req, res) => {
 		var dashboard_template = await fs.readFile(`${html_root}/dashboard/dashboard_template.html`, "utf8");
@@ -86,7 +96,11 @@ async function main() {
 	});
 
 	app.post("/jablko_modules/:module_name/:handler", async (req, res) => {
-		await jablko_modules[req.params.module_name][req.params.handler](req, res);
+		await jablko_modules[req.params.module_name][req.params.handler](req, res)
+			.catch((error) => {
+				console.log(`Requested module path "${req.params.module_name}/${req.params.handler} not found"`);
+				res.json({status: "fail", message: "Module path not found"});
+			});
 	});
 
 	// -------------------- END End Routes --------------------

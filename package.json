@@ -25,6 +25,7 @@
     "bcrypt": "^5.0.0",
     "cookie-parser": "^1.4.5",
     "express": "4.17.1",
+    "node-fetch": "^2.6.0",
     "sqlite": "^4.0.14",
     "sqlite-async": "^1.1.0"
   }
