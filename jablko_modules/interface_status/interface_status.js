@@ -5,14 +5,17 @@
 // Exports: permission_level, generate_card(), check_status(req, res)
 
 const fs = require("fs").promises;
+const path = require("path");
 
 const jablko = require("../../jablko_interface.js");
 const timing = require("../../src/timing.js")
 
+const module_name = path.basename(__dirname);
+
 module.exports.permission_level = 0
 
 module.exports.generate_card = async () => {
-	return await fs.readFile("./jablko_modules/interface_status/interface_status.html");
+	return (await fs.readFile("./jablko_modules/interface_status/interface_status.html", "utf8")).replace("$MODULE_NAME", module_name);
 }
 
 module.exports.check_status = async (req, res) => {
@@ -29,5 +32,3 @@ module.exports.check_status = async (req, res) => {
 	
 	res.json({interface_status: "good", interface_uptime: formatted_uptime, interface_response_time: timing.get_handling_time().toFixed(2) + " ms", cpu_temperature: cpu_temp + " C", memory_usage: meminfo_summary});
 }
-
-

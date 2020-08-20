@@ -2,7 +2,7 @@
 	interface_status = {
 		check_status: async function() {
 			const interface_values = document.querySelectorAll("#interface_status_card>div>.value");
-			const response = await (await fetch("/jablko_modules/interface_status/check_status", {method: "POST"})
+			const response = await (await fetch("/jablko_modules/$MODULE_NAME/check_status", {method: "POST"})
 				.catch(error => {
 					console.log(error);
 					for (var i = 0; i < interface_values.length; i++) {
@@ -25,7 +25,7 @@
 					console.log(error);
 					return;
 				})).json()
-			
+
 			alert(response.message);
 		}
 	}	
@@ -35,7 +35,12 @@
 	setInterval(interface_status.check_status, 15000);
 </script>
 <div id="interface_status_card" class="module_card">
-	<h1 style="background: url('/icons/interface_status_icon.svg') right; background-size: contain; background-repeat: no-repeat;">Interface Status</h1>
+	<div class="module_header">
+		<h1>Interface Status</h1>
+		<svg class="module_icon" viewBox="0 0 150 150">
+			<path d="M 20 75 H 40 L 60 30 L 90 120 L 110 75 H 130" fill="transparent" stroke="#0097e6" stroke-width="20px" stroke-linejoin="round" stroke-linecap="round"/>
+		</svg>
+	</div>
 	<hr>
 	<div class="label_value_pair">
 		<div class="label">Interface Status:</div>
