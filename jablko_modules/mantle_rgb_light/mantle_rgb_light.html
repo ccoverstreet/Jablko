@@ -1,7 +1,7 @@
 <script>
 	const mantle_rgb_light = {
 		status: async function() {
-			await fetch("/jablko_modules/mantle_rgb_light/status", {method: "POST"})
+			await fetch("/jablko_modules/$MODULE_NAME/status", {method: "POST"})
 				.then(async function(data) {
 					const response = await data.json();
 					if (response.status == "good") {
@@ -46,7 +46,7 @@
 				const b = document.getElementById("b").value;
 				const a = document.getElementById("a").value;
 
-				const raw_response = await fetch("/jablko_modules/mantle_rgb_light/set_rgba", {
+				const raw_response = await fetch("/jablko_modules/$MODULE_NAME/set_rgba", {
 
 					method: "POST",
 					headers: {
@@ -97,7 +97,7 @@
 				const rgb = mantle_rgb_light.hsl2rgb(H, S / 100, L / 100);
 				console.log(rgb);
 
-				const raw_response = await fetch("/jablko_modules/mantle_rgb_light/set_rgba", {
+				const raw_response = await fetch("/jablko_modules/$MODULE_NAME/set_rgba", {
 
 					method: "POST",
 					headers: {

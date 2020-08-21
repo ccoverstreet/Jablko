@@ -52,9 +52,10 @@ async function main() {
 		var loaded_modules = {};
 
 		for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
-			loaded_modules[jablko_config.jablko_modules[i]] = require(`./jablko_modules/${jablko_config.jablko_modules[i]}/${jablko_config.jablko_modules[i]}.js`);
+			loaded_modules[jablko_config.jablko_modules[i].name] = require(`./jablko_modules/${jablko_config.jablko_modules[i].name}/${jablko_config.jablko_modules[i].name}.js`);
 		}	
 
+		console.log(loaded_modules);
 		return loaded_modules;
 	} 
 
@@ -82,7 +83,7 @@ async function main() {
 		// Load Jablko Module Cards
 		var module_string = "";
 		for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
-			module_string += await jablko_modules[jablko_config.jablko_modules[i]].generate_card();
+			module_string += await jablko_modules[jablko_config.jablko_modules[i].name].generate_card();
 		}
 
 		dashboard_template = dashboard_template.replace("$JABLKO_MODULES", module_string);
@@ -100,6 +101,7 @@ async function main() {
 		await jablko_modules[req.params.module_name][req.params.handler](req, res)
 			.catch((error) => {
 				console.log(`Requested module path "${req.params.module_name}/${req.params.handler} not found"`);
+				console.log(error);
 				res.json({status: "fail", message: "Module path not found"});
 			});
 	});
@@ -128,4 +130,8 @@ async function main() {
 	// -------------------- END Server Start --------------------
 }
 
-main();
+main()
+	.catch((error) => {
+		console.log(error);
+		return;
+	});
