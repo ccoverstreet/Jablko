@@ -1,7 +1,7 @@
 <script>
 	const jablko_weather = {
 		update_weather: async function() {
-			const raw_response = await fetch("/jablko_modules/jablko_weather/get_all_weather", {
+			const raw_response = await fetch("/jablko_modules/$MODULE_NAME/get_all_weather", {
 				method: "POST"
 			})
 				.catch(error => {

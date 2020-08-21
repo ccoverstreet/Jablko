@@ -38,12 +38,13 @@ async function main() {
 	module.exports.server_start_time = Date.now();
 
 	console.log("Intializing GroupMe messaging system...");
-	const messaging_system = require("./src/messaging.js");
-	module.exports.messaging_system = messaging_system;
+	module.exports.messaging_system = require("./src/messaging.js");
 
 	console.log("Opening SQLite database...");
-	const user_db = await sqlite.open(jablko_config.database.path)
-	module.exports.user_db = user_db
+	module.exports.user_db = await sqlite.open(jablko_config.database.path);
+
+	console.log(`Loading OWM weather wrapper from "src/weather.js"...`);
+	module.exports.weather = require("./src/weather.js");
 
 	console.log("Loading Jablko Modules...");
 	// Load and export jablko_modules

@@ -1,36 +1,38 @@
-// weather.ts: Open Weather Map Wrapper
+// weather.js: Open Weather Map Wrapper
 // Cale Overstreet
-// July 31, 2020
-// This wrapper is used by Jablko components to interface with the OWM API through a unified module.
-// Exports: get_current_weather()
+// August 20, 2020
+// Used by Jablko and its modules to interface with the OWM API.
+// Exports: async get_current_weather()
 
-const jablko_config = (await import("../jablko_interface.ts")).jablko_config;
+const fetch = require("node-fetch");
+const jablko_config = require("../jablko_interface.js").jablko_config;
 
 console.log("Getting lattitude and longitude for weather data...");
-var location = undefined
+var location = undefined;
 (async () => {
 	const raw_location_fetch = await fetch("http://ip-api.com/json");
 	location = await raw_location_fetch.json();
+	console.log(`Location: ${location.lat}, ${location.lon}`);
 })();
 
 const owm_prefix = "https://api.openweathermap.org/data/2.5/onecall?";
 
-export async function get_current_weather() {
-	const raw_weather_data = await fetch(`${owm_prefix}lat=${location.lat}&lon=${location.lon}&appid=${jablko_config.weather.key}&exclude=minutely,hourly,daily`);
+module.exports.get_current_weather = async () => {
+	const raw_weather_data = await fetch(`${owm_prefix}lat=${location.lat}&lon=${location.lon}&appid=${jablko_config.weather.key}&exclude=minutely,daily,hourly`);
 	return await raw_weather_data.json();
 }
 
-export async function get_hourly_weather() {
+module.exports.get_hourly_weather =  async () => {
 	const raw_weather_data = await fetch(`${owm_prefix}lat=${location.lat}&lon=${location.lon}&appid=${jablko_config.weather.key}&exclude=minutely,current,daily`);
 	return await raw_weather_data.json();
 }
 
-export async function get_daily_weather() {
+module.exports.get_daily_weather = async () => {
 	const raw_weather_data = await fetch(`${owm_prefix}lat=${location.lat}&lon=${location.lon}&appid=${jablko_config.weather.key}&exclude=minutely,current,hourly`);
 	return await raw_weather_data.json();
 }
 
-export async function get_all_weather() {
+module.exports.get_all_weather = async () => {
 	const raw_weather_data = await fetch(`${owm_prefix}lat=${location.lat}&lon=${location.lon}&appid=${jablko_config.weather.key}&exclude=minutely`);
 	return await raw_weather_data.json();
 }
