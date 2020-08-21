@@ -10,8 +10,12 @@ const fetch = require("node-fetch");
 
 
 const module_name = path.basename(__dirname);
-const module_config = require("../../jablko_interface.js").jablko_config.jablko_modules.find(obj => obj.name == module_name);
-console.log(module_config);
+const module_config = require("../../jablko_interface.js").jablko_config.jablko_modules[module_name];
+
+// Check if module_config is correct
+if (module_config.controller_ip == undefined) {
+	throw new Error("Incorrect configuration for Mantle RGB Light");
+}
 
 module.exports.permission_level = 0;
 

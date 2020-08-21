@@ -50,9 +50,10 @@ async function main() {
 	// Load and export jablko_modules
 	function jablko_modules_load() {
 		var loaded_modules = {};
+		const modules = Object.keys(jablko_config.jablko_modules);
 
-		for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
-			loaded_modules[jablko_config.jablko_modules[i].name] = require(`./jablko_modules/${jablko_config.jablko_modules[i].name}/${jablko_config.jablko_modules[i].name}.js`);
+		for (var i = 0; i < modules.length; i++) {
+			loaded_modules[modules[i]] = require(`./jablko_modules/${modules[i]}/${modules[i]}.js`);
 		}	
 
 		console.log(loaded_modules);
@@ -82,8 +83,9 @@ async function main() {
 
 		// Load Jablko Module Cards
 		var module_string = "";
-		for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
-			module_string += await jablko_modules[jablko_config.jablko_modules[i].name].generate_card();
+		const modules = Object.keys(jablko_config.jablko_modules);
+		for (var i = 0; i < modules.length; i++) {
+			module_string += await jablko_modules[modules[i]].generate_card();
 		}
 
 		dashboard_template = dashboard_template.replace("$JABLKO_MODULES", module_string);
