@@ -12,7 +12,7 @@ var location = undefined;
 (async () => {
 	const raw_location_fetch = await fetch("http://ip-api.com/json");
 	location = await raw_location_fetch.json();
-	console.log(`Location: ${location.lat}, ${location.lon}`);
+	console.log(`Fetched location: ${location.lat}, ${location.lon}`);
 })();
 
 const owm_prefix = "https://api.openweathermap.org/data/2.5/onecall?";

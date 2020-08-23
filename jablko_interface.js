@@ -4,11 +4,25 @@
 // Contains the setup required for the NodeJS Express Web Server and initializes all Jablko Modules
 // Exports: jablko_config, html_root
 
+const DEBUG_ON = (process.argv[2] == "--debug" || process.argv[2] == "-d") ? true : false;
+
+if (DEBUG_ON) {
+	console.log("Starting Jablko in DEBUG Mode...\n");
+} else {
+	console.log("Starting Jablko...\n");
+}
+
 async function main() {
 	// Overriding console.log
 	const old_console_log = console.log;
-	console.log = function (input) {
+	console.log = function(input) {
 		old_console_log(`[${new Date().toLocaleString("sv-SE")}]:`, input);
+	}
+
+	console.debug = function(input) {
+		if (DEBUG_ON) {
+			console.log(input);
+		}
 	}
 
 	// -------------------- START Package Requires --------------------
@@ -31,6 +45,7 @@ async function main() {
 	console.log(`Loading Jablko Config from "jablko_config.json..."`);
 	const jablko_config = require("./jablko_config.json");
 	module.exports.jablko_config = jablko_config;
+	console.debug(jablko_config);
 
 	console.log("Setting Server Information Constants...");
 	const html_root = `${__dirname}/public_html`;
@@ -56,7 +71,7 @@ async function main() {
 			loaded_modules[modules[i]] = require(`./jablko_modules/${modules[i]}/${modules[i]}.js`);
 		}	
 
-		console.log(loaded_modules);
+		console.debug(loaded_modules);
 		return loaded_modules;
 	} 
 

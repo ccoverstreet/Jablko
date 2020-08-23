@@ -4,7 +4,7 @@ sudo ./setup_iptables.sh
 echo Running as user \"$(whoami)\"
 while true
 do
-	npm start
+	npm start -- $@
 	if (($? != 240))
 	then
 		exit $?
