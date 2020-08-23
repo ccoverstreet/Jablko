@@ -31,8 +31,8 @@ async function main() {
 	console.log(`Loading Jablko Config from "jablko_config.json..."`);
 	const jablko_config = require("./jablko_config.json");
 	module.exports.jablko_config = jablko_config;
-	console.log(jablko_config);
 
+	console.log("Setting Server Information Constants...");
 	const html_root = `${__dirname}/public_html`;
 	module.exports.html_root = html_root;
 	module.exports.server_start_time = Date.now();
@@ -124,7 +124,7 @@ async function main() {
 		http_server = http.createServer(app);
 
 		http_server.listen(jablko_config.http.port, () => {
-			console.log(`Started Jablko Interface on Port ${jablko_config.http.port}`);
+			console.log(`Started Jablko Interface on Port ${jablko_config.http.port} (HTTP)`);
 		});
 	}
 
@@ -137,7 +137,7 @@ async function main() {
 		}, app);
 
 		https_server.listen(jablko_config.https.port, () => {
-			console.log(`Started Jablko Interface on Port ${jablko_config.https.port}`);
+			console.log(`Started Jablko Interface on Port ${jablko_config.https.port} (HTTPS)`);
 		});
 	}
 
