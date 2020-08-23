@@ -99,6 +99,10 @@ async function main() {
 		console.log("Bot Callback");
 	});
 
+	app.get("/restart", async (req, res) => { 
+		process.exit(240);
+	});
+
 	app.post("/jablko_modules/:module_name/:handler", async (req, res) => {
 		await jablko_modules[req.params.module_name][req.params.handler](req, res)
 			.catch((error) => {
