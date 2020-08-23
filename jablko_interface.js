@@ -4,6 +4,19 @@
 // Contains the setup required for the NodeJS Express Web Server and initializes all Jablko Modules
 // Exports: jablko_config, html_root
 
+
+// Overriding console.log
+const old_console_log = console.log;
+console.log = function(input) {
+	old_console_log(`[${new Date().toLocaleString("sv-SE")}]:`, input);
+}
+
+console.debug = function(input) {
+	if (DEBUG_ON) {
+		console.log(input);
+	}
+}
+
 const DEBUG_ON = (process.argv[2] == "--debug" || process.argv[2] == "-d") ? true : false;
 
 if (DEBUG_ON) {
@@ -13,18 +26,8 @@ if (DEBUG_ON) {
 }
 
 async function main() {
-	// Overriding console.log
-	const old_console_log = console.log;
-	console.log = function(input) {
-		old_console_log(`[${new Date().toLocaleString("sv-SE")}]:`, input);
-	}
-
-	console.debug = function(input) {
-		if (DEBUG_ON) {
-			console.log(input);
-		}
-	}
-
+	// Primary server calls and initialization. 
+	
 	// -------------------- START Package Requires --------------------
 
 	const fs = require("fs").promises;
