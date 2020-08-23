@@ -95,8 +95,10 @@ async function main() {
 		res.send(dashboard_template);
 	});
 
+	const bot_brain = require("./src/bot_brain.js");
 	app.post("/bot_callback", async (req, res) => {
-		console.log("Bot Callback");
+		console.log("Message received from GroupMe");
+		await bot_brain.handle_message(req, res);
 	});
 
 	app.get("/restart", async (req, res) => { 

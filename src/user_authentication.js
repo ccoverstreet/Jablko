@@ -39,7 +39,7 @@ module.exports.user_authentication_middleware = async function(req, res, next) {
 		}
 		
 	} else if (req.originalUrl == "/bot_callback") {
-		console.log("Bot callback");
+		await next();
 	} else if (req.cookies.key_1 == null) {
 		res.sendFile(`${jablko.html_root}/login/login.html`);
 		return;
