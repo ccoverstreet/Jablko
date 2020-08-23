@@ -120,6 +120,7 @@ async function main() {
 	var http_server = undefined;
 	if (jablko_config.http.port != null) {
 		http_server = http.createServer(app);
+
 		http_server.listen(jablko_config.http.port, () => {
 			console.log(`Started Jablko Interface on Port ${jablko_config.http.port}`);
 		});
@@ -127,8 +128,13 @@ async function main() {
 
 	var https_server = undefined;
 	if (jablko_config.https.port != null) {
-		console.log("IMPLEMENT THIS");
-		app.listen(jablko_config.https.port, () => {
+		// Read PEM files
+		https_server = https.createServer({
+			key: await fs.readFile(jablko_config.https.key_file, "utf8"),
+			cert: await fs.readFile(jablko_config.https.cert_file, "utf8")
+		}, app);
+
+		https_server.listen(jablko_config.https.port, () => {
 			console.log(`Started Jablko Interface on Port ${jablko_config.https.port}`);
 		});
 	}
