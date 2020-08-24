@@ -9,7 +9,7 @@ const fetch = require("node-fetch");
 const fs = require("fs");
 const { execSync } = require("child_process");
 
-const jablko_config = require("./test_jablko_config.json");
+const jablko_config = require("./jablko_config.json");
 
 async function main() {
 	console.log(process.argv);
@@ -21,6 +21,8 @@ async function main() {
 }
 
 async function init() {
+	await execSync("mkdir -p jablko_modules");
+
 	const module_keys = Object.keys(jablko_config.jablko_modules);
 	for (module in jablko_config.jablko_modules) {
 		await install_module(jablko_config.jablko_modules[module].repo_archive, module);
@@ -29,6 +31,7 @@ async function init() {
 
 async function install_module(repository_url, module_target_name) {
 	const data = await fetch(repository_url);
+	await execSync("mkdir -p module_library");
 	await data.body.pipe(fs.createWriteStream(`./module_library/${module_target_name}.zip`));
 	await extract(`./module_library/${module_target_name}.zip`, {dir: `${process.cwd()}/module_library`});
 
