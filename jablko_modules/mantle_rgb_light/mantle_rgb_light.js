@@ -34,8 +34,8 @@ module.exports.status = async (req, res) => {
 			}
 		})
 		.catch(function(error) {
-			console.log("Mantle RGB: Error communicating with controller");
-			console.log(error);
+			console.log("Mantle RGB Light: Error communicating with controller");
+			console.debug(error);
 
 			res.json({status: "fail", message: `Error contacting controller (HTTP ERROR)`});
 			return;
@@ -59,8 +59,8 @@ module.exports.set_rgba = async (req, res) => {
 			}
 		})
 		.catch(function(error) {
-			console.log("Mantle RGB: Error communicating with controller");
-			console.log(error);
+			console.log("Mantle RGB Light: Error communicating with controller");
+			console.debug(error);
 
 			res.json({status: "fail", message: `Error contacting controller (HTTP ERROR)`});
 			return;
