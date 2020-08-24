@@ -71,7 +71,7 @@ async function main() {
 		const modules = Object.keys(jablko_config.jablko_modules);
 
 		for (var i = 0; i < modules.length; i++) {
-			loaded_modules[modules[i]] = require(`./jablko_modules/${modules[i]}/${modules[i]}.js`);
+			loaded_modules[modules[i]] = require(`./jablko_modules/${modules[i]}/module.js`);
 		}	
 
 		console.debug(loaded_modules);
