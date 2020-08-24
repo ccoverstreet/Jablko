@@ -4,21 +4,25 @@
 	},
 	"https": {
 		"port": null,
-		"cert_file": "../Certs/cert.pem",
-		"key_file": "../Certs/privkey.pem"
+		"cert_file": "your_cert.pem",
+		"key_file": "your_privkey.pem"
+	},
+	"database": {
+		"path": "./database/primary.db",
+		"session_lifetime": 21600000
 	},
 	"GroupMe": {
-		"access_token": "",
-		"group_name": "",
-		"group_id": "",
-		"bot_id": ""
+		"access_token": "access_token",
+        "group_name": "Group Name",
+        "group_id": "Group Id",
+        "bot_id": "Bot Id"
 	},
-	"jablko_modules": [
-		"interface_status",
-		"announcements"
-	],
+	"jablko_modules": {
+		"interface_status": {
+			"repo_archive": "https://github.com/ccoverstreet/Jablko-Interface-Status/archive/master.zip"
+		}
+	},
 	"weather": {
-		"key": "MY_OWM_KEY",
-        "city": "Atlantis"
+		"key": "OWM API KEY"
 	}
 }
