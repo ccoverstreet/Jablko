@@ -12,9 +12,7 @@ const { execSync } = require("child_process");
 const jablko_config = require("./jablko_config.json");
 
 async function main() {
-	console.log(process.argv);
-	console.log(process.cwd());
-	
+	console.log("Jablko Package Manager");
 	if (process.argv[2] == "init") {
 		await init();	
 	}
@@ -23,8 +21,10 @@ async function main() {
 async function init() {
 	await execSync("mkdir -p jablko_modules");
 
+	console.log("Installing all Jablko Modules specified in jablko_config.json");
 	const module_keys = Object.keys(jablko_config.jablko_modules);
 	for (module in jablko_config.jablko_modules) {
+		console.log(`\t${module}`);
 		await install_module(jablko_config.jablko_modules[module].repo_archive, module);
 	}
 }
