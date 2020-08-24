@@ -1,0 +1,31 @@
+{
+  "name": "jablko",
+  "version": "0.1.0",
+  "description": "Jablko Smart Home",
+  "main": "jablko_interface.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node jablko_interface.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://coverstreet@bitbucket.org/coverstreet/jablko.git"
+  },
+  "keywords": [
+    "Smart",
+    "Home"
+  ],
+  "author": "Cale Overstreet",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/coverstreet/jablko#readme",
+  "dependencies": {
+    "bcrypt": "5.0.0",
+    "cookie-parser": "1.4.5",
+    "express": "4.17.1",
+    "node-fetch": "2.6.0",
+    "sqlite-async": "1.1.0"
+  }
+}

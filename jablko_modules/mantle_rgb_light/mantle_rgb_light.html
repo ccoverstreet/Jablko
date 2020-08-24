@@ -1,7 +1,7 @@
 <script>
 	const mantle_rgb_light = {
 		status: async function() {
-			await fetch("/jablko_modules/mantle_rgb_light/status", {method: "POST"})
+			await fetch("/jablko_modules/$MODULE_NAME/status", {method: "POST"})
 				.then(async function(data) {
 					const response = await data.json();
 					if (response.status == "good") {
@@ -46,7 +46,7 @@
 				const b = document.getElementById("b").value;
 				const a = document.getElementById("a").value;
 
-				const raw_response = await fetch("/jablko_modules/mantle_rgb_light/set_rgba", {
+				const raw_response = await fetch("/jablko_modules/$MODULE_NAME/set_rgba", {
 
 					method: "POST",
 					headers: {
@@ -97,7 +97,7 @@
 				const rgb = mantle_rgb_light.hsl2rgb(H, S / 100, L / 100);
 				console.log(rgb);
 
-				const raw_response = await fetch("/jablko_modules/mantle_rgb_light/set_rgba", {
+				const raw_response = await fetch("/jablko_modules/$MODULE_NAME/set_rgba", {
 
 					method: "POST",
 					headers: {
@@ -269,6 +269,14 @@
 	<div class="module_header">
 		<h1>Mantle RGB</h1>
 		<div id="mantle_rgb_light_status" class="status_indicator">N/A</div>
+		<svg class="module_icon" viewBox="0 0 150 150">
+			<circle cx="75" cy="90" r="45" fill="transparent" stroke="#0097e6" stroke-width="20px"/>
+			<circle cx="10" cy="60" r="10" fill="#0097e6"/>
+			<circle cx="140" cy="60" r="10" fill="#0097e6"/>
+			<circle cx="75" cy="20" r="10" fill="#0097e6"/>
+			<circle cx="35" cy="30" r="10" fill="#0097e6"/>
+			<circle cx="115" cy="30" r="10" fill="#0097e6"/>
+		</svg>
 	</div>
 	<hr>
 	<div style="display: flex">
@@ -307,5 +315,4 @@
 			<input id="l" type="range" min="0" max="100"></input>
 		</div>
 	</div>
-	<button onclick="mantle_rgb_light.set_rgba()">SET</button>
 </div>

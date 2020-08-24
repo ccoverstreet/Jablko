@@ -1,28 +1,26 @@
-// bot_brain.ts: GroupMe Bot message callback handler
+// bot_brain.js: GroupMe Bot message callback handler
 // Cale Overstreet
-// July 24, 2020
-// This file describes the behavior of the GroupMe bot. In the future it could use language comprehension to determine actions, but I'll just use some general rules for now.
-// Exports: handle_message
+// August 23, 2020
+// Describes bot behavior and decision making
+// Exports: async handle_message(req, res)
 
-import { readFileStr } from "./util.ts";
-import { exec } from "https://deno.land/x/exec/mod.ts";
+const fs = require("fs").promises;
+const readFileSync = require("fs").readFileSync;
+const { exec } = require("child_process");
 
-const weather = await import("./weather.ts");
-
-const jablko_interface = await import("../jablko_interface.ts");
-const jablko_config = jablko_interface.jablko_config;
+const jablko = require("../jablko_interface.js");
+const jablko_config = jablko.jablko_config;
 
 const dictionary_path = "src/dictionary.csv";
 
-// Parses designed dictionary file creates a dictionary object
-async function parse_dictionary(filename: string) {
-	const data  = await readFileStr(filename);
-	const split_data = await data.split("\n");
+function parse_dictionary(filename) {
+	const data  = readFileSync(filename, "utf8");
+	const split_data = data.split("\n");
 
-	var new_dictionary: any = {}
+	var new_dictionary = {}
 	for (var i = 0; i < split_data.length; i++) {
 		if (split_data[i] != "" && !split_data[i].startsWith("Word")) {
-			const line_split = await split_data[i].split(",");
+			const line_split = split_data[i].split(",");
 			var word_vector = []
 			for (var j = 1; j < line_split.length; j++) {
 				word_vector.push(parseInt(line_split[j]));
@@ -35,9 +33,8 @@ async function parse_dictionary(filename: string) {
 	return new_dictionary;
 }
 
+const dictionary = parse_dictionary(dictionary_path);
 
-const dictionary = await parse_dictionary(dictionary_path);
-const messaging_system = (await import("../jablko_interface.ts")).messaging_system;
 
 // -------------------- Begining of action definitions -------------------- 
 function greeting() {
@@ -77,7 +74,7 @@ async function get_weather() {
 		"Coming right up."
 	];
 
-	const json_weather_data = await weather.get_current_weather();
+	const json_weather_data = await jablko.weather.get_current_weather();
 
 	const temp_in_c = json_weather_data.current.temp - 273.15;
 	const feels_in_c = json_weather_data.current.feels_like - 273.15;
@@ -94,7 +91,7 @@ function uptime() {
 		"I've been watching you for",
 		"This version of me has been up for"
 	]
-	const raw_uptime = (new Date().getTime() - jablko_interface.server_start_time) / 1000;	
+	const raw_uptime = (new Date().getTime() - jablko.server_start_time) / 1000;	
 	const hours = Math.floor(raw_uptime / 3600);
 	const minutes = Math.floor((raw_uptime - 3600 * hours) / 60);
 	const seconds = Math.floor(raw_uptime - 3600 * hours - 60 * minutes);
@@ -104,7 +101,7 @@ function uptime() {
 	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + formatted_uptime;
 }
 
-const actions: any = [
+const actions = [
 	{
 		name: "Greeting",
 		activation_phrases: [
@@ -144,7 +141,8 @@ const actions: any = [
 ];
 // -------------------- End of action definitions --------------------
 
-function add_vector(v1: any, v2: any) {
+
+function add_vector(v1, v2) {
 	const new_vector = []
 	for (var i = 0; i < v1.length; i++) {
 		new_vector.push(v1[i] + v2[i]);
@@ -153,10 +151,10 @@ function add_vector(v1: any, v2: any) {
 	return new_vector;
 }
 
-async function determine_intent(phrase: string) {
-	phrase = await phrase.toLowerCase();
-	phrase = await phrase.replace(/[^\w\s]/g, "");
-	const split_phrase = await phrase.split(" ");
+async function determine_intent(phrase) {
+	phrase = phrase.toLowerCase();
+	phrase = phrase.replace(/[^\w\s]/g, "");
+	const split_phrase = phrase.split(" ");
 	var intent_vector = []
 
 	for (var i = 0; i < dictionary["hi"].length; i++) {
@@ -175,7 +173,7 @@ async function determine_intent(phrase: string) {
 }
 
 
-async function parse_actions(actions: any) {
+async function parse_actions(actions) {
 	for (var i = 0; i < actions.length; i++) {
 		actions[i].activations = []
 		for (var j = 0; j < actions[i].activation_phrases.length; j++) {
@@ -189,9 +187,9 @@ async function parse_actions(actions: any) {
 	}
 }
 
-await parse_actions(actions);
+parse_actions(actions);
 
-async function create_response(message: string) {
+async function create_response(message) {
 	// Create intent vector
 	const message_intent = await determine_intent(message);
 
@@ -242,15 +240,13 @@ async function create_response(message: string) {
 	return response;
 }
 
-export async function handle_message(context: any) {
-	var message = await context.json_content.text.toLowerCase();
+module.exports.handle_message = async (req, res) => {
+	const message = await req.body.text.toLowerCase();
 
 	if (message.includes("jablko")) {
-		const generated_response = await create_response(context.json_content.text);
-		messaging_system.send_message(generated_response);
+		const generated_response = await create_response(message);
+		jablko.messaging_system.send_message(generated_response);
 	}
 
-	context.response.type = "html"
-	context.response.body = "";
+	res.send("Good");
 }
-

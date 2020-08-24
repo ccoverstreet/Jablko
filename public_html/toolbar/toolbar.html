@@ -23,7 +23,7 @@
 	}
 
 	async function logout() {
-		await fetch("/logout", {method: "POST"});
+		await fetch("/logout", {method: "GET"});
 		document.location.replace("/");
 	}
 </script>
