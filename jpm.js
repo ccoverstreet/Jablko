@@ -10,7 +10,6 @@ const fs = require("fs");
 const { execSync } = require("child_process");
 
 const jablko_config = require("./jablko_config.json");
-console.log(JSON.stringify(jablko_config, null, 4));
 
 async function main() {
 	console.log("Jablko Package Manager");
