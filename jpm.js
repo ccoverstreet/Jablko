@@ -102,7 +102,7 @@ async function install_module(repository_url, module_target_name) {
 	const extracted_zip = `${repo}-${tag}`;
 
 
-	console.log(`Installing ${repo} by ${author} from ${tag}`);
+	console.log(`Installing ${repo} by ${author} from ${tag} to "${module_target_name}"`);
 
 	// Should emulate synchronous behavior
 	const data = await fetch(repository_url);
