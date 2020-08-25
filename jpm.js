@@ -34,6 +34,7 @@ async function install_module(repository_url, module_target_name) {
 	await execSync("mkdir -p module_library");
 	await data.body.pipe(fs.createWriteStream(`./module_library/${module_target_name}.zip`));
 	await extract(`./module_library/${module_target_name}.zip`, {dir: `${process.cwd()}/module_library`});
+	console.log(repository_url);
 
 	const split_repo_url = repository_url.split("/");
 	const extracted_zip = `${split_repo_url[4]}-${split_repo_url[6].split(".zip")[0].replace("v", "")}`;
