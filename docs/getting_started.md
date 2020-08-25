@@ -46,6 +46,8 @@ Next is the jablko_modules configuration. Jablko Modules are located in the "jab
 
 Now, to add modules to Jablko, just add the name of what you want to call the module and include the "repo_archive" member to indiciated where the original code is (You can use the example above). Then, run `./jpm init` in the root of Jablko to download the module. When you restart the interface, the module will be loaded and provided the module is made correctly you should see it on your dashboard and be able to use any established routes.
 
+The "weather" section just contains your OpenWeatherMap API key so that Jablko can retrieve weather information.
+
 Great! Now all that's left to setup is the database setup for user information and managing active session.
 
 ## Setting up the User Database
