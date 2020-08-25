@@ -7,24 +7,46 @@ Welcome to the Jablko Smart home project. The goal of this project is to create 
  The "jablko_config.json" file contains info neccessary to run the GroupMe messaging bot and the list of Jablko Modules in the order you want them to appear on the dashboard. Here's the general format and necessary fields:
 ```
 {
-  "GroupMe: {
-    "access_token": "yourToken",
-    "group_name": "YourGroupName",
-    "group_id": "YourGroupId",
-    "bot_id": "YourBotsId"
-  },
-  "jablko_modules": [
-    "theFirstModule",
-    "theSecondModule
-  ]
+    "http": {
+        "port": 8080
+    },
+    "https": {
+        "port": null,
+        "cert_file": "your_cert.pem",
+        "key_file": "your_privkey.pem"
+    },
+    "database": {
+        "path": "./database/primary.db",
+        "session_lifetime": 21600000
+    },
+    "GroupMe": {
+        "access_token": "access_token",
+        "group_name": "Group Name",
+        "group_id": "Group Id",
+        "bot_id": "Bot Id"
+    },
+    "jablko_modules": {
+        "interface_status": {
+            "repo_archive": "https://github.com/ccoverstreet/Jablko-Interface-Status/archive/master.zip"
+        }
+    },
+    "weather": {
+        "key": "OWM API KEY"
+    }
 }
 ```
 
-Let's start with the GroupMe portion. You can find the required information on your GroupMe developer page (https://dev.groupme.com/bots). If you don't have a bot setup, you can use the online form to create a bot in an existing groupchat. 
+Let's start with the first two keys: "http" and "https". These keys contain the port number for the http and https server and the SSL certificate files. If you aren't running the HTTPS server, then you can keep the "port" value for HTTPS as `null`. If not, you must provide a port number and the relative path to your SSL certificate files.
 
-Next is the jablko_modules configuration. Jablko Modules are located in the "jablko_modules" directory and should be in their own subdirectory (jablko_modules/mymodule/*). Each Jablko Module also needs a file "mymodule.ts" that contains the functions/exports needed to interface with the main interface. This file **MUST** be named the same as the containing directory and entry in the "jablko_modules" section of the config file. You can find out more details and how to create a Jablko Module in the [documentation for Jablko Modules](docs/jablko_modules.md).
+The database section does not need to be modified unless you wish to change the session_lifetime or have your own SQLite database setup. The "session_lifetime" determines how long each user can stay logged in.
 
-Now, to add modules to Jablko, just add the name of the module into the "jablko_modules" array. When you restart the interface, the module will be loaded and provided the module is made correctly you should see it on your dashboard and be able to use any established routes.
+Now, let's look at the GroupMe portion. The "access_token" is not needed, but I need to fix that in the future. You can find the required information on your GroupMe developer page (https://dev.groupme.com/bots). If you don't have a bot setup, you can use the online form to create a bot in an existing groupchat. 
+
+Next is the jablko_modules configuration. Jablko Modules are located in the "jablko_modules" directory and are automatically installed when you run the command `./jpm init` in the root of Jablko. The previous command reads this config file and will download the source of each module from its respective repository. It then copies the contents to the key for each module in the subdirectory "jablko_modules". Each Jablko Module also needs a file "module.js" that contains the functions/exports needed to interface with the main interface.  You can find out more details and how to create a Jablko Module in the [documentation for Jablko Modules](/docs/jablko_modules.md).
+
+Now, to add modules to Jablko, just add the name of what you want to call the module and include the "repo_archive" member to indiciated where the original code is (You can use the example above). Then, run `./jpm init` in the root of Jablko to download the module. When you restart the interface, the module will be loaded and provided the module is made correctly you should see it on your dashboard and be able to use any established routes.
+
+The "weather" section just contains your OpenWeatherMap API key so that Jablko can retrieve weather information.
 
 Great! Now all that's left to setup is the database setup for user information and managing active session.
 
@@ -32,17 +54,17 @@ Great! Now all that's left to setup is the database setup for user information a
 
 ### Easy Method
 
-An easy way to setup the database is to run `./setup_jablko.sh` in the root of Jablko. This will automatically start a database creation script that will prompt you for information. Here's what you need to do:
+An easy way to setup the database is to run `node database/database_maintanence.js` in the root of Jablko. This will automatically start a database creation script that will prompt you for information. Here's what you need to do:
 1. Use option 1 to create a database.
 2. The database name should be "primary" (Will add customizability in the future).
 3. Now use option 2 to add a user.
 4. Make sure to use the primary database
 
 ### Manual Method
-I'll add this documentation later. You can also just look through the database directory to figure it out.# Getting Started
+I'll add this documentation later. You can also just look through the database directory to figure it out. #BeingLazy
 
 ## Running and Using the Interface
-To run Jablko, all you need to do is run the command `./start_jablko.sh`. To access the dashboard, open a browser and navigate to http://localhost:10230. You can also use port forwarding on your router to enable access when outside your network. Remember that by forwarding the port, you are opening a potential attack vector to the outside world. As long as the modules you use don't have the capability to burn your house down (*cough* smart ovens *cough*), any potential attacks won't be able to do too much harm. 
+To run Jablko, all you need to do is run the command `./jablko` in the root of Jablko. To access the dashboard, open a browser and navigate to the http or https port you specified in "jablko_config.json". You can also use port forwarding on your router to enable access when outside your network. Remember that by forwarding the port, you are opening a potential attack vector to the outside world. As long as the modules you use don't have the capability to burn your house down (*cough* smart ovens *cough*), any potential attacks won't be able to do too much harm. You will need to use port forwarding (at least HTTPS only) to be able to use the GroupMe functionality of Jablko. 
 
 As always, think about what security risks you are willing to take.
 
