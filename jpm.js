@@ -18,11 +18,17 @@ async function main() {
 		await install(process.argv.slice(3));
 	} else if (process.argv[2] == "uninstall") {
 		await uninstall(process.argv.slice(3));
+	} else if (process.argv[2] == "reinstall") {
+		await reinstall(process.argv.slice(3));
 	} else if (process.argv[2] == "list") {
 		await list(process.argv.slice(3));
 	} else if (process.argv[2] == "reset") {
 		await reset(process.argv.slice(3));
 	}
+}
+
+function write_config_file() {
+	fs.writeFileSync("jablko_config.json", JSON.stringify(jablko_config, null, 4));
 }
 
 async function init(args) {
@@ -48,9 +54,8 @@ async function install(args) {
 	jablko_config.jablko_modules[args[1]] = {
 		repo_archive: args[0]
 	}
-	console.log(jablko_config);
 
-	fs.writeFileSync("jablko_config.json", JSON.stringify(jablko_config, null, 4));
+	write_config_file();
 }
 
 async function uninstall(args) {
@@ -64,6 +69,15 @@ async function uninstall(args) {
 
 		execSync(`rm -r ./jablko_modules/${args[i]}`);
 		console.log(`Removed module ${args[i]}`);
+	}
+
+	write_config_file();
+}
+
+async function reinstall(args) {
+	if (args.length == 0) {
+		execSync("rm -r -f jablko_modules/*");
+		await init([]);	
 	}
 }
 
@@ -116,7 +130,6 @@ async function install_module(repository_url, module_target_name) {
 	fs.writeFileSync(`./module_library/${module_target_name}.zip`, buffer);
 
 	await extract(`./module_library/${module_target_name}.zip`, {dir: `${process.cwd()}/module_library`});
-
 
 	execSync(`mkdir -p ./jablko_modules && mkdir -p ./jablko_modules/${module_target_name} && cp ./module_library/${extracted_zip}/* ./jablko_modules/${module_target_name}`);
 }
