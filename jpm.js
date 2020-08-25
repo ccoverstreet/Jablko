@@ -12,11 +12,16 @@ const { execSync } = require("child_process");
 const jablko_config = require("./jablko_config.json");
 
 async function main() {
-	console.log("Jablko Package Manager");
 	if (process.argv[2] == "init") {
 		await init(process.argv.slice(3));	
 	} else if (process.argv[2] == "install") {
 		await install(process.argv.slice(3));
+	} else if (process.argv[2] == "uninstall") {
+		await uninstall(process.argv.slice(3));
+	} else if (process.argv[2] == "list") {
+		await list(process.argv.slice(3));
+	} else if (process.argv[2] == "reset") {
+		await reset(process.argv.slice(3));
 	}
 }
 
@@ -36,12 +41,42 @@ async function init(args) {
 }
 
 async function install(args) {
+	// Only installs one module at a time
+
 	await install_module(args[0], args[1]);
 
 	jablko_config.jablko_modules[args[1]] = {
 		repo_archive: args[0]
 	}
 	console.log(jablko_config);
+
+	fs.writeFileSync("jablko_config.json", JSON.stringify(jablko_config, null, 4));
+}
+
+async function uninstall(args) {
+	for (var i = 0; i < args.length; i++) {
+		if (!fs.existsSync(`./jablko_modules/${args[i]}`)) {
+			throw new Error("No such module");
+			return;
+		}
+
+		delete jablko_config.jablko_modules[args[i]];
+
+		execSync(`rm -r ./jablko_modules/${args[i]}`);
+		console.log(`Removed module ${args[i]}`);
+	}
+}
+
+async function list(args) {
+	for (module in jablko_config.jablko_modules) {
+		console.log(module);
+	}
+}
+
+async function reset(args) {
+	for (module in jablko_config.jablko_modules) {
+		await uninstall([module]);
+	}
 }
 
 async function install_module(repository_url, module_target_name) {
@@ -62,13 +97,13 @@ async function install_module(repository_url, module_target_name) {
 	const buffer = await data.buffer();
 
 	// Check if files already exist
-	if (fs.existsSync(`./module_library/${module_target_name}.zip`)) {
-		const answer = reader.question(`Do you want to replace the module "${module_target_name}"?`).trim();
+	if (fs.existsSync(`./jablko_modules/${module_target_name}`)) {
+		const answer = reader.question(`Do you want to replace the module "${module_target_name}"? <y/n>: `).trim();
 		if (!/[yn]/.test(answer)) {
 			console.log("Invalid response... Aborting install.");;
 			process.exit(1);
 		} 
-		
+
 		if (answer == "y") {
 			if (fs.existsSync(`./jablko_modules/${module_target_name}`)) {
 				execSync(`rm -r ./jablko_modules/${module_target_name}`);
@@ -86,4 +121,7 @@ async function install_module(repository_url, module_target_name) {
 	execSync(`mkdir -p ./jablko_modules && mkdir -p ./jablko_modules/${module_target_name} && cp ./module_library/${extracted_zip}/* ./jablko_modules/${module_target_name}`);
 }
 
-main();
+main()
+	.catch((error) => {
+		console.log(error);
+	});
