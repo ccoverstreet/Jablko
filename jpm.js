@@ -13,8 +13,10 @@ const jablko_config = require("./jablko_config.json");
 
 async function main() {
 	console.log("Jablko Package Manager");
-	if (process.argv[2] == "install") {
+	if (process.argv[2] == "init") {
 		await init(process.argv.slice(3));	
+	} else if (process.argv[2] == "install") {
+		await install(process.argv.slice(3));
 	}
 }
 
@@ -31,6 +33,11 @@ async function init(arguments) {
 			console.log();
 		}
 	}
+}
+
+async function install(arguments) {
+	console.log(arguments);
+	await install_module(arguments[0], arguments[1]);
 }
 
 async function install_module(repository_url, module_target_name) {
