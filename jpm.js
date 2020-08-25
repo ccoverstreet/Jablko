@@ -13,18 +13,23 @@ const jablko_config = require("./jablko_config.json");
 
 async function main() {
 	console.log("Jablko Package Manager");
-	if (process.argv[2] == "init") {
-		await init();	
+	if (process.argv[2] == "install") {
+		await init(process.argv.slice(3));	
 	}
 }
 
-async function init() {
+async function init(arguments) {
+	console.log(arguments);
 	execSync("mkdir -p jablko_modules");
 
-	console.log("Installing all Jablko Modules specified in jablko_config.json\n");
-	const module_keys = Object.keys(jablko_config.jablko_modules);
-	for (module in jablko_config.jablko_modules) {
-		await install_module(jablko_config.jablko_modules[module].repo_archive, module);
+	if (arguments.length == 0) {
+		console.log("Installing all modules specified in jablko_config.json\n");
+
+		const module_keys = Object.keys(jablko_config.jablko_modules);
+		for (module in jablko_config.jablko_modules) {
+			await install_module(jablko_config.jablko_modules[module].repo_archive, module);
+			console.log();
+		}
 	}
 }
 
