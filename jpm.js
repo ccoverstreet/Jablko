@@ -101,15 +101,6 @@ async function install_module(repository_url, module_target_name) {
 	const tag = split_repo_url[6].split(".zip")[0].replace("v", "");
 	const extracted_zip = `${repo}-${tag}`;
 
-
-	console.log(`Installing ${repo} by ${author} from ${tag} to "${module_target_name}"`);
-
-	// Should emulate synchronous behavior
-	const data = await fetch(repository_url);
-
-	await execSync("mkdir -p module_library");
-	const buffer = await data.buffer();
-
 	// Check if files already exist
 	if (fs.existsSync(`./jablko_modules/${module_target_name}`)) {
 		const answer = reader.question(`Do you want to replace the module "${module_target_name}"? <y/n>: `).trim();
@@ -127,6 +118,16 @@ async function install_module(repository_url, module_target_name) {
 			return;
 		}
 	}
+
+
+	console.log(`Installing ${repo} by ${author} from ${tag} to "${module_target_name}"`);
+
+	// Should emulate synchronous behavior
+	const data = await fetch(repository_url);
+
+	await execSync("mkdir -p module_library");
+	const buffer = await data.buffer();
+
 	fs.writeFileSync(`./module_library/${module_target_name}.zip`, buffer);
 
 	await extract(`./module_library/${module_target_name}.zip`, {dir: `${process.cwd()}/module_library`});
