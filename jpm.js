@@ -32,7 +32,6 @@ function write_config_file() {
 }
 
 async function init(args) {
-	console.log(args);
 	execSync("mkdir -p jablko_modules");
 
 	if (args.length == 0) {
@@ -48,12 +47,30 @@ async function init(args) {
 
 async function install(args) {
 	// Only installs one module at a time
+	var archive_url = undefined;
+	
+	// Check if Github Syntax is used
+	if (args[0].startsWith("http")) {
+		// Use route as is
+		await install_module(args[0], args[1]);
+		archive_url = args[0];
 
-	await install_module(args[0], args[1]);
+		jablko_config.jablko_modules[args[1]] = {
+			repo_archive: archive_url
+		}
+	} else {
+		if (args.length != 3) {
+			throw new Error("Not enough arguments");
+			return;
+		}
+		archive_url = github_to_https(args[0], args[1]);
+		await install_module(archive_url, args[2]);
 
-	jablko_config.jablko_modules[args[1]] = {
-		repo_archive: args[0]
+		jablko_config.jablko_modules[args[2]] = {
+			repo_archive: archive_url
+		}
 	}
+
 
 	write_config_file();
 }
@@ -76,8 +93,15 @@ async function uninstall(args) {
 
 async function reinstall(args) {
 	if (args.length == 0) {
+		console.log("Reinstalling all jablko_modules listed in jablko_config.json");
 		execSync("rm -r -f jablko_modules/*");
 		await init([]);	
+	} else {
+		for (module of args) {
+			console.log(`Reinstalling module "${module}"`);
+			execSync(`rm -r -f jablko_modules/${module}`);
+			await install_module(jablko_config.jablko_modules[module].repo_archive, module);
+		}
 	}
 }
 
@@ -120,7 +144,7 @@ async function install_module(repository_url, module_target_name) {
 	}
 
 
-	console.log(`Installing ${repo} by ${author} from ${tag} to "${module_target_name}"`);
+	console.log(`Installing ${repo} (${tag}) by ${author} to "${module_target_name}"`);
 
 	// Should emulate synchronous behavior
 	const data = await fetch(repository_url);
@@ -133,6 +157,11 @@ async function install_module(repository_url, module_target_name) {
 	await extract(`./module_library/${module_target_name}.zip`, {dir: `${process.cwd()}/module_library`});
 
 	execSync(`mkdir -p ./jablko_modules && mkdir -p ./jablko_modules/${module_target_name} && cp ./module_library/${extracted_zip}/* ./jablko_modules/${module_target_name}`);
+}
+
+function github_to_https(author_repo, tag) {
+	const https_string = `https://github.com/${author_repo}/archive/${tag}.zip`;
+	return https_string;
 }
 
 main()
