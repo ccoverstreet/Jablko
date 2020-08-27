@@ -175,7 +175,7 @@ async function install_module(repository_url, module_target_name) {
 
 	await extract(`./module_library/${module_target_name}.zip`, {dir: `${process.cwd()}/module_library`});
 
-	execSync(`mkdir -p ./jablko_modules && mkdir -p ./jablko_modules/${module_target_name} && cp ./module_library/${extracted_zip}/* ./jablko_modules/${module_target_name}`);
+	execSync(`mkdir -p ./jablko_modules && mkdir -p ./jablko_modules/${module_target_name} && cp ./module_library/${extracted_zip}/* ./jablko_modules/${module_target_name} && cd ./jablko_modules/${module_target_name} && npm install`);
 }
 
 function github_to_https(author_repo, tag) {

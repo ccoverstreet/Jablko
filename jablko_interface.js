@@ -71,7 +71,13 @@ async function main() {
 		const modules = Object.keys(jablko_config.jablko_modules);
 
 		for (var i = 0; i < modules.length; i++) {
-			loaded_modules[modules[i]] = require(`${jablko_config.jablko_modules[modules[i]].install_dir}/module.js`);
+			try {
+				loaded_modules[modules[i]] = require(`${jablko_config.jablko_modules[modules[i]].install_dir}/module.js`);
+			} catch (error) {
+				console.log(error)
+				console.log("FATAL ERROR: Quiting Jablko");
+				process.exit(1);
+			}
 		}	
 
 		console.debug(loaded_modules);
