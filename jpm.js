@@ -39,7 +39,12 @@ async function init(args) {
 
 		const module_keys = Object.keys(jablko_config.jablko_modules);
 		for (module in jablko_config.jablko_modules) {
-			await install_module(jablko_config.jablko_modules[module].repo_archive, module);
+			if (jablko_config.jablko_modules[module].install_dir.startsWith("./jablko_modules")) {
+				await install_module(jablko_config.jablko_modules[module].repo_archive, module);
+			} else {
+				console.log(`WARNING: Ignoring module. Module "${module}" does not appear to have been installed with JPM. Remove this entry from Jablko Config if you no longer use it.`);
+			}
+
 			console.log();
 		}
 	}
@@ -48,15 +53,22 @@ async function init(args) {
 async function install(args) {
 	// Only installs one module at a time
 	var archive_url = undefined;
+
+	var module_package = undefined;
 	
 	// Check if Github Syntax is used
 	if (args[0].startsWith("http")) {
 		// Use route as is
-		await install_module(args[0], args[1]);
+		module_package = await install_module(args[0], args[1]);
 		archive_url = args[0];
 
 		jablko_config.jablko_modules[args[1]] = {
-			repo_archive: archive_url
+			repo_archive: archive_url,
+			install_dir: `./jablko_modules/${args[1]}`
+		}
+
+		for (field in module_package.jablko) {
+			jablko_config.jablko_modules[args[1]][field] = module_package.jablko[field];
 		}
 	} else {
 		if (args.length != 3) {
@@ -64,20 +76,29 @@ async function install(args) {
 			return;
 		}
 		archive_url = github_to_https(args[0], args[1]);
-		await install_module(archive_url, args[2]);
+		module_package = await install_module(archive_url, args[2]);
 
 		jablko_config.jablko_modules[args[2]] = {
-			repo_archive: archive_url
+			repo_archive: archive_url,
+			install_dir: `./jablko_modules/${args[2]}`
+		}
+
+		for (field in module_package.jablko) {
+			jablko_config.jablko_modules[args[2]][field] = module_package.jablko[field];
 		}
 	}
-
 
 	write_config_file();
 }
 
 async function uninstall(args) {
 	for (var i = 0; i < args.length; i++) {
-		if (!fs.existsSync(`./jablko_modules/${args[i]}`)) {
+
+		if (!jablko_config.jablko_modules[args[i]].install_dir.startsWith("./jablko_modules")) {
+			console.log("Module is not installed in the jablko_modules directory. Removing module from jablko_config.json");
+			delete jablko_config.jablko_modules[args[i]];
+			continue;
+		} else if (!fs.existsSync(`./jablko_modules/${args[i]}`)) {
 			throw new Error("No such module");
 			return;
 		}
@@ -99,8 +120,16 @@ async function reinstall(args) {
 	} else {
 		for (module of args) {
 			console.log(`Reinstalling module "${module}"`);
-			execSync(`rm -r -f jablko_modules/${module}`);
-			await install_module(jablko_config.jablko_modules[module].repo_archive, module);
+			if (!jablko_config.jablko_modules[module].install_dir.startsWith("./jablko_modules")) {
+				console.log(`WARNING: Ignoring module "${module}". Module does not appear to have been installed by JPM.`);
+				continue;
+			} else if (!fs.existsSync(`./jablko_modules/${module}`)) {
+				console.log("Module directory not found... reinstalling from indicated source.");
+			} else {
+				execSync(`rm -r -f jablko_modules/${module}`);
+			}
+
+			await install_module(jablko_config.jablko_modules[module].repo_archive, module); 
 		}
 	}
 }
@@ -156,7 +185,9 @@ async function install_module(repository_url, module_target_name) {
 
 	await extract(`./module_library/${module_target_name}.zip`, {dir: `${process.cwd()}/module_library`});
 
-	execSync(`mkdir -p ./jablko_modules && mkdir -p ./jablko_modules/${module_target_name} && cp ./module_library/${extracted_zip}/* ./jablko_modules/${module_target_name}`);
+	execSync(`mkdir -p ./jablko_modules && mkdir -p ./jablko_modules/${module_target_name} && cp ./module_library/${extracted_zip}/* ./jablko_modules/${module_target_name} && cd ./jablko_modules/${module_target_name} && npm install`);
+
+	return require(`./module_library/${extracted_zip}/package.json`);
 }
 
 function github_to_https(author_repo, tag) {
