@@ -3,9 +3,9 @@
 JPM is the package manager for users wanting to install Jablko Modules into their Jablko system. The main method of module distribution is through GitHub repositories, where JPM downloads a zip version of the target tag to users Jablko install, installs any dependencies, and updates their configuration file.
 
 ## Contents
-- (Installing Packages)[#installing-packages]
-- (Uninstalling Packages)[#uninstalling-packages]
-- (Reinstalling Packages)[#reinstalling-packages]
+- [Installing Packages](#installing-packages)
+- [Uninstalling Packages](#uninstalling-packages)
+- [Reinstalling Packages](#reinstalling-packages)
 
 ## Installing Packages
 
