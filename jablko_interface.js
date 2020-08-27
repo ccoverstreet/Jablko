@@ -75,6 +75,9 @@ async function main() {
 				loaded_modules[modules[i]] = require(`${jablko_config.jablko_modules[modules[i]].install_dir}/module.js`);
 			} catch (error) {
 				console.log(error)
+				if (error.message == "Incorrect Configuration") {
+					console.log("You may want to check the jablko_config.json file for each modules configuration.");
+				}
 				console.log("FATAL ERROR: Quiting Jablko");
 				process.exit(1);
 			}
