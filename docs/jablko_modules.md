@@ -63,6 +63,10 @@ There are several key design principles developers should follow when creating a
 <script>
   const $MODULE_NAME = { // Module name replaced by regex in you async generate_card function
     somefunc: async () => {
+      await fetch("/jablko_modules/$MODULE_NAME/your_exposed_func", {method: "POST", body: {YOUR DATA HERE}})
+        .catch((error) => {
+          console.log(error);
+        });
       const value_div = document.getElementById("$MODULE_NAME_somevalue");
       console.log(value_div.textContent);
       alert($SOME_CONFIG_VALUE); // Replaced by regex in your async generate_card function
@@ -70,6 +74,12 @@ There are several key design principles developers should follow when creating a
   }
 </script>
 <div id="$MODULE_NAME" class="module_card">
+  <div class="module_header">
+    <h1>Module</h1>
+      <svg class="module_icon" viewBox="0 0 150 150">
+      <path d="M 20 75 H 40 L 60 30 L 90 120 L 110 75 H 130" fill="transparent" stroke="#0097e6" stroke-width="20px" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+  </div>
   <div id="$MODULE_NAME_somevalue">100</div>
   <button onclick="$MODULE_NAME.somefunc()">Get Value</button>
 </div>
