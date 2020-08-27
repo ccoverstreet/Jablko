@@ -84,7 +84,11 @@ async function install(args) {
 
 async function uninstall(args) {
 	for (var i = 0; i < args.length; i++) {
-		if (!fs.existsSync(`./jablko_modules/${args[i]}`)) {
+
+		if (!jablko_config.jablko_modules[args[i]].install_dir.startsWith("./jablko_modules")) {
+			console.log("Module is not installed in the jablko_modules directory. Skipping uninstall step");
+			continue;
+		} else if (!fs.existsSync(`./jablko_modules/${args[i]}`)) {
 			throw new Error("No such module");
 			return;
 		}
@@ -106,7 +110,10 @@ async function reinstall(args) {
 	} else {
 		for (module of args) {
 			console.log(`Reinstalling module "${module}"`);
-			if (!fs.existsSync(`./jablko_modules/${module}`)) {
+			if (!jablko_config.jablko_modules[module].install_dir.startsWith("./jablko_modules")) {
+				console.log(`WARNING: Ignoring module "${module}". Module does not appear to have been installed by JPM.`);
+				continue;
+			} else if (!fs.existsSync(`./jablko_modules/${module}`)) {
 				console.log("Module directory not found... reinstalling from indicated source.");
 			} else {
 				execSync(`rm -r -f jablko_modules/${module}`);
