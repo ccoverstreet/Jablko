@@ -6,7 +6,7 @@ Jablko Modules can be made by creating a directory or repository that has a "mod
 
 - [Overview](#overview)
 - [Jablko Module Standards](#jablko-module-standards)
-- [Card Design](#card-design)
+- [General HTML Design](#general-html-design)
 
 ## Overview
 
@@ -55,14 +55,24 @@ There are several key design principles developers should follow when creating a
 - If you have config options or default config values, they **MUST** be set in the package.json in a field called `"jablko"`.
   - If you have config values that must be correct or manually set, make sure to add config validation to the very start of your module that throws an error if the config is invalid or missing.
   
-**TIP** If you need examples, look at any of the official Jablko Modules listed on the [main README.md](/README.md). A simple one that uses most features is [Jablko-Interface-Status](https://github.com/ccoverstreet/Jablko-Interface-Status/README.md)
+**TIP** If you need examples, look at any of the official Jablko Modules listed on the [main README.md](/README.md). A simple one that uses most features is [Jablko-Interface-Status](https://github.com/ccoverstreet/Jablko-Interface-Status)
 
-## Card Design
+## General HTML Design
 
-In Jablko there is a general CSS file that contains class definitions for certain module components. The goal of this is to unify the appearance of modules and make it easy to adjust the overall look of Jablko.
+```HTML
+<script>
+  const $MODULE_NAME = { // Module name replaced by regex in you async generate_card function
+    somefunc: async () => {
+      const value_div = document.getElementById("$MODULE_NAME_somevalue");
+      console.log(value_div.textContent);
+      alert($SOME_CONFIG_VALUE); // Replaced by regex in your async generate_card function
+    }
+  }
+</script>
+<div id="$MODULE_NAME" class="module_card">
+  <div id="$MODULE_NAME_somevalue">100</div>
+  <button onclick="$MODULE_NAME.somefunc()">Get Value</button>
+</div>
+```
 
-| CSS Selector | CSS Content|
-| --- | --- |
-| `.jablko_module_card` | display: inline-block;<br>margin: 10px;<br>border-radius: 5px;<br>width: calc(100% - 20px);<br>color: var(--font-color);<br>background-color: var(--color-card-background);|
-| button | border-width: 0px;<br>border-radius: 5px;<br>padding: 5px;|
-
+**CSS**: Available CSS classes/presets are in [dashboard.css](/public_html/dashboard/dashboard.css)
