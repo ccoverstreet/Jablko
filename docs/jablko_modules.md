@@ -1,25 +1,28 @@
 # Jablko Modules
 
-Jablko Modules can be made by creating the required typescript file with external functions thay the main interface can call. Below is a list of items that **MUST** be defined in a module.
+Jablko Modules can be made by creating a directory or repository that has a "module.js" file and NPM package.json file. There are some required `module.exports` needed in order for the module to interface with Jablko.
 
 ## Contents
 
 - [Overview](#overview)
-- [Generate Card](#generate-card)
+- [Jablko Module Standards](#jablko-module-standards)
 - [Card Design](#card-design)
 
 ## Overview
 
-Required components:
+Components:
 - "module.js": Must be located in the root of the Jablko Module's repository.
-  - module.exports.permission_level: A exported int set to an integer value (0, 1, or 2). Permission level needed to use the module increase with the number. The level 2 denotes administrative level and 0 represents no required permissions.
+  - `module.exports.permission_level`: A exported int set to an integer value (0, 1, or 2). Permission level needed to use the module increase with the number. The level 2 denotes administrative level and 0 represents no required permissions.
     ```Javascript
     module.exports.permission_level = 0
     ```
-  - module.exports.generate_card: If you want a card to appear on your dashboard you must provide an `async generate_card()`. function. This function is called when a user visits the server route and returns a string containing the HTML of the modules card. How you generate the string is up to each individual module. You can store the html in a separate .html file and then read in the html on load.
+  - RECOMMENDED: `const module_name = path.basename(__dirname)`. Module name resolves to the name of the install directory of the module. This makes it so that every module has a unique identifier and there are no function/definition collisions between modules when they are on the dashboard.
+  - RECOMMENDED: `const jablko = require(module.parent.filename)`. This is used to import any functions exposed by the main Jablko Interface.
+  - RECOMMENDED: `const module_config = jablko.jablko_config.jablko_modules[module_name]`. Contains the configuration data pulled from the "jablko_config.json" file.
+  - `module.exports.generate_card`: If you want a card to appear on your dashboard you must provide an `async generate_card()`. function. This function is called when a user visits the server route and returns a string containing the HTML of the modules card. How you generate the string is up to each individual module. The recommended method is to read from an html file in the module.js file's directory and replace any occurences of $MODULE_NAME with the module's installed directory name. You can see more in [HTML Standards](#html-standards)
     ```Javascript
       module.exports.generate_card = async function generate_card() {
-      return `
+      return (await fs.readFile(`${__dirname}/mantle_rgb.html`, "utf8")).replace(/\$MODULE_NAME/g, module_name);
       <div id="mymodule_card" class="module_card">
         <div class="module_header">
                 <h1>Interface Status</h1>
@@ -32,20 +35,27 @@ Required components:
       </div>
       `
     ```
+    
+## Jablko Module Standard
 
-## Generate Card
-
-This function is required if you want your module to display on the dashboard. This function must return a string that contains the html of the modules display card. If you want to look at available CSS to unify the appearance, look in the [Card Design](#card-design) section.
-```Javascript
-export async function generate_card() {
-  return `
-    <div id="mymodule_card" class="jablko_module_card">
-      <div class="card_title" background: url('/icons/interface_status_icon.svg') right; background-size: contain; background-repeat: no-repeat;">MyModule</div>
-      <hr>
-      <p>*Your Content*</p>
-    </div>
-    `
-```
+There are several key design principles developers should follow when creating a Jablko module:
+- All ids and unique identifiers in the HTML should be prefaced with `$MODULE_NAME` (ex. `id="$MODULE_NAME_mydiv"`, which should be replaced with `module_name` when the HTML file is read in and returned.
+- All JavaScript definitions should also be namespaced using a const $MODULE_NAME object and be called from that object.
+    ```Javascript
+    const $MODULE_NAME = {
+      myfunc: async () => {
+        console.log("myfunc");
+      }
+    }
+    
+    // In module <div>
+    <button onclick="$MODULE_NAME.myfunc()">My Button</button>
+    ```
+- Any variables you replace in the html file from some form of config should be of the form `$VARIABLE_NAME` to make them easily identifiable.
+- If you have config options or default config values, they **MUST** be set in the package.json in a field called `"jablko"`.
+  - If you have config values that must be correct or manually set, make sure to add config validation to the very start of your module that throws an error if the config is invalid or missing.
+  
+**TIP** If you need examples, look at any of the official Jablko Modules listed on the [main README.md](/README.md). A simple one that uses most features is [Jablko-Interface-Status](https://github.com/ccoverstreet/Jablko-Interface-Status/README.md)
 
 ## Card Design
 
