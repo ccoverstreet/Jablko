@@ -95,7 +95,8 @@ async function uninstall(args) {
 	for (var i = 0; i < args.length; i++) {
 
 		if (!jablko_config.jablko_modules[args[i]].install_dir.startsWith("./jablko_modules")) {
-			console.log("Module is not installed in the jablko_modules directory. Skipping uninstall step");
+			console.log("Module is not installed in the jablko_modules directory. Removing module from jablko_config.json");
+			delete jablko_config.jablko_modules[args[i]];
 			continue;
 		} else if (!fs.existsSync(`./jablko_modules/${args[i]}`)) {
 			throw new Error("No such module");
