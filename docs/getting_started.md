@@ -27,7 +27,8 @@ Welcome to the Jablko Smart home project. The goal of this project is to create 
     },
     "jablko_modules": {
         "interface_status": {
-            "repo_archive": "https://github.com/ccoverstreet/Jablko-Interface-Status/archive/master.zip"
+            "repo_archive": "https://github.com/ccoverstreet/Jablko-Interface-Status/archive/master.zip",
+            "install_dir": "./jablko_modules"
         }
     },
     "weather": {
@@ -44,7 +45,7 @@ Now, let's look at the GroupMe portion. The "access_token" is not needed, but I 
 
 Next is the jablko_modules configuration. Jablko Modules are located in the "jablko_modules" directory and are automatically installed when you run the command `./jpm init` in the root of Jablko. The previous command reads this config file and will download the source of each module from its respective repository. It then copies the contents to the key for each module in the subdirectory "jablko_modules". Each Jablko Module also needs a file "module.js" that contains the functions/exports needed to interface with the main interface.  You can find out more details and how to create a Jablko Module in the [documentation for Jablko Modules](/docs/jablko_modules.md).
 
-Now, to add modules to Jablko, just add the name of what you want to call the module and include the "repo_archive" member to indiciated where the original code is (You can use the example above). Then, run `./jpm init` in the root of Jablko to download the module. When you restart the interface, the module will be loaded and provided the module is made correctly you should see it on your dashboard and be able to use any established routes.
+Now, to add modules to Jablko, you can use the JPM utility (`./jpm`) in the root of Jablko. More information in the [Install Jablko Modules](#installing-jablko-modules)
 
 The "weather" section just contains your OpenWeatherMap API key so that Jablko can retrieve weather information.
 
@@ -62,6 +63,10 @@ An easy way to setup the database is to run `node database/database_maintanence.
 
 ### Manual Method
 I'll add this documentation later. You can also just look through the database directory to figure it out. #BeingLazy
+
+## Installing Jablko Modules
+
+The primary method for installing Jablko Modules is to use the Jablko Package Manager (JPM) utility. To use, navigate to the root of Jablko and run `./jpm`. If you want to install a module, you can run `./jpm install author/repo tag module_name` to install a Jablko Module from a GitHub repository to your desired module name. JPM automatically will install any dependencies and update your "jablko_config.json" file. You can read more about JPM [here](/docs/jpm.md).
 
 ## Running and Using the Interface
 To run Jablko, all you need to do is run the command `./jablko` in the root of Jablko. To access the dashboard, open a browser and navigate to the http or https port you specified in "jablko_config.json". You can also use port forwarding on your router to enable access when outside your network. Remember that by forwarding the port, you are opening a potential attack vector to the outside world. As long as the modules you use don't have the capability to burn your house down (*cough* smart ovens *cough*), any potential attacks won't be able to do too much harm. You will need to use port forwarding (at least HTTPS only) to be able to use the GroupMe functionality of Jablko. 
