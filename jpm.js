@@ -39,7 +39,12 @@ async function init(args) {
 
 		const module_keys = Object.keys(jablko_config.jablko_modules);
 		for (module in jablko_config.jablko_modules) {
-			await install_module(jablko_config.jablko_modules[module].repo_archive, module);
+			if (jablko_config.jablko_modules[module].install_dir.startsWith("./jablko_modules")) {
+				await install_module(jablko_config.jablko_modules[module].repo_archive, module);
+			} else {
+				console.log(`WARNING: Ignoring module. Module "${module}" does not appear to have been installed with JPM. Remove this entry from Jablko Config if you no longer use it.`);
+			}
+
 			console.log();
 		}
 	}
@@ -56,7 +61,8 @@ async function install(args) {
 		archive_url = args[0];
 
 		jablko_config.jablko_modules[args[1]] = {
-			repo_archive: archive_url
+			repo_archive: archive_url,
+			install_dir: `./jablko_modules/${args[1]}`
 		}
 	} else {
 		if (args.length != 3) {
@@ -67,7 +73,8 @@ async function install(args) {
 		await install_module(archive_url, args[2]);
 
 		jablko_config.jablko_modules[args[2]] = {
-			repo_archive: archive_url
+			repo_archive: archive_url,
+			install_dir: `./jablko_modules/${args[2]}`
 		}
 	}
 
@@ -99,8 +106,13 @@ async function reinstall(args) {
 	} else {
 		for (module of args) {
 			console.log(`Reinstalling module "${module}"`);
-			execSync(`rm -r -f jablko_modules/${module}`);
-			await install_module(jablko_config.jablko_modules[module].repo_archive, module);
+			if (!fs.existsSync(`./jablko_modules/${module}`)) {
+				console.log("Module directory not found... reinstalling from indicated source.");
+			} else {
+				execSync(`rm -r -f jablko_modules/${module}`);
+			}
+
+			await install_module(jablko_config.jablko_modules[module].repo_archive, module); 
 		}
 	}
 }
