@@ -7,6 +7,7 @@ Jablko Modules can be made by creating a directory or repository that has a "mod
 - [Overview](#overview)
 - [Jablko Module Standards](#jablko-module-standards)
 - [General HTML Design](#general-html-design)
+- [Development Setup](#development-setup)
 
 ## Overview
 
@@ -86,3 +87,24 @@ There are several key design principles developers should follow when creating a
 ```
 
 **CSS**: Available CSS classes/presets are in [dashboard.css](/public_html/dashboard/dashboard.css)
+
+## Development Setup
+
+To setup up Jablko so that you can use a separate local repository for development just involves changing the `install_dir` field in the corresponding module in "jablko_config.json" and ensuring that your containing directory is valid (No spaces or dashes):
+
+```JSON
+{
+  ...
+  "jablko_modules": {
+    "your_dev_module": {
+      "repo_archive": null,
+      "install_dir": "/some/absolute/path/to/your_dev_module",
+      "some_config_value": true
+    }
+  }
+}
+```
+**NOTE** The module name and containing directory name must be the same.
+
+Once this is configured, Jablko will load the module from the specified directory instead of through the typical "jablko_modules" install path. 
+
