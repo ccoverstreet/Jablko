@@ -22,3 +22,7 @@ To remove packages from Jablko, use the syntax `./jpm uninstall module_name` whe
 To reinstall a package, use the syntax `./jpm reinstall module_name`. This will delete the current module's directory and redownload the module from the `repo_archive` specified in the "jablko_config.json" file. Running reinstall with no arguments will result in all modules being reinstalled.
 
 Reinstall can also be used to download modules from a previously defined "jablko_config.json" by running `./jpm reinstall` with no arguments.
+
+## Listing Packages
+
+`./jpm list` will list all installed Jablko Modules.
