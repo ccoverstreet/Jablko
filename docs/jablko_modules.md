@@ -23,18 +23,8 @@ Components:
   - `module.exports.generate_card`: If you want a card to appear on your dashboard you must provide an `async generate_card()`. function. This function is called when a user visits the server route and returns a string containing the HTML of the modules card. How you generate the string is up to each individual module. The recommended method is to read from an html file in the module.js file's directory and replace any occurences of $MODULE_NAME with the module's installed directory name. You can see more in [HTML Standards](#html-standards)
     ```Javascript
       module.exports.generate_card = async function generate_card() {
-      return (await fs.readFile(`${__dirname}/mantle_rgb.html`, "utf8")).replace(/\$MODULE_NAME/g, module_name);
-      <div id="mymodule_card" class="module_card">
-        <div class="module_header">
-                <h1>Interface Status</h1>
-                <svg class="module_icon" viewBox="0 0 150 150">
-                        <path d="M 20 75 H 40 L 60 30 L 90 120 L 110 75 H 130" fill="transparent" stroke="#0097e6" stroke-width="20px" stroke-linejoin="round" stroke-linecap="round"/>
-                </svg>
-        </div>
-        <hr>
-        <p>*Your Content*</p>
-      </div>
-      `
+        return (await fs.readFile(`${__dirname}/mantle_rgb.html`, "utf8")).replace(/\$MODULE_NAME/g, module_name);
+      }
     ```
     
 ## Jablko Module Standard
