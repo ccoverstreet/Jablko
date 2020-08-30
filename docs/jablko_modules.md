@@ -26,6 +26,11 @@ Components:
         return (await fs.readFile(`${__dirname}/mantle_rgb.html`, "utf8")).replace(/\$MODULE_NAME/g, module_name);
       }
     ```
+```Javascript
+const module_name = path.basename(__dirname);
+const jablko = require(module.parent.filename);
+const module_config = jablko.jablko_config.jablko_modules[module_name];
+```
     
 ## Jablko Module Standard
 
