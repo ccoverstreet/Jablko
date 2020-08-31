@@ -11,6 +11,14 @@ const { exec } = require("child_process");
 const jablko = require("../jablko_interface.js");
 const jablko_config = jablko.jablko_config;
 
+for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
+	if (jablko_config.jablko_modules[i].chatbot != undefined) {
+		for (item of jablko_config.jablko_modules[i].chatbot) {
+			console.log(item);
+		}
+	}
+}
+
 const dictionary_path = "src/dictionary.csv";
 
 function parse_dictionary(filename) {
