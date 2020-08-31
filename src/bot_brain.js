@@ -53,6 +53,7 @@ for (module_name in jablko_config.jablko_modules) {
 }
 
 (async () => {
+	console.log(jablko_module_functions);
 	for (module_name in jablko_module_functions) {
 		for (var i = 0; i < jablko_module_functions[module_name].length; i++) {
 			jablko_module_functions[module_name][i].activation = await determine_intent(jablko_module_functions[module_name][i].activation_phrase);
@@ -163,6 +164,7 @@ module.exports.handle_message = async (req, res) => {
 }
 
 module.exports.parse_message = async (message) => {
+	console.log("SHIT");
 	return await create_response(message);	
 	console.log("SHIT");
 }

@@ -128,8 +128,8 @@ async function main() {
 		const message = await req.body.text.toLowerCase();
 
 		if (message.includes("jablko")) {
-			const generated_response = await parse_message(message);
-			jablko.messaging_system.send_message(generated_response);
+			const generated_response = await bot_brain.parse_message(message);
+			module.exports.messaging_system.send_message(generated_response);
 		}
 
 		res.send("good");
