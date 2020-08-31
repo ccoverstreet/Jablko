@@ -164,6 +164,7 @@ module.exports.handle_message = async (req, res) => {
 
 module.exports.parse_message = async (message) => {
 	return await create_response(message);	
+	console.log("SHIT");
 }
 
 setTimeout(module.exports.parse_message, 2000, "Hello weather");
