@@ -16,3 +16,13 @@ Announcement @all: Jablko bot will be going offline for maintanence
 jablko uptime
 jablko uptime
 jablko utpime
+Hello weather
+Hello weather
+Hello weather
+Hello weather
+Hello weather
+Hello weather
+Hello weather
+Hello weather
+jablko uptime
+jablko uptime
