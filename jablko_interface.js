@@ -133,12 +133,17 @@ async function main() {
 	});
 
 	app.post("/jablko_modules/:module_name/:handler", async (req, res) => {
-		await jablko_modules[req.params.module_name][req.params.handler](req, res)
-			.catch((error) => {
-				console.log(`Requested module path "${req.params.module_name}/${req.params.handler} not found"`);
-				console.log(error);
-				res.json({status: "fail", message: "Module path not found"});
-			});
+		try {
+			await jablko_modules[req.params.module_name][req.params.handler](req, res)
+				.catch((error) => {
+					console.log(`Requested module path "${req.params.module_name}/${req.params.handler} not found"`);
+					console.log(error);
+					res.json({status: "fail", message: "Module path not found"});
+				});
+		} catch (error) {
+			console.log("ERROR: Module and/or exposed function not found");
+			console.debug(error);
+		}
 	});
 
 	// -------------------- END End Routes --------------------
