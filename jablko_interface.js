@@ -88,6 +88,7 @@ async function main() {
 	} 
 
 	const jablko_modules = jablko_modules_load();
+	module.exports.jablko_modules = jablko_modules;
 
 	// -------------------- END Module Initialization --------------------
 
@@ -124,8 +125,15 @@ async function main() {
 
 	const bot_brain = require("./src/bot_brain.js");
 	app.post("/bot_callback", async (req, res) => {
+		const message = await req.body.text.toLowerCase();
+
+		if (message.includes("jablko")) {
+			const generated_response = await parse_message(message);
+			jablko.messaging_system.send_message(generated_response);
+		}
+
+		res.send("good");
 		console.log("Message received from GroupMe");
-		await bot_brain.handle_message(req, res);
 	});
 
 	app.get("/restart", async (req, res) => { 

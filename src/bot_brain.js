@@ -9,15 +9,9 @@ const readFileSync = require("fs").readFileSync;
 const { exec } = require("child_process");
 
 const jablko = require("../jablko_interface.js");
-const jablko_config = jablko.jablko_config;
+var jablko_config = jablko.jablko_config;
+const jablko_modules = jablko.jablko_modules;
 
-for (var i = 0; i < jablko_config.jablko_modules.length; i++) {
-	if (jablko_config.jablko_modules[i].chatbot != undefined) {
-		for (item of jablko_config.jablko_modules[i].chatbot) {
-			console.log(item);
-		}
-	}
-}
 
 const dictionary_path = "src/dictionary.csv";
 
@@ -44,111 +38,32 @@ function parse_dictionary(filename) {
 const dictionary = parse_dictionary(dictionary_path);
 
 
-// -------------------- Begining of action definitions -------------------- 
-function greeting() {
-	const available_responses = [
-		"Hi!",
-		"Hello!",
-		"What's up my homie?",
-		"Dzien Dobry!",
-		"Top of the morning to ya!",
-		"How's it hanging?"
-	];
-
-	return available_responses[Math.floor(Math.random() * 100) % available_responses.length];
-}
-
-function test_fun() {
-	messaging_system.send_message("Testing parser");
-	return "Ran test function.";
-}
-
-function rude() {
-	const available_responses = [
-		"Well ok then.",
-		"Your mom.",
-		"Do I sense a small pp?",
-		"Hoe.",
-		"Hoe-bitch."
-	];
-
-	return available_responses[Math.floor(Math.random() * 100) % available_responses.length];
-}
-
-async function get_weather() {
-	const available_responses = [
-		"I'm getting the weather for you!",
-		"Here's the weather.",
-		"Coming right up."
-	];
-
-	const json_weather_data = await jablko.weather.get_current_weather();
-
-	const temp_in_c = json_weather_data.current.temp - 273.15;
-	const feels_in_c = json_weather_data.current.feels_like - 273.15;
-
-	const weather_summary = `\nRight now it is ${(temp_in_c * 9/5 + 32).toFixed(2)} F (${temp_in_c.toFixed(2)} C) but feels like ${(feels_in_c * 9/5 + 32).toFixed(2)} (${feels_in_c.toFixed(2)} C).\nThe weather is "${json_weather_data.current.weather[0].description}" with a humidity of ${json_weather_data.current.humidity}%. \nThe wind is ${json_weather_data.current.wind_speed} m/s from ${json_weather_data.current.wind_deg} degrees from N."`;
-
-	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + weather_summary;
-}
-
-function uptime() {
-	const available_responses = [
-		"I've been alive for",
-		"I've been running for",
-		"I've been watching you for",
-		"This version of me has been up for"
-	]
-	const raw_uptime = (new Date().getTime() - jablko.server_start_time) / 1000;	
-	const hours = Math.floor(raw_uptime / 3600);
-	const minutes = Math.floor((raw_uptime - 3600 * hours) / 60);
-	const seconds = Math.floor(raw_uptime - 3600 * hours - 60 * minutes);
-	const formatted_uptime = `${hours} h ${minutes} m ${seconds}s`;
 
 
-	return available_responses[Math.floor(Math.random() * 100) % available_responses.length] + " " + formatted_uptime;
-}
+// -------------------- START Module chatbot exports --------------------
+//
+var jablko_module_functions = {};
 
-const actions = [
-	{
-		name: "Greeting",
-		activation_phrases: [
-			"Hi"
-		],
-		function: greeting
-	},
-	{
-		name: "Test",
-		activation_phrases: [
-			"Send hello announcement"
-		],
-		function: test_fun
-	},
-	{
-		name: "Rude",
-		activation_phrases: [
-			"Stupid"
-		],
-		function: rude
-	},
-	{
-		name: "Get Weather",
-		activation_phrases: [
-			"weather"
-		],
-		function: get_weather
-	},
-	{
-		name: "Uptime",
-		activation_phrases: [
-			"uptime",
-			"running time"
-		],
-		function: uptime
+for (module_name in jablko_config.jablko_modules) {
+	jablko_module_functions[module_name] = [];
+	
+	for (func in jablko_config.jablko_modules[module_name].chatbot) {
+		jablko_module_functions[module_name].push(jablko_config.jablko_modules[module_name].chatbot[func]);
 	}
-];
-// -------------------- End of action definitions --------------------
+}
 
+(async () => {
+	for (module_name in jablko_module_functions) {
+		for (var i = 0; i < jablko_module_functions[module_name].length; i++) {
+			jablko_module_functions[module_name][i].activation = await determine_intent(jablko_module_functions[module_name][i].activation_phrase);
+		}
+	}
+
+	console.log(jablko_module_functions);
+})();
+
+
+// -------------------- END Module chatbot exports --------------------
 
 function add_vector(v1, v2) {
 	const new_vector = []
@@ -180,54 +95,42 @@ async function determine_intent(phrase) {
 	return intent_vector;
 }
 
-
-async function parse_actions(actions) {
-	for (var i = 0; i < actions.length; i++) {
-		actions[i].activations = []
-		for (var j = 0; j < actions[i].activation_phrases.length; j++) {
-			actions[i].activations.push(await determine_intent(actions[i].activation_phrases[j]));
-			for (var k = 0; k < actions[i].activations[j].length; k++) {
-				if (actions[i].activations[j][k] > 1) {
-					actions[i].activations[j][k] = 1;
-				}
-			}
-		}
-	}
-}
-
-parse_actions(actions);
-
 async function create_response(message) {
 	// Create intent vector
 	const message_intent = await determine_intent(message);
+	console.log(message_intent);
 
 	// Create required action list
 	var action_list = []
-	for (var i = 0; i < actions.length; i++) {
-		for (var k = 0; k < actions[i].activations.length; k++) {
+
+	for (module_name in jablko_module_functions) {
+		for (var i = 0; i < jablko_module_functions[module_name].length; i++) {
 
 			var should_continue = false;
 			var abs_diff = 0
-			for (var j = 0; j < message_intent.length; j++) {
-				abs_diff += Math.abs(message_intent[j] - actions[i].activations[k][j]);
-				if (message_intent[j] < actions[i].activations[k][j]) {
+
+			for (var j = 0; j < jablko_module_functions[module_name][i].activation.length; j++) {
+				abs_diff += Math.abs(message_intent[j] - jablko_module_functions[module_name][i].activation[j]);
+				//console.log(`${message_intent[j]}, ${jablko_module_functions[module_name][i].activation[j]}`)
+				if (message_intent[j] < jablko_module_functions[module_name][i].activation[j]) {
 					should_continue = true;
 					break;
 				}
-			}
+			}	
 
 			if (abs_diff < 15 && should_continue == false) {
-				action_list.push(i);
+				action_list.push({module_name: module_name, function: jablko_module_functions[module_name][i].function});
 			}
 		}
-
 	}
+
+	console.log(action_list);
 
 	// Create response and call appropriate functions
 	var response = "";
 
 	for (var i = 0; i < action_list.length; i++) {
-		response += await actions[action_list[i]].function() + " ";
+		response += await jablko_modules[action_list[i].module_name][action_list[i].function] + " ";
 	}
 
 	const confused_responses = [
@@ -258,3 +161,10 @@ module.exports.handle_message = async (req, res) => {
 
 	res.send("Good");
 }
+
+module.exports.parse_message = async (message) => {
+	return await create_response(message);	
+}
+
+setTimeout(module.exports.parse_message, 2000, "Hello weather");
+setTimeout(module.exports.parse_message, 2000, "Hello weather");
