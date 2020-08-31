@@ -41,7 +41,8 @@ const dictionary = parse_dictionary(dictionary_path);
 
 
 // -------------------- START Module chatbot exports --------------------
-//
+// Use chat functions described in jablko_config.json
+
 var jablko_module_functions = {};
 
 for (module_name in jablko_config.jablko_modules) {
@@ -152,22 +153,6 @@ async function create_response(message) {
 	return response;
 }
 
-module.exports.handle_message = async (req, res) => {
-	const message = await req.body.text.toLowerCase();
-
-	if (message.includes("jablko")) {
-		const generated_response = await create_response(message);
-		jablko.messaging_system.send_message(generated_response);
-	}
-
-	res.send("Good");
-}
-
 module.exports.parse_message = async (message) => {
-	console.log("SHIT");
 	return await create_response(message);	
-	console.log("SHIT");
 }
-
-setTimeout(module.exports.parse_message, 2000, "Hello weather");
-setTimeout(module.exports.parse_message, 2000, "Hello weather");
