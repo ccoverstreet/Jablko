@@ -132,7 +132,7 @@ async function create_response(message) {
 	var response = "";
 
 	for (var i = 0; i < action_list.length; i++) {
-		response += await jablko_modules[action_list[i].module_name][action_list[i].function] + " ";
+		response += await jablko_modules[action_list[i].module_name][action_list[i].function]() + " ";
 	}
 
 	const confused_responses = [
