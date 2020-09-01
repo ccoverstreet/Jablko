@@ -19,3 +19,11 @@ Node: v14.8.0
 ## Jablko Modules
 
 [Documentation](docs/jablko_modules.md)
+
+### Official Modules
+
+- [Jablko-Interface-Status](https://github.com/ccoverstreet/Jablko-Interface-Status)
+- [Jablko-Weather](https://github.com/ccoverstreet/Jablko-Weather)
+- [Jablko-Announcements](https://github.com/ccoverstreet/Jablko-Announcements)
+- [Jablko-Mantle-RGB](https://github.com/ccoverstreet/Jablko-Mantle-RGB)
+- [Jablko-Notepad](https://github.com/ccoverstreet/Jablko-Notepad)
