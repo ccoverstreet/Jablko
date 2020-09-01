@@ -26,3 +26,6 @@ Hello weather
 Hello weather
 jablko uptime
 jablko uptime
+@jablko color cycle
+jablko mantle off
+jablko mantle
