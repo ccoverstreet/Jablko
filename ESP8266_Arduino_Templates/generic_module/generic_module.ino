@@ -1,24 +1,30 @@
-#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include "config.h"
 
-const char *ssid = "NETWORK_SSID";
-const char *password = "MYPASSWORD";
+/*
+There should be a config.h file in the same directory with the following contents
+#DEFINE NETWORK_SSID "yournetworkname"
+#DEFINE NETWORK_PASSWORD "yournetworkpassword"
+ */
 
-const unsigned int timeout = 2000; // Timeout time that kills client response if taking too long. prevents hanging or soft resets.
-
-
-WiFiServer server(80); // Create and instance of WiFiServer open on Port 80.
+ESP8266WebServer server; // Create server holder
 
 void setup() {
 	Serial.begin(9600);
-	delay(1);
 	Serial.print("Starting up...\n");
-	
-	init_wifi();
+	init_wifi(); // Initialize wifi
+
+	// Server definitions and start
+	server.on("/", [](){ server.send(200, "text/plain", "Hello World from ESP8266"); }); // Custom route
+	server.on("/status", status); // Custom route
+
+	server.begin();
+
 }
 
 void init_wifi() {
 	// Initializes WiFi on ESP8266. Must check for failure.
-	WiFi.begin(ssid, password);
+	WiFi.begin(NETWORK_SSID, NETWORK_PASSWORD);
 	Serial.print("Connecting to WiFi...\n");
 
 	while (WiFi.status() != WL_CONNECTED) {
@@ -27,22 +33,14 @@ void init_wifi() {
 	}
 
 	Serial.print("SUCCESS: Connected to WiFi.\n");
+	Serial.println(WiFi.localIP());
+}
 
+void status() {
+	Serial.println("Good!");
 }
 
 void loop() {
-	WiFiClient client = server.available(); // Listen for clients
-
-	unsigned long int current_time = millis();
-	unsigned long int previous_time = current_time;
-
-
-	if (client) {
-		// If client connected
-		current_time = millis();
-		String request = "";
-
-
-	}
-
+	server.handleClient(); // Handle network requests
+	delay(1);
 }
