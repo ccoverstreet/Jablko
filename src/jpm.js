@@ -9,7 +9,7 @@ const fetch = require("node-fetch");
 const fs = require("fs");
 const { execSync } = require("child_process");
 
-const jablko_config = require("./jablko_config.json");
+const jablko_config = require("../jablko_config.json");
 
 async function main() {
 	if (process.argv[2] == "init") {
