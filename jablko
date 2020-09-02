@@ -1,6 +1,20 @@
 #!/bin/bash
 
-sudo ./setup_iptables.sh
+IPTABLES_FLAG=0
+
+for arguments in "$@"
+do 
+	if [ $arguments = "--iptables" ]
+	then
+		IPTABLES_FLAG=1
+	fi
+done
+
+if [[ $IPTABLES_FLAG -eq 1 ]] 
+then 
+	sudo ./setup_iptables.sh
+fi
+
 echo Running as user \"$(whoami)\"
 while true
 do
