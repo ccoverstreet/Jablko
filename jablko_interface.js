@@ -113,7 +113,7 @@ async function main() {
 		var module_string = "";
 		const modules = Object.keys(jablko_config.jablko_modules);
 		for (var i = 0; i < modules.length; i++) {
-			module_string += await jablko_modules[modules[i]].generate_card();
+			module_string += await jablko_modules[modules[i]].generate_card(req);
 		}
 
 		dashboard_template = dashboard_template.replace("$JABLKO_MODULES", module_string);
