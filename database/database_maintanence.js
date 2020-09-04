@@ -104,8 +104,8 @@ async function create_user() {
 	user_data.wakeup_time = wakeup_time_input;
 
 	const permission_level_input = reader.question("Enter permission level for user (0: guest, 1: family, 2: admin): ").trim();
-	if (!/[0-9]/.test(permission_level_input)) {
-		user_data.permission_level = parseInt(permission_level_input);
+	if (/[0-9]/.test(permission_level_input)) {
+		user_data.permission_level = parseInt(permission_level_input, 10);
 	}
 
 	// Create password hash
