@@ -57,7 +57,16 @@ module.exports.user_authentication_middleware = async function(req, res, next) {
 			jablko.user_db.run("DELETE FROM login_sessions WHERE session_cookie=?", [req.cookies.key_1]);
 			res.json({status: "good", message: "Logged out"});
 		}  else {
-			req.username = session_id.username;
+			// Add user data to req object and pass to route handlers
+			const user_data = await jablko.user_db.get("SELECT * FROM users WHERE username=(?)", [session_id.username]);
+
+			req.user_data = {
+				username: session_id.username,
+				first_name: user_data.first_name,
+				wakeup_time: user_data.wakeup_time,
+				permission_level: user_data.permission_level
+			}
+
 			await next();
 		}
 	}
