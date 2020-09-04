@@ -43,8 +43,23 @@ module.exports.user_authentication_middleware = async function(req, res, next) {
 	} else if (req.cookies.key_1 == null) {
 		res.sendFile(`${jablko.html_root}/login/login.html`);
 		return;
+	} else if (req.originalUrl.startsWith("/module_callback")) {
+		// Callback for Jablko Modules on local network. Checks if IPv4 matches pattern "10.0.0.*". Need to add configuration later
+		// There might be a better option to this.
+		
+		const split_ip = req.ip.split(":");
+		const IPv4 = split_ip[split_ip.length - 1];
+
+		if (!IPv4.startsWith("10.0.0.") && IPv4 != "1") {
+			res.send("Not a valid IP");
+			return;
+		}
+
+		req.url = req.url.replace("/module_callback", ""); // Remove the module_callback part of the request
+		await next()
 	} else {
 		const session_id = await jablko.user_db.get("SELECT * from login_sessions WHERE session_cookie=?", [req.cookies.key_1]);
+
 
 		if (session_id == undefined || Date.now() - session_id.creation_time > jablko.jablko_config.database.session_lifetime) {
 			// Invalid session id or cookie is expired, send login page

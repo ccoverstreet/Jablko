@@ -188,7 +188,7 @@ async function install_module(repository_url, module_target_name) {
 
 	execSync(`mkdir -p ./jablko_modules && mkdir -p ./jablko_modules/${module_target_name} && cp -r ./module_library/${extracted_zip}/* ./jablko_modules/${module_target_name} && cd ./jablko_modules/${module_target_name} && npm install`);
 
-	return require(`./module_library/${extracted_zip}/package.json`);
+	return require(`../module_library/${extracted_zip}/package.json`);
 }
 
 function github_to_https(author_repo, tag) {
