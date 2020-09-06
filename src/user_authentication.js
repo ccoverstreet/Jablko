@@ -10,8 +10,7 @@ const bcrypt = require("bcrypt");
 const jablko = require("../jablko_interface.js");
 
 module.exports.user_authentication_middleware = async function(req, res, next) {
-	console.log(req.url);
-	console.log(req.originalUrl);
+	console.debug(req.originalUrl);
 	if (req.originalUrl == "/login") {
 		try {
 			// Get hash from SQLite
