@@ -54,14 +54,14 @@ for (module_name in jablko_config.jablko_modules) {
 }
 
 (async () => {
-	console.log(jablko_module_functions);
+	// Load modules and initialize intent array
 	for (module_name in jablko_module_functions) {
 		for (var i = 0; i < jablko_module_functions[module_name].length; i++) {
 			jablko_module_functions[module_name][i].activation = await determine_intent(jablko_module_functions[module_name][i].activation_phrase);
 		}
 	}
 
-	console.log(jablko_module_functions);
+	console.debug(jablko_module_functions);
 })();
 
 
@@ -100,7 +100,6 @@ async function determine_intent(phrase) {
 async function create_response(message) {
 	// Create intent vector
 	const message_intent = await determine_intent(message);
-	console.log(message_intent);
 
 	// Create required action list
 	var action_list = []
@@ -126,7 +125,7 @@ async function create_response(message) {
 		}
 	}
 
-	console.log(action_list);
+	console.debug(action_list);
 
 	// Create response and call appropriate functions
 	var response = "";
