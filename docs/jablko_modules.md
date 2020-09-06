@@ -106,7 +106,9 @@ Once this is configured, Jablko will load the module from the specified director
 
 ## Module Routes
 
-Module routes allow for Jablko to automatically pass requests to your desired module function. Your function must handle the req and send a proper res object. Module routes can be used to handle requests from both user dasboards and wifi-connected modules. If you do not wish to include authentication when having your wifi-connected module send requests to Jablko, you **MUST** prepend your path with `/module_callback`. If not, your request will be ignored. Your request will also be ignored if the request does not come from within the wifi network.
+Module routes allow for Jablko to automatically pass requests to your desired module function. Your function must handle the req and send a proper res object. Module routes can be used to handle requests from both user dasboards and wifi-connected modules. If you do not wish to include authentication when having your wifi-connected module send requests to Jablko, you **MUST** prepend your path with `/module_callback`. If not, your request will be ignored. Your request will also be ignored if the request does not come from within the wifi network. 
+
+Calling a route from the user dashboard should be done using `/jablko_modules/$MODULE_NAME/my_exported_path` where `$MODULE_NAME` is string replaced in your `async function generate_card()`. If you want a wifi-connected module to use the path and the device is on the same network as the computer running Jablko, you **MUST** prepend `/module_callback` to your request (which gives `/module_callback/jablko_modules/$MODULE_NAME/my_exported_path`). If not, Jablko will treat your request as unauthenticated. This type of request would be made if a module wants to send data to Jablko for either storage, proxying, or parsing. For example, a temperature logging device would use this type of callback to send data to Jablko where it could be logged to a file or prompt a warning to all users. 
 
 Example:
 ```Javascript
@@ -136,4 +138,7 @@ module.exports.update_config = async function(req, res) {
     }
 }
 ```
+
+The `module.exports.update_config` function would be used in a case where you store the module name in the EEPROM of a microcontroller. This can be useful since Jablko Modules can be installed under any name and if the module uses the `/module_callback`, it needs to have the correct module name for the request to go through. As long as you keep usage of this function low (say 1 call per day) the EEPROM would be expected to survive a few hundred years. 
+
 
