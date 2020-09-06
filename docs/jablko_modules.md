@@ -8,6 +8,7 @@ Jablko Modules can be made by creating a directory or repository that has a "mod
 - [Jablko Module Standards](#jablko-module-standards)
 - [General HTML Design](#general-html-design)
 - [Development Setup](#development-setup)
+- [Module Routes](#module-routes)
 
 ## Overview
 
@@ -102,4 +103,37 @@ To setup up Jablko so that you can use a separate local repository for developme
 **NOTE** The module name and containing directory name must be the same.
 
 Once this is configured, Jablko will load the module from the specified directory instead of through the typical "jablko_modules" install path. 
+
+## Module Routes
+
+Module routes allow for Jablko to automatically pass requests to your desired module function. Your function must handle the req and send a proper res object. Module routes can be used to handle requests from both user dasboards and wifi-connected modules. If you do not wish to include authentication when having your wifi-connected module send requests to Jablko, you **MUST** prepend your path with `/module_callback`. If not, your request will be ignored. Your request will also be ignored if the request does not come from within the wifi network.
+
+Example:
+```Javascript
+// Should be async function most of the time
+module.exports.my_exported_path = async function(req, res) {
+  console.log(req.body); // Just print data sent for fun.
+  
+  // Do whatever you need for your module
+  
+  res.json({status: "good", message: "Did the thing"}); // Send response back to client
+}
+
+module.exports.update_config = async function(req, res) {
+  // This type of function should only be used if you need to dynamically update a config value (say stored in EEPROM) of your module
+  // Otherwise, you should prioritize making your modules not need dynamic config updates.
+  
+  await fetch("http://10.0.0.60/update_config", {
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(req.body)
+  })
+    .catch((error) => {
+      console.log("Error updating module config of my_module"); // Pretty output when running in normal output
+      console.debug(error); // Only shows full error in debug mode
+    }
+}
+```
 
