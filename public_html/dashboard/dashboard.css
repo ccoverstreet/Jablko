@@ -5,7 +5,7 @@ body {
 }
 
 .theme_light {
-	--color-background: #dcdde1;
+	--color-background: #e9eeee;
 	--color-inverted-background: #2f3640;
 	--color-card-background: #f5f6fa;
 	--font-color: #000000;
@@ -17,7 +17,7 @@ body {
 }
 
 .theme_dark {
-	--color-inverted-background: #dcdde1;
+	--color-inverted-background: #e9eeee;
 	--color-background: #2f3640;
 	--color-card-background: #353b48;
 	--font-color: #f5f6fa;
