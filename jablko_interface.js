@@ -100,7 +100,6 @@ async function main() {
 	app.use(express.json());
 	app.use(require("./src/user_authentication.js").user_authentication_middleware);
 
-	app.get("/", require("compression")());
 
 	// -------------------- END Middleware --------------------
 
@@ -108,6 +107,7 @@ async function main() {
 
 	console.log("Establishing routes...");
 
+	app.get("/", require("compression")());
 	app.get("/", async (req, res) => {
 		var dashboard_template = await fs.readFile(`${html_root}/dashboard/dashboard_template.html`, "utf8");
 
