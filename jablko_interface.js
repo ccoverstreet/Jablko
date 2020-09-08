@@ -100,6 +100,8 @@ async function main() {
 	app.use(express.json());
 	app.use(require("./src/user_authentication.js").user_authentication_middleware);
 
+	app.get("/", require("compression")());
+
 	// -------------------- END Middleware --------------------
 
 	// -------------------- START End Routes --------------------
