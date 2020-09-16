@@ -91,8 +91,14 @@
 				interpolate_rgb: function(lower, rgb_1, upper, rgb_2, value) {
 					// Interpolate using HSL space
 
-					const hsl_1 = rgb_to_hsl(rgb_1);
-					const hsl_2 = rgb_to_hsl(rgb_2);
+					if (value < lower) {
+						return rgb_1;
+					} else if (value > upper) {
+						return rgb_2;
+					}
+
+					const hsl_1 = jablko.rgb_to_hsl(rgb_1);
+					const hsl_2 = jablko.rgb_to_hsl(rgb_2);
 
 					const res_hsl = [
 						(hsl_2[0] - hsl_1[0]) / (upper - lower) * (value - lower) + hsl_1[0],
@@ -100,7 +106,7 @@
 						(hsl_2[2] - hsl_1[2]) / (upper - lower) * (value - lower) + hsl_1[2]
 					]
 
-					return hsl_to_rgb(res_hsl);
+					return jablko.hsl_to_rgb(res_hsl);
 				}
 
 			}
