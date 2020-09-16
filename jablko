@@ -12,7 +12,7 @@ done
 
 if [[ $IPTABLES_FLAG -eq 1 ]] 
 then 
-	sudo ./setup_iptables.sh
+	sudo ./src/setup_iptables.sh
 fi
 
 echo Running as user \"$(whoami)\"
