@@ -23,8 +23,6 @@ module.exports.ip_logger_middleware = async (req, res, next) => {
 	}
 
 	access_counter++;
-	console.log(access_counter);
-	console.log(ip_addresses);
 
 	await next();	
 }
