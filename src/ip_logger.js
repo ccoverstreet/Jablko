@@ -28,7 +28,7 @@ module.exports.ip_logger_middleware = async (req, res, next) => {
 }
 
 function write_log() {
-	fs.writeFile("./ip_addresses.json", JSON.stringify(ip_addresses, null, 4))
+	fs.writeFile("./log/ip_addresses.json", JSON.stringify(ip_addresses, null, 4))
 		.catch((error) => {
 			console.log("Unable to write to ip_addresses.log");
 			console.debug(error);

@@ -9,3 +9,5 @@ jablko_config.json
 *.swp
 /module_library/*
 !/module_library/module_library.md
+/log/*
+!/log/*.md
