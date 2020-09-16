@@ -14,6 +14,8 @@ const jablko_config = require("../jablko_config.json");
 async function main() {
 	if (process.argv[2] == "init") {
 		await init(process.argv.slice(3));	
+	} else if (process.argv[2] == "help") {
+		help();
 	} else if (process.argv[2] == "install") {
 		await install(process.argv.slice(3));
 	} else if (process.argv[2] == "uninstall") {
@@ -29,6 +31,20 @@ async function main() {
 
 function write_config_file() {
 	fs.writeFileSync("jablko_config.json", JSON.stringify(jablko_config, null, 4));
+}
+
+function help() {
+	console.log(`Jablko Package Manager
+Cale Overstreet
+August 24, 2020
+
+Commands:
+	help		Shows this screen
+	init		For first install when setting up Jablko. Creates directories and installs from config file
+	install 	Install a module. "./jpm install author/repo tag target"
+	uninstall	Uninstall a module. "./jpm uninstall installed_module_name"
+	list 		Lists all installed module names and version. Has options "--verbose"
+	reset 		Uninstall all jablko modules`);
 }
 
 async function init(args) {
