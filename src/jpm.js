@@ -135,8 +135,34 @@ async function reinstall(args) {
 }
 
 async function list(args) {
+	const fs = require("fs");
+
+	var VERBOSE_FLAG = false;
+	for (argument of args) {
+		if (argument == "-v" || argument == "--verbose") {
+			VERBOSE_FLAG = true;	
+		}
+	}
+
 	for (module in jablko_config.jablko_modules) {
-		console.log(module);
+		var module_package = undefined
+		try {
+			module_package = JSON.parse(fs.readFileSync(jablko_config.jablko_modules[module].install_dir + "/package.json"));
+		} catch(error) {
+			// Not able to find package.json
+			console.log(`Module "${module}" does not have valid package.json`);
+			console.log(error);
+			continue;
+		}
+
+		var output_line = `${module} (v${module_package.version})`;
+		output_line += " ".repeat(35 - output_line.length); 
+
+		if (VERBOSE_FLAG) {
+			output_line += jablko_config.jablko_modules[module].install_dir
+		}
+
+		console.log(output_line);
 	}
 }
 
