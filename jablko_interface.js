@@ -96,6 +96,7 @@ async function main() {
 
 	console.log("Loading middleware...");
 	app.use(require("./src/timing.js").timing_middleware);
+	app.use(require("./src/ip_logger.js").ip_logger_middleware);
 	app.use(require("cookie-parser")())
 	app.use(express.json());
 	app.use(require("./src/user_authentication.js").user_authentication_middleware);
