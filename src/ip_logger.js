@@ -27,7 +27,6 @@ module.exports.ip_logger_middleware = async (req, res, next) => {
 		ip_addresses[req.connection.remoteAddress]++;
 	} else {
 		ip_addresses[req.connection.remoteAddress] = 1;
-
 		report_new_ip(req.connection.remoteAddress);
 		write_log();
 		access_counter = 0;
@@ -56,10 +55,9 @@ async function report_new_ip(remote_address) {
 		.then(async (data) => {
 			const response = await data.json();
 			jablko.messaging_system.send_message(`New access from ip "${remote_address}"
-At ${response.region_name}, ${response.country_name}
-Provider: "${response.isp}"
+At ${response.data.geo.region_name}, ${response.data.geo.country_name}
+Provider: "${response.data.geo.isp}"
 Request happened at ${new Date().toLocaleString("sv-SE")}`);
-			console.log(response);
 		})
 		.catch((error) => {
 			console.log("Unable to reverse-lookup new-ip");
