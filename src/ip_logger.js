@@ -4,7 +4,9 @@
 // Logs IP addresses to ip_addresses.log in root of Jablko. Used for security monitoring
 
 const fs = require("fs").promises;
+const fetch = require("node-fetch");
 
+const jablko = require("../jablko_interface.js");
 
 var ip_addresses = {}
 
@@ -19,7 +21,6 @@ console.log(ip_addresses);
 
 var access_counter = 0;
 
-const jablko = require("../jablko_interface.js");
 
 module.exports.ip_logger_middleware = async (req, res, next) => {
 	if (req.connection.remoteAddress in ip_addresses) {
@@ -27,7 +28,7 @@ module.exports.ip_logger_middleware = async (req, res, next) => {
 	} else {
 		ip_addresses[req.connection.remoteAddress] = 1;
 
-		jablko.messaging_system.send_message(`New access from ip "${req.connection.remoteAddress}"`);
+		report_new_ip(req.connection.remoteAddress);
 		write_log();
 		access_counter = 0;
 	}
@@ -48,4 +49,20 @@ function write_log() {
 			console.log("Unable to write to ip_addresses.log");
 			console.debug(error);
 		});
+}
+
+async function report_new_ip(remote_address) {
+	await fetch(`https://tools.keycdn.com/geo.json?host=${remote_address}`)
+		.then(async (data) => {
+			const response = await data.json();
+			jablko.messaging_system.send_message(`New access from ip "${remote_address}"
+At ${response.region_name}, ${response.country_name}
+Provider: "${response.isp}"
+Request happened at ${new Date().toLocaleString("sv-SE")}`);
+			console.log(response);
+		})
+		.catch((error) => {
+			console.log("Unable to reverse-lookup new-ip");
+			console.debug(error);
+		})
 }
