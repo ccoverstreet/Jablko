@@ -37,9 +37,6 @@ function parse_dictionary(filename) {
 
 const dictionary = parse_dictionary(dictionary_path);
 
-
-
-
 // -------------------- START Module chatbot exports --------------------
 // Use chat functions described in jablko_config.json
 
@@ -145,7 +142,7 @@ async function create_response(message) {
 	];
 
 	if (action_list.length == 0) {
-		exec(`bash -c "echo ${message} >> src/unknown_phrases.txt"`);
+		exec(`bash -c "echo ${message} >> log/unknown_phrases.txt"`);
 		return confused_responses[Math.floor(Math.random() * 100) % confused_responses.length];
 	}
 
