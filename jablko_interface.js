@@ -90,6 +90,10 @@ async function main() {
 	const jablko_modules = jablko_modules_load();
 	module.exports.jablko_modules = jablko_modules;
 
+	console.log("Loading Bot Brain...");
+	const bot_brain = require("./src/bot_brain.js");
+	module.exports.bot_brain = bot_brain;
+
 	// -------------------- END Module Initialization --------------------
 
 	// -------------------- START Middleware --------------------
@@ -126,7 +130,6 @@ async function main() {
 		res.send(dashboard_template);
 	});
 
-	const bot_brain = require("./src/bot_brain.js");
 	app.post("/bot_callback", async (req, res) => {
 		const message = await req.body.text.toLowerCase();
 
