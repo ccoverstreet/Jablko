@@ -5,14 +5,29 @@
 
 const fs = require("fs").promises;
 
+
 var ip_addresses = {}
+
+try {
+	ip_addresses = require("../log/ip_addresses.json");
+} catch(error) {
+	console.log("Error getting ip addresses");
+	console.debug(error);
+}
+
+console.log(ip_addresses);
+
 var access_counter = 0;
+
+const jablko = require("../jablko_interface.js");
 
 module.exports.ip_logger_middleware = async (req, res, next) => {
 	if (req.connection.remoteAddress in ip_addresses) {
 		ip_addresses[req.connection.remoteAddress]++;
 	} else {
 		ip_addresses[req.connection.remoteAddress] = 1;
+
+		jablko.messaging_system.send_message(`New access from ip "${req.connection.remoteAddress}"`);
 		write_log();
 		access_counter = 0;
 	}
