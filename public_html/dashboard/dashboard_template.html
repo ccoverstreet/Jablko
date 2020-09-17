@@ -115,23 +115,23 @@
 			var focused_element = undefined;
 
 			function focus_card() {
-				focused_element = this;
+				focused_element = this.parentElement;
 
 				const blur_element = document.getElementById("blur");
 				blur_element.style.display = "block";
 
-				this.style.position = "fixed";
-				this.style.top = "calc(100vh / 6)";
-				this.style.left = "calc((100vw - 350px) / 2)";
-				this.style.width = "calc(330px)";
-				this.style.zIndex = "1000";
+				this.parentElement.style.position = "fixed";
+				this.parentElement.style.top = "calc(100vh / 6)";
+				this.parentElement.style.left = "calc((100vw - 350px) / 2)";
+				this.parentElement.style.width = "calc(330px)";
+				this.parentElement.style.zIndex = "1000";
 				console.log("ASDASDAS");
 			}
 
 			document.addEventListener("DOMContentLoaded", (event) => {
 				time_check();
 
-				const cards = document.getElementsByClassName("module_card");
+				const cards = document.getElementsByClassName("module_header");
 
 				for (var i = 0; i < cards.length; i++) {
 					cards[i].addEventListener("click", focus_card);
