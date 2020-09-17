@@ -20,6 +20,7 @@
 				}
 			}
 
+
 			const jablko = {
 				hsl_to_rgb: function (hsl_array) {
 					const h = hsl_array[0];
@@ -111,14 +112,55 @@
 
 			}
 
+			var focused_element = undefined;
+
+			function focus_card() {
+				focused_element = this;
+
+				const blur_element = document.getElementById("blur");
+				blur_element.style.display = "block";
+
+				this.style.position = "fixed";
+				this.style.top = "calc(100vh / 6)";
+				this.style.left = "calc((100vw - 350px) / 2)";
+				this.style.width = "calc(330px)";
+				this.style.zIndex = "1000";
+				console.log("ASDASDAS");
+			}
+
 			document.addEventListener("DOMContentLoaded", (event) => {
 				time_check();
+
+				const cards = document.getElementsByClassName("module_card");
+
+				for (var i = 0; i < cards.length; i++) {
+					cards[i].addEventListener("click", focus_card);
+				}
+
+				const blur_element = document.getElementById("blur");
+				blur_element.addEventListener("click", function() {
+					focused_element.style.zIndex = "10";
+					focused_element.style.position = "relative";
+					focused_element.style.top = "0px";
+					focused_element.style.left = "0px";
+					focused_element.style.width = "calc(100% - 20px)";
+
+					this.style.display = "none";
+				});
 			});
 		</script>
 	</head>
+<style>
+.module_card {
+	transition: width 0.25s, top 0.25s, left 0.25s, z-index 1s;
+}
+</style>
 
 	<body class="theme_light">
 		$TOOLBAR
+
+		<div id="blur" style="display: none; position: fixed; top: 0px; left: 0px; z-index: 500; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.7);">
+		</div>
 
 		<div id="module_container">
 			$JABLKO_MODULES
