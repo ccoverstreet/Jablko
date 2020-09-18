@@ -91,6 +91,7 @@ Request happened at ${new Date().toLocaleString("sv-SE")}`);
 			}
 		} catch (err) {
 			// Log invalid login and store in file.
+			console.log(`Invalid login user ${req.body.username} at ${new Date().toLocaleString("sv-SE")}`);
 			console.debug(err);
 			res.json({status: "fail", message: "Invalid Login"});
 
