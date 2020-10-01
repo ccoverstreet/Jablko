@@ -1,0 +1,27 @@
+{
+	"name": "jablko_weather",
+	"version": "1.1.0",
+	"description": "",
+	"main": "module.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ccoverstreet/Jablko-Weather.git"
+	},
+	"author": "Cale Overstreet",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/ccoverstreet/Jablko-Weather/issues"
+	},
+	"homepage": "https://github.com/ccoverstreet/Jablko-Weather#readme",
+	"jablko": {
+		"chatbot": {
+			"current_weather": {
+				"activation_phrase": "current weather",
+				"function": "chatbot_current_weather"
+			}
+		}
+	}
+}
