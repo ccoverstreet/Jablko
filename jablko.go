@@ -44,6 +44,8 @@ func main() {
 	initializeConfig()
 	log.Printf("%v\n", config)
 
+	initializeRoutes()
+
 	// Start HTTP and HTTPS depending on config
 	// Wait for all to exit
 	var wg sync.WaitGroup
@@ -75,6 +77,10 @@ func initializeConfig() {
 	}
 }
 
+func initializeRoutes() {
+	http.HandleFunc("/", dashboardHandler)
+}
+
 func startJablko(config jablkoConfig, wg *sync.WaitGroup) chan error {
 	errs := make(chan error)
 
@@ -99,4 +105,11 @@ func startJablko(config jablkoConfig, wg *sync.WaitGroup) chan error {
 	}
 
 	return errs
+}
+
+func dashboardHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
+	}
 }
