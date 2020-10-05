@@ -22,6 +22,8 @@ import (
 	"net/http"
 	"strconv"
 	"github.com/buger/jsonparser"
+
+	"jablko/jablkomodules"
 )
 
 const startingStatement = `Jablko Smart Home
@@ -75,6 +77,13 @@ func initializeConfig() {
 	} else {
 		config.httpsPort = int(httpsPort)
 	}
+
+	jablkoModulesSlice, _, _, err := jsonparser.Get(configData, "jablkoModules")
+	if err != nil {
+		panic("Error get Jablko Modules Config\n")
+	}
+
+	jablkomodules.Initialize(jablkoModulesSlice)
 }
 
 func initializeRoutes() {
@@ -103,6 +112,7 @@ func startJablko(config jablkoConfig, wg *sync.WaitGroup) chan error {
 			log.Printf("Starting HTTPS Server on Port %d\n", config.httpsPort)	
 		}()
 	}
+
 
 	return errs
 }
