@@ -111,5 +111,6 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
+
 	}
 }
