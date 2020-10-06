@@ -82,4 +82,9 @@ func main() {
 	templateStr = strings.Replace(templateStr, "$HANDLER_MAP", handlerMapString, 1)
 
 	fmt.Printf("%s\n", templateStr)
+
+	err = ioutil.WriteFile("./driver.go", []byte(templateStr), 0744)
+	if err != nil {
+		panic(err)
+	}
 }
