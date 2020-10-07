@@ -33,7 +33,7 @@ func main() {
 	}
 
 	var importString string = "import (\n"
-	var handlerMapString string = "var HandlerMap = map[string]func(w http.ResponseWriter, r *http.Request) {"
+	var handlerMapString string = "var WebHandlerMap = map[string]func(w http.ResponseWriter, r *http.Request) {"
 
 	var packageNumber int = 0
 	jsonparser.ObjectEach(jablkoModulesConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
@@ -52,9 +52,9 @@ func main() {
 		// Add package map to handler map
 		if packageNumber == 0 {
 			packageNumber += 1
-			handlerMapString += "\"" + formattedName + "\": " + formattedName + ".RouteHandler"
+			handlerMapString += "\"" + formattedName + "\": " + formattedName + ".WebHandler"
 		} else {
-			handlerMapString += ", \"" + formattedName + "\": " + formattedName + ".RouteHandler"
+			handlerMapString += ", \"" + formattedName + "\": " + formattedName + ".WebHandler"
 		}
 
 		// Get the slice for the Jablko Package
