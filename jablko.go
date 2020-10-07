@@ -21,6 +21,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
+	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
 
 	"jablko/jablkomodules"
@@ -46,12 +48,12 @@ func main() {
 	initializeConfig()
 	log.Printf("%v\n", config)
 
-	initializeRoutes()
+	router := initializeRoutes()
 
 	// Start HTTP and HTTPS depending on config
 	// Wait for all to exit
 	var wg sync.WaitGroup
-	startJablko(config, &wg)
+	startJablko(config, router, &wg)
 	wg.Wait()
 }
 
@@ -84,13 +86,21 @@ func initializeConfig() {
 	}
 
 	jablkomodules.Initialize(jablkoModulesSlice)
+	log.Printf("%v\n", jablkomodules.WebHandlerMap)
 }
 
-func initializeRoutes() {
-	http.HandleFunc("/", dashboardHandler)
+func initializeRoutes() *mux.Router {
+	r := mux.NewRouter()
+
+	// Timing Middleware
+	r.Use(timingMiddleware)
+
+	r.HandleFunc("/", dashboardHandler).Methods("GET")
+
+	return r
 }
 
-func startJablko(config jablkoConfig, wg *sync.WaitGroup) chan error {
+func startJablko(config jablkoConfig, router *mux.Router, wg *sync.WaitGroup) chan error {
 	errs := make(chan error)
 
 	if config.httpPort > 1 {
@@ -100,7 +110,7 @@ func startJablko(config jablkoConfig, wg *sync.WaitGroup) chan error {
 			defer wg.Done()
 			log.Printf("Starting HTTP Server on Port %d\n", config.httpPort)	
 
-			log.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(config.httpPort), nil))
+			log.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(config.httpPort), router))
 		}()
 	}
 
@@ -117,10 +127,19 @@ func startJablko(config jablkoConfig, wg *sync.WaitGroup) chan error {
 	return errs
 }
 
-func dashboardHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
+func timingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 
-	}
+		// Calling next handler
+		next.ServeHTTP(w, r)
+
+		end := time.Now()
+
+		log.Printf("Request took %d ns\n", end.Sub(start))
+	})
+}
+
+func dashboardHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
 }

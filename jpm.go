@@ -13,14 +13,14 @@ import (
 func main() {
 	fmt.Printf("JPM\n")	
 
-	jablkoConfig, err := ioutil.ReadFile("../jablko_config.json")
+	jablkoConfig, err := ioutil.ReadFile("./jablko_config.json")
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("%s\n", jablkoConfig)
 
-	template, err := ioutil.ReadFile("../jablkomodules/jablkomodules.template")
+	template, err := ioutil.ReadFile("./jablkomodules/jablkomodules.template")
 	if err != nil {
 		panic(err)
 	}
@@ -83,7 +83,7 @@ func main() {
 
 	fmt.Printf("%s\n", templateStr)
 
-	err = ioutil.WriteFile("./driver.go", []byte(templateStr), 0744)
+	err = ioutil.WriteFile("./jablkomodules/jablkomodules.go", []byte(templateStr), 0744)
 	if err != nil {
 		panic(err)
 	}

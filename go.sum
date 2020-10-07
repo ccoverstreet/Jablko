@@ -4,3 +4,5 @@ github.com/ccoverstreet/jablkointerfacestatus v0.0.1 h1:xZTvkdzo2UBEASgjhDvj1EoN
 github.com/ccoverstreet/jablkointerfacestatus v0.0.1/go.mod h1:xcYL2EXhYrqwEGmLAEkbkaKcV36PGV1M26sIAJEUDJE=
 github.com/ccoverstreet/jablkointerfacestatus v0.0.2-0.20201007012151-4488a7f02b38 h1:dz21NKxpYeyreltBik2vt1Dd6bj06xqtPqJ5aQLTFqM=
 github.com/ccoverstreet/jablkointerfacestatus v0.0.2-0.20201007012151-4488a7f02b38/go.mod h1:xcYL2EXhYrqwEGmLAEkbkaKcV36PGV1M26sIAJEUDJE=
+github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
+github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
