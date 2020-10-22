@@ -25,7 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
 
-	"jablko/jablkomodules"
+	"jablko/jablkomods"
 )
 
 const startingStatement = `Jablko Smart Home
@@ -85,7 +85,10 @@ func initializeConfig() {
 		panic("Error get Jablko Modules Config\n")
 	}
 
-	jablkomodules.Initialize(jablkoModulesSlice)
+	jablkomods.Initialize(jablkoModulesSlice)
+	log.Println(jablkomods.ModMap)
+	log.Println(jablkomods.ModMap["test1"])
+	log.Println(jablkomods.ModMap["test2"])
 }
 
 func initializeRoutes() *mux.Router {

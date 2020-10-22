@@ -1,6 +1,6 @@
 // jablkomodules.go: Jablko Module Manager
 
-package jablkomodules
+package jablkomods
 
 import (
 	"fmt"
@@ -12,11 +12,10 @@ import (
 	"github.com/buger/jsonparser"
 )
 
-var JablkoModMap = make(map[string]types.JablkoMod)
+var ModMap = make(map[string]types.JablkoMod)
 
 func Initialize(jablkoModConfig []byte) {
 	fmt.Printf("%s\n", jablkoModConfig)	
-	fmt.Println(JablkoModMap)
 
 	// Iterate through the JSON object to initialize all instances
 	jsonparser.ObjectEach(jablkoModConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
@@ -45,8 +44,6 @@ func Initialize(jablkoModConfig []byte) {
 			return err
 		}
 
-		fmt.Println(plug)
-
 		// Look for Initialize function symbol in plugin
 		initSym, err := plug.Lookup("Initialize")
 		if err != nil {
@@ -64,14 +61,7 @@ func Initialize(jablkoModConfig []byte) {
 			return err
 		}
 
-		modInstance2, err := initFunc(string(key), value)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(modInstance)
-		fmt.Println(modInstance2
-
+		ModMap[string(key)] = modInstance
 
 		return nil
 	}) 

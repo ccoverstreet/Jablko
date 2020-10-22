@@ -8,6 +8,7 @@ import (
 )
 
 type intStatus struct {
+	name string
 	updateInterval int
 }
 
@@ -16,6 +17,8 @@ func Initialize(instanceName string, configData []byte) (types.JablkoMod, error)
 	fmt.Printf("%s\n", configData)
 
 	instance := new(intStatus) 
+
+	instance.name = instanceName
 
 	updateInt, err := jsonparser.GetInt(configData, "updateInterval")
 	if err != nil {
