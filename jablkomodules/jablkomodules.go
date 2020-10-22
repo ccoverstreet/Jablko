@@ -4,15 +4,75 @@ package jablkomodules
 
 import (
 	"fmt"
-	"net/http"
+	"os"
+	"plugin"
+
+	"jablko/types"
+
+	"github.com/buger/jsonparser"
 )
 
-import (
-	ccoverstreet_jablkointerfacestatus "github.com/ccoverstreet/jablkointerfacestatus"
-)
+var JablkoModMap = make(map[string]types.JablkoMod)
 
-var WebHandlerMap = map[string]func(w http.ResponseWriter, r *http.Request) {"ccoverstreet_jablkointerfacestatus": ccoverstreet_jablkointerfacestatus.WebHandler}
+func Initialize(jablkoModConfig []byte) {
+	fmt.Printf("%s\n", jablkoModConfig)	
+	fmt.Println(JablkoModMap)
 
-func Initialize(jablkoModulesConfig []byte) {
-	fmt.Printf("%s\n", jablkoModulesConfig)	
+	// Iterate through the JSON object to initialize all instances
+	jsonparser.ObjectEach(jablkoModConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+		// Checks if Jablko Module Package was initialized with 
+		// a compiled plugin. If jablkomod.so not found, Jablko
+		// will attempt to build the plugin.
+
+		fmt.Printf("%s\n%s\n", key, value)
+		
+		// DEV WARNING: ONLY WORKS FOR LOCAL MODULES WITH ABSOLUTE PATH
+		pluginDir, err := jsonparser.GetString(value, "source")
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+
+		pluginFile := pluginDir + "/jablkomod.so"
+
+		// Check if the plugin has already been built
+		if _, err := os.Stat(pluginFile); os.IsNotExist(err) {
+			fmt.Printf("Plugin file not found.\n")
+		}
+
+		// Load plugin
+		plug, err := plugin.Open(pluginFile)	
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(plug)
+
+		// Look for Initialize function symbol in plugin
+		initSym, err := plug.Lookup("Initialize")
+		if err != nil {
+			return err
+		}
+
+		// Check if function signature matches
+		initFunc, ok := initSym.(func(string, []byte)(types.JablkoMod, error))
+		if !ok {
+			return nil
+		}
+
+		modInstance, err := initFunc(string(key), value)
+		if err != nil {
+			return err
+		}
+
+		modInstance2, err := initFunc(string(key), value)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(modInstance)
+		fmt.Println(modInstance2
+
+
+		return nil
+	}) 
 }

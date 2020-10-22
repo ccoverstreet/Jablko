@@ -58,7 +58,7 @@ func main() {
 }
 
 func initializeConfig() {
-	configData, err := ioutil.ReadFile("./jablko_config.json")
+	configData, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
 		log.Printf("%v\n", err)
 		panic("Error opening and reading config file\n")
@@ -86,7 +86,6 @@ func initializeConfig() {
 	}
 
 	jablkomodules.Initialize(jablkoModulesSlice)
-	log.Printf("%v\n", jablkomodules.WebHandlerMap)
 }
 
 func initializeRoutes() *mux.Router {

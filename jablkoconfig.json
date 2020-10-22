@@ -1,0 +1,14 @@
+{
+	"http": {
+        "port": 8080
+    },
+    "https": {
+        "port": null
+    },
+	"jablkoModules": {
+		"test1": {
+			"source": "/home/coverstreet/Coding/Go/src/github.com/ccoverstreet/Jablko/test_modules/interface_status",
+			"updateInterval": 30
+		}
+	}
+}
