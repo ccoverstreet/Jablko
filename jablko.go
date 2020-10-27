@@ -22,9 +22,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"strings"
 	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
-
 	"github.com/ccoverstreet/Jablko/jablkomods"
 )
 
@@ -156,11 +156,16 @@ func timingMiddleware(next http.Handler) http.Handler {
 }
 
 func dashboardHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
+	//http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
 
 	var x http.Request
+
+	var sb strings.Builder
 	
 	for i := 0; i < len(config.moduleOrder); i++ {
-		log.Println(jablkomods.ModMap[config.moduleOrder[i]].Card(&x))	
+		sb.WriteString(jablkomods.ModMap[config.moduleOrder[i]].Card(&x))	
 	}
+
+	log.Println(sb.String())
+	w.Write([]byte(sb.String()))
 }
