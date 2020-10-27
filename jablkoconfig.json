@@ -10,14 +10,9 @@
 			"source": "/home/coverstreet/Coding/Go/src/github.com/ccoverstreet/Jablko/test_modules/interface_status",
 			"updateInterval": 30
 		},
-
 		"test2": {
 			"source": "/home/coverstreet/Coding/Go/src/github.com/ccoverstreet/Jablko/test_modules/interface_status2",
-			"updateInterval": 20
-		},
-		"test3": {
-			"source": "/home/coverstreet/Coding/Go/src/github.com/ccoverstreet/Jablko/test_modules",
-			"updateInterval": 15
+			"updateInterval": 30
 		}
 	}
 }

@@ -85,10 +85,12 @@ func initializeConfig() {
 		panic("Error get Jablko Modules Config\n")
 	}
 
-	jablkomods.Initialize(jablkoModulesSlice)
+	err = jablkomods.Initialize(jablkoModulesSlice)
+	if err != nil {
+		log.Println("Error initializing Jablko Mods")
+		log.Println(err)
+	}
 	log.Println(jablkomods.ModMap)
-	log.Println(jablkomods.ModMap["test1"])
-	log.Println(jablkomods.ModMap["test2"])
 }
 
 func initializeRoutes() *mux.Router {
