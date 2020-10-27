@@ -25,7 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
 
-	"jablko/jablkomods"
+	"github.com/ccoverstreet/Jablko/jablkomods"
 )
 
 const startingStatement = `Jablko Smart Home

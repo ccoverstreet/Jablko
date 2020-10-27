@@ -7,7 +7,7 @@ import (
 	"os"
 	"plugin"
 
-	"jablko/types"
+	"github.com/ccoverstreet/Jablko/types"
 
 	"github.com/buger/jsonparser"
 )

@@ -11,7 +11,7 @@
 			"updateInterval": 30
 		},
 		"test2": {
-			"source": "/home/coverstreet/Coding/Go/src/github.com/ccoverstreet/Jablko/test_modules/interface_status2",
+			"source": "/home/coverstreet/Coding/Go/src/github.com/ccoverstreet/testmod",
 			"updateInterval": 30
 		}
 	}
