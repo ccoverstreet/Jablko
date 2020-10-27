@@ -1,7 +1,7 @@
 package main
 
 import (
-	"jablko/types"
+	"github.com/ccoverstreet/Jablko/types"
 	"net/http"
 	"fmt"
 	"github.com/buger/jsonparser"
