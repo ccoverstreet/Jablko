@@ -15,16 +15,12 @@ import (
 var ModMap = make(map[string]types.JablkoMod)
 
 func Initialize(jablkoModConfig []byte) error {
-	fmt.Printf("%s\n", jablkoModConfig)	
-
 	// Iterate through the JSON object to initialize all instances
 	return jsonparser.ObjectEach(jablkoModConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		// Checks if Jablko Module Package was initialized with 
 		// a compiled plugin. If jablkomod.so not found, Jablko
 		// will attempt to build the plugin.
 
-		fmt.Printf("%s\n%s\n", key, value)
-		
 		// DEV WARNING: ONLY WORKS FOR LOCAL MODULES WITH ABSOLUTE PATH
 		pluginDir, err := jsonparser.GetString(value, "source")
 		if err != nil {

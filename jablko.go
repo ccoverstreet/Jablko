@@ -138,7 +138,6 @@ func startJablko(config jablkoConfig, router *mux.Router, wg *sync.WaitGroup) ch
 		}()
 	}
 
-
 	return errs
 }
 
@@ -166,6 +165,5 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 		sb.WriteString(jablkomods.ModMap[config.moduleOrder[i]].Card(&x))	
 	}
 
-	log.Println(sb.String())
 	w.Write([]byte(sb.String()))
 }
