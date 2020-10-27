@@ -90,6 +90,7 @@ func initializeConfig() {
 		log.Println("Error initializing Jablko Mods")
 		log.Println(err)
 	}
+
 	log.Println(jablkomods.ModMap)
 }
 
@@ -146,4 +147,6 @@ func timingMiddleware(next http.Handler) http.Handler {
 
 func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
+
+
 }
