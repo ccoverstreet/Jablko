@@ -38,6 +38,7 @@ License: GPLv3
 type jablkoConfig struct {
 	httpPort int
 	httpsPort int
+	moduleOrder []string
 }
 
 var config = jablkoConfig{httpPort: 8080, httpsPort: -1}
@@ -90,6 +91,15 @@ func initializeConfig() {
 		log.Println("Error initializing Jablko Mods")
 		log.Println(err)
 	}
+
+	// Initialize module order in config file
+	moduleOrderSlice, _, _, err := jsonparser.Get(configData, "moduleOrder")
+
+	jsonparser.ArrayEach(moduleOrderSlice, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+		config.moduleOrder = append(config.moduleOrder, string(value))
+	})
+
+	log.Println(config)
 
 	log.Println(jablkomods.ModMap)
 }
@@ -148,5 +158,9 @@ func timingMiddleware(next http.Handler) http.Handler {
 func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
 
-
+	var x http.Request
+	
+	for i := 0; i < len(config.moduleOrder); i++ {
+		log.Println(jablkomods.ModMap[config.moduleOrder[i]].Card(&x))	
+	}
 }

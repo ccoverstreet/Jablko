@@ -11,8 +11,12 @@
 			"updateInterval": 30
 		},
 		"test2": {
-			"source": "/home/coverstreet/go/src/github.com/ccoverstreet/tester",
+			"source": "/home/coverstreet/go/src/github.com/ccoverstreet/Jablko/test_modules/interface_status",
 			"updateInterval": 20
 		}
+	},
+	"moduleOrder": {
+		"test1",
+		"test2"
 	}
 }

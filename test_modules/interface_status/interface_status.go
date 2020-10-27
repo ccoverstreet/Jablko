@@ -31,7 +31,7 @@ func Initialize(instanceName string, configData []byte) (types.JablkoMod, error)
 }
 
 func (instance *intStatus) Card(*http.Request) string {
-	return "Hello"
+	return fmt.Sprintf("Hello from Interface Status Module with interval of %d s", instance.updateInterval)
 }
 
 func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
