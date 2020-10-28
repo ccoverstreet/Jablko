@@ -30,7 +30,7 @@ import (
 
 const startingStatement = `Jablko Smart Home
 Cale Overstreet
-Version 2.0.0
+Version 0.3.0
 License: GPLv3
 
 `
@@ -47,7 +47,6 @@ func main() {
 	log.Printf(startingStatement)
 
 	initializeConfig()
-	log.Printf("%v\n", config)
 
 	router := initializeRoutes()
 
@@ -99,8 +98,10 @@ func initializeConfig() {
 		config.moduleOrder = append(config.moduleOrder, string(value))
 	})
 
+	// Print Config
 	log.Println(config)
 
+	// Print module map
 	log.Println(jablkomods.ModMap)
 }
 
@@ -111,6 +112,7 @@ func initializeRoutes() *mux.Router {
 	r.Use(timingMiddleware)
 
 	r.HandleFunc("/", dashboardHandler).Methods("GET")
+	r.HandleFunc("/jablkomods/{mod}/{func}", moduleHandler).Methods("POST")
 
 	return r
 }
@@ -166,4 +168,9 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(sb.String()))
+}
+
+func moduleHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL.Path)
+	//if val, ok := jablkomods.ModMap[]	
 }

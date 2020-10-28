@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/ccoverstreet/Jablko/types"
 	"net/http"
-	"fmt"
+	"log"
 	"github.com/buger/jsonparser"
 	"strings"
 	"strconv"
@@ -46,14 +46,28 @@ func (instance *intStatus) Card(*http.Request) string {
 }
 
 func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("WEB HANLDER")
+	log.Println(r.URL.Path)
+
+	splitPath := strings.Split(r.URL.Path, "/")
+	log.Println(splitPath)
+	if len(splitPath) != 3 {
+		// Incorrect path received
+		w.Write([]byte(`{"status": 400, "message": "Invalid path received."}`))
+	}
+
+	log.Println("WEB HANLDER")
 }
 
 const htmlTemplate = `
 <script>
 	const $MODULE_ID = {
 		"warn": function() {
-			alert("WARNING")
+			fetch("/jablkomods/$MODULE_ID/fart", {
+				method: "POST"
+			})
+				.then(async (data) => {
+					console.log(await data.text())
+				})
 		}
 	}
 </script>
