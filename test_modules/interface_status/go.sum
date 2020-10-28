@@ -1,5 +1,0 @@
-github.com/buger/jsonparser v1.0.0 h1:etJTGF5ESxjI0Ic2UaLQs2LQQpa8G9ykQScukbh4L8A=
-github.com/buger/jsonparser v1.0.0/go.mod h1:tgcrVJ81GPSF0mz+0nu1Xaz0fazGPrmmJfJtxjbHhUQ=
-github.com/ccoverstreet/Jablko v0.1.0 h1:vRq+C75Lu6VUgQv5PtxBP2zZ4WCil5oGV43lpHffpbQ=
-github.com/ccoverstreet/jablkointerfacestatus v0.0.2-0.20201007012151-4488a7f02b38/go.mod h1:xcYL2EXhYrqwEGmLAEkbkaKcV36PGV1M26sIAJEUDJE=
-github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
