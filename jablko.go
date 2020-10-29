@@ -171,6 +171,12 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func moduleHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL.Path)
-	//if val, ok := jablkomods.ModMap[]	
+	//log.Println(r.URL.Path)
+	splitPath := strings.Split(r.URL.Path, "/")
+	if val, ok := jablkomods.ModMap[splitPath[2]]; ok {
+		val.WebHandler(w, r)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"message": "Invalid path received."}`))
+	}
 }

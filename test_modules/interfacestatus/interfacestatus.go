@@ -39,8 +39,8 @@ func Initialize(instanceId string, configData []byte) (types.JablkoMod, error) {
 
 func (instance *intStatus) Card(*http.Request) string {
 	r := strings.NewReplacer("$UPDATE_INTERVAL", strconv.Itoa(instance.updateInterval),
-		"$MODULE_ID", instance.id,
-		"$MODULE_TITLE", instance.title)
+	"$MODULE_ID", instance.id,
+	"$MODULE_TITLE", instance.title)
 
 	return r.Replace(htmlTemplate)
 }
@@ -50,12 +50,22 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 
 	splitPath := strings.Split(r.URL.Path, "/")
 	log.Println(splitPath)
-	if len(splitPath) != 3 {
+	if len(splitPath) != 4 {
 		// Incorrect path received
-		w.Write([]byte(`{"status": 400, "message": "Invalid path received."}`))
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"message": "Invalid path received."}`))
+
+		return
 	}
 
-	log.Println("WEB HANLDER")
+	switch {
+	case splitPath[3] == "fart":
+		log.Println("Fart was called by client")
+	case splitPath[3] == "getStatus":
+		log.Println("Get status called")
+	default:
+		log.Println("No call found.")	
+	}
 }
 
 const htmlTemplate = `
@@ -66,7 +76,7 @@ const htmlTemplate = `
 				method: "POST"
 			})
 				.then(async (data) => {
-					console.log(await data.text())
+					console.log(await data.json())
 				})
 		}
 	}
