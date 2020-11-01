@@ -13,9 +13,10 @@ type intStatus struct {
 	id string
 	title string
 	updateInterval int
+	jablko types.JablkoInterface
 }
 
-func Initialize(instanceId string, configData []byte) (types.JablkoMod, error) {
+func Initialize(instanceId string, configData []byte, jablko types.JablkoInterface) (types.JablkoMod, error) {
 	instance := new(intStatus) 
 
 	instance.id = instanceId
@@ -33,6 +34,8 @@ func Initialize(instanceId string, configData []byte) (types.JablkoMod, error) {
 	}
 
 	instance.title = configTitle
+
+	instance.jablko = jablko
 
 	return types.StructToMod(instance), nil
 }
@@ -61,6 +64,7 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case splitPath[3] == "fart":
 		log.Println("Fart was called by client")
+		instance.jablko.Tester()
 	case splitPath[3] == "getStatus":
 		log.Println("Get status called")
 	default:

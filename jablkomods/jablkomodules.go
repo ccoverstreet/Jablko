@@ -14,8 +14,9 @@ import (
 
 var ModMap = make(map[string]types.JablkoMod)
 
-func Initialize(jablkoModConfig []byte) error {
+func Initialize(jablkoModConfig []byte, jablko types.JablkoInterface) error {
 	// Iterate through the JSON object to initialize all instances
+	
 	return jsonparser.ObjectEach(jablkoModConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		// Checks if Jablko Module Package was initialized with 
 		// a compiled plugin. If jablkomod.so not found, Jablko
@@ -47,12 +48,12 @@ func Initialize(jablkoModConfig []byte) error {
 		}
 
 		// Check if function signature matches
-		initFunc, ok := initSym.(func(string, []byte)(types.JablkoMod, error))
+		initFunc, ok := initSym.(func(string, []byte, types.JablkoInterface)(types.JablkoMod, error))
 		if !ok {
 			return nil
 		}
 
-		modInstance, err := initFunc(string(key), value)
+		modInstance, err := initFunc(string(key), value, jablko)
 		if err != nil {
 			return err
 		}

@@ -35,6 +35,7 @@ License: GPLv3
 
 `
 
+
 type jablkoConfig struct {
 	httpPort int
 	httpsPort int
@@ -42,6 +43,14 @@ type jablkoConfig struct {
 }
 
 var config = jablkoConfig{httpPort: 8080, httpsPort: -1}
+
+type MainApp struct {}
+
+var Jablko MainApp
+
+func (jablko MainApp) Tester() {
+	log.Println("Shit")
+}
 
 func main() {
 	log.Printf(startingStatement)
@@ -85,7 +94,7 @@ func initializeConfig() {
 		panic("Error get Jablko Modules Config\n")
 	}
 
-	err = jablkomods.Initialize(jablkoModulesSlice)
+	err = jablkomods.Initialize(jablkoModulesSlice, Jablko)
 	if err != nil {
 		log.Println("Error initializing Jablko Mods")
 		log.Println(err)

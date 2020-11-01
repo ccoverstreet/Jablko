@@ -4,6 +4,10 @@ import (
 	"net/http"
 )
 
+type JablkoInterface interface {
+	Tester()
+}
+
 type JablkoMod interface{
 	Card(*http.Request) string
 	WebHandler(http.ResponseWriter, *http.Request)
