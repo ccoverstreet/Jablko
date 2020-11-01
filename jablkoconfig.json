@@ -7,12 +7,12 @@
     },
 	"jablkoModules": {
 		"test1": {
-			"source": "/home/coverstreet/go/src/github.com/ccoverstreet/Jablko/test_modules/interfacestatus",
+			"source": "/home/coverstreet/Coding/Jablko_Home/Jablko/test_modules/interfacestatus",
 			"title": "My Test 1",
 			"updateInterval": 30
 		},
 		"test2": {
-			"source": "/home/coverstreet/go/src/github.com/ccoverstreet/Jablko/test_modules/interfacestatus",
+			"source": "/home/coverstreet/Coding/Jablko_Home/Jablko/test_modules/interfacestatus",
 			"title": "My Test 2",
 			"updateInterval": 20
 		}

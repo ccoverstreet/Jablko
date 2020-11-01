@@ -83,6 +83,7 @@ const htmlTemplate = `
 </script>
 <div class="module_card">
 	<h1>$MODULE_TITLE</h1>
+	<p>Module ID: $MODULE_ID</p>
 	<p>Update Interval: $UPDATE_INTERVAL s</p>
 </div>
 `
