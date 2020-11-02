@@ -119,6 +119,7 @@ func initializeRoutes() *mux.Router {
 
 	// Timing Middleware
 	r.Use(timingMiddleware)
+	r.Use(authenticationMiddleware)
 
 	r.HandleFunc("/", dashboardHandler).Methods("GET")
 	r.HandleFunc("/jablkomods/{mod}/{func}", moduleHandler).Methods("POST")
@@ -165,6 +166,41 @@ func timingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func authenticationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		log.Println(r.Form)
+
+		authenticated := false
+		cookieValue := ""
+
+		for key, val := range(r.Cookies()) {
+			log.Println(key, val)
+
+			if val.Name == "jablkologin" {
+				cookieValue = val.Value
+				break;
+			}
+		}
+
+		if cookieValue == "" {
+			log.Println("No login cookie found.")
+		}
+
+		log.Println(authenticated)
+
+		/*
+		if val := r.Cookies()[0] {
+			log.Println(val)
+		} else {
+			log.Println("ASDASDASD")
+		}
+		*/
+		
+		next.ServeHTTP(w, r)
+	})
+}
+
 func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	//http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
 
@@ -176,7 +212,16 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 		sb.WriteString(jablkomods.ModMap[config.moduleOrder[i]].Card(&x))	
 	}
 
+	cookie := http.Cookie {
+		Name: "jablkologin",
+		Value: "11111",
+		Expires: time.Now().Add(1 * time.Minute),
+	}
+
+	http.SetCookie(w, &cookie)
+
 	w.Write([]byte(sb.String()))
+
 }
 
 func moduleHandler(w http.ResponseWriter, r *http.Request) {

@@ -65,6 +65,17 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 	case splitPath[3] == "fart":
 		log.Println("Fart was called by client")
 		instance.jablko.Tester()
+
+		go func() {
+			x := 0
+
+			for i := 0; i < 10000000; i++ {
+				x = i + i
+			}
+
+			log.Println(x)
+		}()
+
 	case splitPath[3] == "getStatus":
 		log.Println("Get status called")
 	default:
