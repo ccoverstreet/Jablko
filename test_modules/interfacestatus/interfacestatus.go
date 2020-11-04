@@ -47,6 +47,7 @@ func (instance *intStatus) ConfigStr() ([]byte, error) {
 		return nil, nil	
 	}
 
+
 	log.Printf("%s\n", res)
 
 	return res, nil
@@ -77,6 +78,7 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 	case splitPath[3] == "fart":
 		log.Println("Fart was called by client")
 		instance.jablko.Tester()
+		instance.jablko.SyncConfig()
 
 		go func() {
 			x := 0

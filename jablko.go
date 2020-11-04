@@ -52,6 +52,20 @@ func (jablko MainApp) Tester() {
 	log.Println("Shit")
 }
 
+func (jablko MainApp) SyncConfig() {
+	tempConfigStr := ""
+	for key, element := range jablkomods.ModMap {
+		modConfig, err := element.ConfigStr()
+		if err != nil {
+			log.Println(err)
+		}
+
+		tempConfigStr += `"` + key + `":` + string(modConfig)
+	}
+
+	log.Println(tempConfigStr)
+}
+
 func main() {
 	log.Printf(startingStatement)
 
