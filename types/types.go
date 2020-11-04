@@ -9,6 +9,7 @@ type JablkoInterface interface {
 }
 
 type JablkoMod interface{
+	ConfigStr() ([]byte, error)
 	Card(*http.Request) string
 	WebHandler(http.ResponseWriter, *http.Request)
 }

@@ -112,6 +112,8 @@ func initializeConfig() {
 
 	// Print module map
 	log.Println(jablkomods.ModMap)
+
+	log.Println(jablkomods.ModMap["test1"].ConfigStr())
 }
 
 func initializeRoutes() *mux.Router {

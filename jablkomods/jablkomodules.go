@@ -23,7 +23,7 @@ func Initialize(jablkoModConfig []byte, jablko types.JablkoInterface) error {
 		// will attempt to build the plugin.
 
 		// DEV WARNING: ONLY WORKS FOR LOCAL MODULES WITH ABSOLUTE PATH
-		pluginDir, err := jsonparser.GetString(value, "source")
+		pluginDir, err := jsonparser.GetString(value, "Source")
 		if err != nil {
 			fmt.Printf("%v\n", err)
 		}

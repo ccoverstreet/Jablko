@@ -7,14 +7,14 @@
     },
 	"jablkoModules": {
 		"test1": {
-			"source": "/home/coverstreet/Coding/Jablko_Home/Jablko/test_modules/interfacestatus",
-			"title": "My Test 1",
-			"updateInterval": 30
+			"Source": "/home/coverstreet/Coding/Jablko_Home/Jablko/test_modules/interfacestatus",
+			"Title": "My Test 1",
+			"UpdateInterval": 30
 		},
 		"test2": {
-			"source": "/home/coverstreet/Coding/Jablko_Home/Jablko/test_modules/interfacestatus",
-			"title": "My Test 2",
-			"updateInterval": 20
+			"Source": "/home/coverstreet/Coding/Jablko_Home/Jablko/test_modules/interfacestatus",
+			"Title": "My Test 2",
+			"UpdateInterval": 20
 		}
 	},
 	"moduleOrder": {

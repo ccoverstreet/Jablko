@@ -7,12 +7,13 @@ import (
 	"github.com/buger/jsonparser"
 	"strings"
 	"strconv"
+	"encoding/json"
 )
 
 type intStatus struct {
 	id string
-	title string
-	updateInterval int
+	Title string
+	UpdateInterval int
 	jablko types.JablkoInterface
 }
 
@@ -21,29 +22,40 @@ func Initialize(instanceId string, configData []byte, jablko types.JablkoInterfa
 
 	instance.id = instanceId
 
-	updateInt, err := jsonparser.GetInt(configData, "updateInterval")
+	updateInt, err := jsonparser.GetInt(configData, "UpdateInterval")
 	if err != nil {
 		return nil, err
 	}
 
-	instance.updateInterval = int(updateInt)
+	instance.UpdateInterval = int(updateInt)
 
-	configTitle, err := jsonparser.GetString(configData, "title")
+	configTitle, err := jsonparser.GetString(configData, "Title")
 	if err != nil {
 		return nil, err
 	}
 
-	instance.title = configTitle
+	instance.Title = configTitle
 
 	instance.jablko = jablko
 
 	return types.StructToMod(instance), nil
 }
 
+func (instance *intStatus) ConfigStr() ([]byte, error) {
+	res, err := json.Marshal(instance)	
+	if err != nil {
+		return nil, nil	
+	}
+
+	log.Printf("%s\n", res)
+
+	return res, nil
+}
+
 func (instance *intStatus) Card(*http.Request) string {
-	r := strings.NewReplacer("$UPDATE_INTERVAL", strconv.Itoa(instance.updateInterval),
+	r := strings.NewReplacer("$UPDATE_INTERVAL", strconv.Itoa(instance.UpdateInterval),
 	"$MODULE_ID", instance.id,
-	"$MODULE_TITLE", instance.title)
+	"$MODULE_TITLE", instance.Title)
 
 	return r.Replace(htmlTemplate)
 }
