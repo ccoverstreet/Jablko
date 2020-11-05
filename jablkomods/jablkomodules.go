@@ -14,13 +14,18 @@ import (
 
 var ModMap = make(map[string]types.JablkoMod)
 
-func Initialize(jablkoModConfig []byte, jablko types.JablkoInterface) error {
+func Initialize(jablkoModConfig []byte, jablko types.JablkoInterface) (map[string]string, error) {
 	// Iterate through the JSON object to initialize all instances
+
+	configMap := make(map[string]string)
 	
-	return jsonparser.ObjectEach(jablkoModConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+	return configMap, jsonparser.ObjectEach(jablkoModConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		// Checks if Jablko Module Package was initialized with 
 		// a compiled plugin. If jablkomod.so not found, Jablko
 		// will attempt to build the plugin.
+
+		configMap[string(key)] = string(value)
+
 
 		// DEV WARNING: ONLY WORKS FOR LOCAL MODULES WITH ABSOLUTE PATH
 		pluginDir, err := jsonparser.GetString(value, "Source")

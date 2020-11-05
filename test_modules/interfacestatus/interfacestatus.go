@@ -4,51 +4,44 @@ import (
 	"github.com/ccoverstreet/Jablko/types"
 	"net/http"
 	"log"
-	"github.com/buger/jsonparser"
 	"strings"
 	"strconv"
 	"encoding/json"
 )
 
+var jablko types.JablkoInterface
+
 type intStatus struct {
 	id string
 	Title string
+	Source string
 	UpdateInterval int
-	jablko types.JablkoInterface
 }
 
-func Initialize(instanceId string, configData []byte, jablko types.JablkoInterface) (types.JablkoMod, error) {
+func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInterface) (types.JablkoMod, error) {
 	instance := new(intStatus) 
 
+	err := json.Unmarshal(configData, &instance)	
+	if err != nil {
+		return nil, err		
+	}
+
+	log.Println(instance)
 	instance.id = instanceId
 
-	updateInt, err := jsonparser.GetInt(configData, "UpdateInterval")
-	if err != nil {
-		return nil, err
-	}
-
-	instance.UpdateInterval = int(updateInt)
-
-	configTitle, err := jsonparser.GetString(configData, "Title")
-	if err != nil {
-		return nil, err
-	}
-
-	instance.Title = configTitle
-
-	instance.jablko = jablko
+	jablko = jablkoRef
 
 	return types.StructToMod(instance), nil
 }
 
 func (instance *intStatus) ConfigStr() ([]byte, error) {
+	instance.UpdateInterval = 5
 	res, err := json.Marshal(instance)	
 	if err != nil {
-		return nil, nil	
+		return nil, err
 	}
 
-
-	log.Printf("%s\n", res)
+	log.Println(instance)
 
 	return res, nil
 }
@@ -77,19 +70,9 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case splitPath[3] == "fart":
 		log.Println("Fart was called by client")
-		instance.jablko.Tester()
-		instance.jablko.SyncConfig()
+		jablko.Tester()
 
-		go func() {
-			x := 0
-
-			for i := 0; i < 10000000; i++ {
-				x = i + i
-			}
-
-			log.Println(x)
-		}()
-
+		jablko.SyncConfig(instance.id)
 	case splitPath[3] == "getStatus":
 		log.Println("Get status called")
 	default:

@@ -35,10 +35,10 @@ License: GPLv3
 
 `
 
-
 type jablkoConfig struct {
 	httpPort int
 	httpsPort int
+	configMap map[string]string
 	moduleOrder []string
 }
 
@@ -52,18 +52,26 @@ func (jablko MainApp) Tester() {
 	log.Println("Shit")
 }
 
-func (jablko MainApp) SyncConfig() {
-	tempConfigStr := ""
-	for key, element := range jablkomods.ModMap {
-		modConfig, err := element.ConfigStr()
-		if err != nil {
-			log.Println(err)
-		}
+func (jablko MainApp) SyncConfig(modId string) {
+	log.Println("Initial")
+	log.Println(config.configMap)
 
-		tempConfigStr += `"` + key + `":` + string(modConfig)
+	if _, ok := jablkomods.ModMap[modId]; !ok {
+		log.Printf("Cannot find module %s", modId)
+		return 
 	}
 
-	log.Println(tempConfigStr)
+	testStr, err := jablkomods.ModMap[modId].ConfigStr()
+	if err != nil {
+		log.Printf("Unable to get config string for module %s\n", modId)
+	}
+
+	config.configMap[modId] = string(testStr)
+
+	log.Println(string(testStr))
+
+	log.Println("Updated")
+	log.Println(config.configMap)
 }
 
 func main() {
@@ -108,11 +116,13 @@ func initializeConfig() {
 		panic("Error get Jablko Modules Config\n")
 	}
 
-	err = jablkomods.Initialize(jablkoModulesSlice, Jablko)
+	configMap, err := jablkomods.Initialize(jablkoModulesSlice, Jablko)
 	if err != nil {
 		log.Println("Error initializing Jablko Mods")
 		log.Println(err)
 	}
+
+	config.configMap = configMap
 
 	// Initialize module order in config file
 	moduleOrderSlice, _, _, err := jsonparser.Get(configData, "moduleOrder")
@@ -126,8 +136,6 @@ func initializeConfig() {
 
 	// Print module map
 	log.Println(jablkomods.ModMap)
-
-	log.Println(jablkomods.ModMap["test1"].ConfigStr())
 }
 
 func initializeRoutes() *mux.Router {

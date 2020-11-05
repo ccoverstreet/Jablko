@@ -6,7 +6,7 @@ import (
 
 type JablkoInterface interface {
 	Tester()
-	SyncConfig()
+	SyncConfig(string)
 }
 
 type JablkoMod interface{
