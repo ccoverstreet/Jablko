@@ -23,6 +23,7 @@ import (
 	"strconv"
 	"time"
 	"strings"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
 	"github.com/ccoverstreet/Jablko/jablkomods"
@@ -36,13 +37,13 @@ License: GPLv3
 `
 
 type jablkoConfig struct {
-	httpPort int
-	httpsPort int
-	configMap map[string]string
-	moduleOrder []string
+	HttpPort int
+	HttpsPort int
+	ConfigMap map[string]string
+	ModuleOrder []string
 }
 
-var config = jablkoConfig{httpPort: 8080, httpsPort: -1}
+var config = jablkoConfig{HttpPort: 8080, HttpsPort: -1}
 
 type MainApp struct {}
 
@@ -54,7 +55,7 @@ func (jablko MainApp) Tester() {
 
 func (jablko MainApp) SyncConfig(modId string) {
 	log.Println("Initial")
-	log.Println(config.configMap)
+	log.Println(config.ConfigMap)
 
 	if _, ok := jablkomods.ModMap[modId]; !ok {
 		log.Printf("Cannot find module %s", modId)
@@ -66,12 +67,19 @@ func (jablko MainApp) SyncConfig(modId string) {
 		log.Printf("Unable to get config string for module %s\n", modId)
 	}
 
-	config.configMap[modId] = string(testStr)
+	config.ConfigMap[modId] = string(testStr)
 
 	log.Println(string(testStr))
 
 	log.Println("Updated")
-	log.Println(config.configMap)
+	log.Println(config.ConfigMap)
+
+	res, err := json.Marshal(config)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println(string(res))
 }
 
 func main() {
@@ -102,13 +110,13 @@ func initializeConfig() {
 		panic("Error getting HTTP port data\n")
 	}
 
-	config.httpPort = int(httpPort)
+	config.HttpPort = int(httpPort)
 
 	httpsPort, err := jsonparser.GetInt(configData, "https", "port")
 	if err != nil {
 		log.Printf("HTTPS port config not set in config file\n")
 	} else {
-		config.httpsPort = int(httpsPort)
+		config.HttpsPort = int(httpsPort)
 	}
 
 	jablkoModulesSlice, _, _, err := jsonparser.Get(configData, "jablkoModules")
@@ -122,13 +130,13 @@ func initializeConfig() {
 		log.Println(err)
 	}
 
-	config.configMap = configMap
+	config.ConfigMap = configMap
 
 	// Initialize module order in config file
 	moduleOrderSlice, _, _, err := jsonparser.Get(configData, "moduleOrder")
 
 	jsonparser.ArrayEach(moduleOrderSlice, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		config.moduleOrder = append(config.moduleOrder, string(value))
+		config.ModuleOrder = append(config.ModuleOrder, string(value))
 	})
 
 	// Print Config
@@ -154,23 +162,23 @@ func initializeRoutes() *mux.Router {
 func startJablko(config jablkoConfig, router *mux.Router, wg *sync.WaitGroup) chan error {
 	errs := make(chan error)
 
-	if config.httpPort > 1 {
+	if config.HttpPort > 1 {
 		// Start http port
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Printf("Starting HTTP Server on Port %d\n", config.httpPort)	
+			log.Printf("Starting HTTP Server on Port %d\n", config.HttpPort)	
 
-			log.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(config.httpPort), router))
+			log.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(config.HttpPort), router))
 		}()
 	}
 
-	if config.httpsPort > 1 {
+	if config.HttpsPort > 1 {
 		// Start https server
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Printf("Starting HTTPS Server on Port %d\n", config.httpsPort)	
+			log.Printf("Starting HTTPS Server on Port %d\n", config.HttpsPort)	
 		}()
 	}
 
@@ -232,8 +240,8 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	var sb strings.Builder
 	
-	for i := 0; i < len(config.moduleOrder); i++ {
-		sb.WriteString(jablkomods.ModMap[config.moduleOrder[i]].Card(&x))	
+	for i := 0; i < len(config.ModuleOrder); i++ {
+		sb.WriteString(jablkomods.ModMap[config.ModuleOrder[i]].Card(&x))	
 	}
 
 	cookie := http.Cookie {
