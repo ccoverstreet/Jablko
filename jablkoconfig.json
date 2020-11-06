@@ -1,24 +1,16 @@
 {
 	"http": {
-        "port": 8080
-    },
-    "https": {
-        "port": null
-    },
-	"jablkoModules": {
-		"test1": {
-			"Source": "/home/coverstreet/Coding/Jablko_Home/Jablko/test_modules/interfacestatus",
-			"Title": "My Test 1",
-			"UpdateInterval": 30
-		},
-		"test2": {
-			"Source": "/home/coverstreet/Coding/Jablko_Home/Jablko/test_modules/interfacestatus",
-			"Title": "My Test 2",
-			"UpdateInterval": 20
-		}
+		"port": 8080
 	},
-	"moduleOrder": {
+	"https": {
+		"port": -1
+	},
+	"jablkoModules": {
+		"test1":{"Title":"My Test 1","Source":"./test_modules/interfacestatus","UpdateInterval":5},
+		"test2":{"Title":"My Test 2","Source":"./test_modules/interfacestatus","UpdateInterval":5}
+	},
+	"moduleOrder": [
 		"test1",
 		"test2"
-	}
+	]
 }

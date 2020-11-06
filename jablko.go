@@ -23,7 +23,6 @@ import (
 	"strconv"
 	"time"
 	"strings"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
 	"github.com/ccoverstreet/Jablko/jablkomods"
@@ -57,6 +56,24 @@ func (jablko MainApp) SyncConfig(modId string) {
 	log.Println("Initial")
 	log.Println(config.ConfigMap)
 
+	configTemplate:= `{
+	"http": {
+		"port": $httpPort
+	},
+	"https": {
+		"port": $httpsPort
+	},
+	"jablkoModules": {
+		$moduleString
+	},
+	"moduleOrder": [
+		$moduleOrder
+	]
+}
+`
+
+	log.Println(configTemplate)
+
 	if _, ok := jablkomods.ModMap[modId]; !ok {
 		log.Printf("Cannot find module %s", modId)
 		return 
@@ -67,6 +84,7 @@ func (jablko MainApp) SyncConfig(modId string) {
 		log.Printf("Unable to get config string for module %s\n", modId)
 	}
 
+
 	config.ConfigMap[modId] = string(testStr)
 
 	log.Println(string(testStr))
@@ -74,12 +92,44 @@ func (jablko MainApp) SyncConfig(modId string) {
 	log.Println("Updated")
 	log.Println(config.ConfigMap)
 
-	res, err := json.Marshal(config)
-	if err != nil {
-		panic(err)
+	// Create JSON to dump to config file
+
+	// Prepare each module's string
+	jablkoModulesStr := ""
+	index := 0
+	for key, value := range config.ConfigMap {
+		if index > 0 {
+			jablkoModulesStr = jablkoModulesStr + ",\n\t\t\"" + key + "\":" + value
+		} else {
+			jablkoModulesStr = jablkoModulesStr + "\"" + key + "\":" + value
+		}
+
+		index = index + 1
 	}
 
-	log.Println(string(res))
+	// Prepare Module Order
+	orderStr := ""
+	for index, val := range config.ModuleOrder {
+		if index > 0 {
+			orderStr = orderStr + ",\n" + "\t\t\"" + val + "\""
+		} else {
+			orderStr = orderStr + "\"" + val + "\""
+		}
+	}
+
+	log.Println(orderStr)
+
+	r := strings.NewReplacer("$httpPort", strconv.Itoa(config.HttpPort),
+	"$httpsPort", strconv.Itoa(config.HttpsPort),
+	"$moduleString", jablkoModulesStr,
+	"$moduleOrder", orderStr)
+
+	configDumpStr := r.Replace(configTemplate)
+
+	err = ioutil.WriteFile("./jablkoconfig.json", []byte(configDumpStr), 0022)
+	if err != nil {
+		log.Println(`Unable to write to "jablkoconfig.json".`)
+	}
 }
 
 func main() {
