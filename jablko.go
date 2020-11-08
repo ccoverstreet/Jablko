@@ -25,6 +25,7 @@ import (
 	"strings"
 	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
+
 	"github.com/ccoverstreet/Jablko/jablkomods"
 )
 
@@ -35,28 +36,28 @@ License: GPLv3
 
 `
 
-type jablkoConfig struct {
+type generalConfig struct {
 	HttpPort int
 	HttpsPort int
 	ConfigMap map[string]string
 	ModuleOrder []string
 }
 
-var config = jablkoConfig{HttpPort: 8080, HttpsPort: -1}
+var jablkoConfig = generalConfig{HttpPort: 8080, HttpsPort: -1}
 
-type MainApp struct {}
+type MainApp struct {} // Placeholder struct for implementing the JablkoInterface interface
 
-var Jablko MainApp
-
+var Jablko MainApp // Creating the MainApp instance
+ 
 func (jablko MainApp) Tester() {
 	log.Println("Shit")
 }
 
 func (jablko MainApp) SyncConfig(modId string) {
 	log.Println("Initial")
-	log.Println(config.ConfigMap)
+	log.Println(jablkoConfig.ConfigMap)
 
-	configTemplate:= `{
+	ConfigTemplate:= `{
 	"http": {
 		"port": $httpPort
 	},
@@ -72,7 +73,7 @@ func (jablko MainApp) SyncConfig(modId string) {
 }
 `
 
-	log.Println(configTemplate)
+	log.Println(ConfigTemplate)
 
 	if _, ok := jablkomods.ModMap[modId]; !ok {
 		log.Printf("Cannot find module %s", modId)
@@ -81,23 +82,23 @@ func (jablko MainApp) SyncConfig(modId string) {
 
 	testStr, err := jablkomods.ModMap[modId].ConfigStr()
 	if err != nil {
-		log.Printf("Unable to get config string for module %s\n", modId)
+		log.Printf("Unable to get Config string for module %s\n", modId)
 	}
 
 
-	config.ConfigMap[modId] = string(testStr)
+	jablkoConfig.ConfigMap[modId] = string(testStr)
 
 	log.Println(string(testStr))
 
 	log.Println("Updated")
-	log.Println(config.ConfigMap)
+	log.Println(jablkoConfig.ConfigMap)
 
-	// Create JSON to dump to config file
+	// Create JSON to dump to Config file
 
 	// Prepare each module's string
 	jablkoModulesStr := ""
 	index := 0
-	for key, value := range config.ConfigMap {
+	for key, value := range jablkoConfig.ConfigMap {
 		if index > 0 {
 			jablkoModulesStr = jablkoModulesStr + ",\n\t\t\"" + key + "\":" + value
 		} else {
@@ -109,7 +110,7 @@ func (jablko MainApp) SyncConfig(modId string) {
 
 	// Prepare Module Order
 	orderStr := ""
-	for index, val := range config.ModuleOrder {
+	for index, val := range jablkoConfig.ModuleOrder {
 		if index > 0 {
 			orderStr = orderStr + ",\n" + "\t\t\"" + val + "\""
 		} else {
@@ -119,14 +120,14 @@ func (jablko MainApp) SyncConfig(modId string) {
 
 	log.Println(orderStr)
 
-	r := strings.NewReplacer("$httpPort", strconv.Itoa(config.HttpPort),
-	"$httpsPort", strconv.Itoa(config.HttpsPort),
+	r := strings.NewReplacer("$httpPort", strconv.Itoa(jablkoConfig.HttpPort),
+	"$httpsPort", strconv.Itoa(jablkoConfig.HttpsPort),
 	"$moduleString", jablkoModulesStr,
 	"$moduleOrder", orderStr)
 
-	configDumpStr := r.Replace(configTemplate)
+	ConfigDumpStr := r.Replace(ConfigTemplate)
 
-	err = ioutil.WriteFile("./jablkoconfig.json", []byte(configDumpStr), 0022)
+	err = ioutil.WriteFile("./jablkoconfig.json", []byte(ConfigDumpStr), 0022)
 	if err != nil {
 		log.Println(`Unable to write to "jablkoconfig.json".`)
 	}
@@ -139,58 +140,58 @@ func main() {
 
 	router := initializeRoutes()
 
-	// Start HTTP and HTTPS depending on config
+	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
-	startJablko(config, router, &wg)
+	startJablko(jablkoConfig, router, &wg)
 	wg.Wait()
 }
 
 func initializeConfig() {
-	configData, err := ioutil.ReadFile("./jablkoconfig.json")
+	ConfigData, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
 		log.Printf("%v\n", err)
-		panic("Error opening and reading config file\n")
+		panic("Error opening and reading Config file\n")
 	}
 
 	// Get HTTP data
-	httpPort, err := jsonparser.GetInt(configData, "http", "port")
+	httpPort, err := jsonparser.GetInt(ConfigData, "http", "port")
 	if err != nil {
 		log.Printf("%v\n", err)
 		panic("Error getting HTTP port data\n")
 	}
 
-	config.HttpPort = int(httpPort)
+	jablkoConfig.HttpPort = int(httpPort)
 
-	httpsPort, err := jsonparser.GetInt(configData, "https", "port")
+	httpsPort, err := jsonparser.GetInt(ConfigData, "https", "port")
 	if err != nil {
-		log.Printf("HTTPS port config not set in config file\n")
+		log.Printf("HTTPS port Config not set in Config file\n")
 	} else {
-		config.HttpsPort = int(httpsPort)
+		jablkoConfig.HttpsPort = int(httpsPort)
 	}
 
-	jablkoModulesSlice, _, _, err := jsonparser.Get(configData, "jablkoModules")
+	jablkoModulesSlice, _, _, err := jsonparser.Get(ConfigData, "jablkoModules")
 	if err != nil {
 		panic("Error get Jablko Modules Config\n")
 	}
 
-	configMap, err := jablkomods.Initialize(jablkoModulesSlice, Jablko)
+	ConfigMap, err := jablkomods.Initialize(jablkoModulesSlice, Jablko)
 	if err != nil {
 		log.Println("Error initializing Jablko Mods")
 		log.Println(err)
 	}
 
-	config.ConfigMap = configMap
+	jablkoConfig.ConfigMap = ConfigMap
 
-	// Initialize module order in config file
-	moduleOrderSlice, _, _, err := jsonparser.Get(configData, "moduleOrder")
+	// Initialize module order in Config file
+	moduleOrderSlice, _, _, err := jsonparser.Get(ConfigData, "moduleOrder")
 
 	jsonparser.ArrayEach(moduleOrderSlice, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		config.ModuleOrder = append(config.ModuleOrder, string(value))
+		jablkoConfig.ModuleOrder = append(jablkoConfig.ModuleOrder, string(value))
 	})
 
 	// Print Config
-	log.Println(config)
+	log.Println(jablkoConfig)
 
 	// Print module map
 	log.Println(jablkomods.ModMap)
@@ -209,26 +210,26 @@ func initializeRoutes() *mux.Router {
 	return r
 }
 
-func startJablko(config jablkoConfig, router *mux.Router, wg *sync.WaitGroup) chan error {
+func startJablko(jablkoConfig generalConfig, router *mux.Router, wg *sync.WaitGroup) chan error {
 	errs := make(chan error)
 
-	if config.HttpPort > 1 {
+	if jablkoConfig.HttpPort > 1 {
 		// Start http port
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Printf("Starting HTTP Server on Port %d\n", config.HttpPort)	
+			log.Printf("Starting HTTP Server on Port %d\n", jablkoConfig.HttpPort)	
 
-			log.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(config.HttpPort), router))
+			log.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(jablkoConfig.HttpPort), router))
 		}()
 	}
 
-	if config.HttpsPort > 1 {
+	if jablkoConfig.HttpsPort > 1 {
 		// Start https server
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Printf("Starting HTTPS Server on Port %d\n", config.HttpsPort)	
+			log.Printf("Starting HTTPS Server on Port %d\n", jablkoConfig.HttpsPort)	
 		}()
 	}
 
@@ -256,7 +257,7 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 		authenticated := false
 		cookieValue := ""
 
-		for key, val := range(r.Cookies()) {
+	for key, val := range(r.Cookies()) {
 			log.Println(key, val)
 
 			if val.Name == "jablkologin" {
@@ -290,8 +291,8 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	var sb strings.Builder
 	
-	for i := 0; i < len(config.ModuleOrder); i++ {
-		sb.WriteString(jablkomods.ModMap[config.ModuleOrder[i]].Card(&x))	
+	for i := 0; i < len(jablkoConfig.ModuleOrder); i++ {
+		sb.WriteString(jablkomods.ModMap[jablkoConfig.ModuleOrder[i]].Card(&x))	
 	}
 
 	cookie := http.Cookie {

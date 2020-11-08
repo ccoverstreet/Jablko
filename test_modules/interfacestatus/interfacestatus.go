@@ -35,7 +35,6 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 }
 
 func (instance *intStatus) ConfigStr() ([]byte, error) {
-	instance.UpdateInterval = 5
 	res, err := json.Marshal(instance)	
 	if err != nil {
 		return nil, err
@@ -71,6 +70,8 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 	case splitPath[3] == "fart":
 		log.Println("Fart was called by client")
 		jablko.Tester()
+
+		instance.UpdateInterval = instance.UpdateInterval + 1
 
 		jablko.SyncConfig(instance.id)
 	case splitPath[3] == "getStatus":
