@@ -23,10 +23,14 @@ import (
 	"strconv"
 	"time"
 	"strings"
+	"database/sql"
+
 	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
+	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/ccoverstreet/Jablko/jablkomods"
+	"github.com/ccoverstreet/Jablko/src/database"
 )
 
 const startingStatement = `Jablko Smart Home
@@ -52,6 +56,8 @@ var Jablko MainApp // Creating the MainApp instance
 func (jablko MainApp) Tester() {
 	log.Println("Shit")
 }
+
+var jablkoDB *sql.DB // Database handle
 
 func (jablko MainApp) SyncConfig(modId string) {
 	log.Println("Initial")
@@ -140,6 +146,9 @@ func main() {
 
 	router := initializeRoutes()
 
+	jablkoDB = database.Initialize()
+	defer jablkoDB.Close()
+
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
@@ -210,6 +219,9 @@ func initializeRoutes() *mux.Router {
 	return r
 }
 
+func initializeDatabase() {
+	}
+
 func startJablko(jablkoConfig generalConfig, router *mux.Router, wg *sync.WaitGroup) chan error {
 	errs := make(chan error)
 
@@ -257,7 +269,7 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 		authenticated := false
 		cookieValue := ""
 
-	for key, val := range(r.Cookies()) {
+		for key, val := range(r.Cookies()) {
 			log.Println(key, val)
 
 			if val.Name == "jablkologin" {
@@ -304,7 +316,6 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookie)
 
 	w.Write([]byte(sb.String()))
-
 }
 
 func moduleHandler(w http.ResponseWriter, r *http.Request) {
