@@ -112,3 +112,22 @@ func createDatabase() {
 func removeDatabase() {
 	os.Remove("./data/jablko.db")	
 }
+
+func AddUser(db *sql.DB, username string, password string, firstName string, permissions int) error {
+
+	userSQL := `INSERT INTO users (username, password, firstName, permissions) VALUES(?, ?, ?, ?)`
+
+	statement, err := db.Prepare(userSQL)
+	if err != nil {
+		log.Println("Error in preparing user create SQL statement")
+		return err
+	}
+
+	_, err = statement.Exec(username, password, firstName, permissions)
+	if err != nil {
+		log.Println("Error inserting new user in database.")
+		return err
+	}
+
+	return nil
+}

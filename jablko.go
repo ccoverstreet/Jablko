@@ -149,6 +149,8 @@ func main() {
 	jablkoDB = database.Initialize()
 	defer jablkoDB.Close()
 
+	database.AddUser(jablkoDB, "ASDASD", "ASDASD", "Cameron", 2)
+
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
@@ -218,9 +220,6 @@ func initializeRoutes() *mux.Router {
 
 	return r
 }
-
-func initializeDatabase() {
-	}
 
 func startJablko(jablkoConfig generalConfig, router *mux.Router, wg *sync.WaitGroup) chan error {
 	errs := make(chan error)
@@ -297,7 +296,12 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 }
 
 func dashboardHandler(w http.ResponseWriter, r *http.Request) {
-	//http.ServeFile(w, r, "./public_html/dashboard/dashboard_template.html")
+	templateBytes, err := ioutil.ReadFile("./public_html/dashboard/template.html")
+	if err != nil {
+		log.Println("Unable to read template.html for dashboard")
+	}
+
+	template := string(templateBytes)
 
 	var x http.Request
 
@@ -315,7 +319,7 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &cookie)
 
-	w.Write([]byte(sb.String()))
+	w.Write([]byte(strings.Replace(template, "$JABLKO_MODULES", sb.String(), 1)))
 }
 
 func moduleHandler(w http.ResponseWriter, r *http.Request) {
