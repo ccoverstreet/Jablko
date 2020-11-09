@@ -16,22 +16,23 @@ import (
 
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Initialize() *sql.DB {
-	log.Println("Initializing Jablko Database")
+	log.Println("Initializing Jablko Database...")
 
 	// Check if database exists
 	if _, err := os.Stat("./data/jablko.db"); err == nil {
 		log.Println(`Found "jablko.db" in "./data". Using as primary database.`)
 	} else if os.IsNotExist(err) {
-		log.Println("Database file does not exist. Creating database in \"./data\"")
+		log.Println("Database file does not exist. Creating database in \"./data\".")
 		createDatabase()
 		return nil
 	} else {
-		log.Println("Issue determining if database file exists. Please check file permisions")
+		log.Println("Issue determining if database file exists. Please check file permisions.")
 	}
-
 
 	newDB, _ := sql.Open("sqlite3", "./data/jablko.db")		
 
@@ -47,28 +48,67 @@ func createDatabase() {
 
 	log.Println("Creating table \"users\" in database.")
 
-	userTableSQL := `CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT NOT NULL)`
+	userTableSQL := `CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT NOT NULL, password TEXT NOT NULL, firstName TEXT NOT NULL, permissions INTEGER NOT NULL)`
 	_, err := newDB.Exec(userTableSQL)
 	if err != nil {
+		removeDatabase()
 		log.Println("FATAL ERROR: Unable to create necessary database. Check file permissions")
 		log.Println("Use the following panic information to help with debugging")
-		panic(err)
+		log.Fatal(err.Error())
 	}
 
+	// -------------------- Administrative Account --------------------
 	log.Println("You must create an administrative account.")
 	var username string
-	log.Printf("Enter a username: ")
-	fmt.Scanln(&username)
-
 	var password string
-	log.Printf("Enter a password: ")
+	var firstName string
+
+	log.Printf("Enter a username:")
+	fmt.Scanln(&username)
+	log.Printf("Enter a password:")
 	fmt.Scanln(&password)
+	log.Printf("Enter First Name:")
+	fmt.Scanln(&firstName)
 
 	log.Println(username, password)
-
-	testUserSQL := `INSERT INTO users (name) VALUES ("Cale"), ("Fart"), ("Foo"), ("Bar")`
-	_, err = newDB.Exec(testUserSQL)
+	adminPassHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		panic(err)
+		removeDatabase()
+		log.Println("FATAL ERROR: Unable to hash administrative password.")
+		log.Fatal(err.Error())
 	}
+	log.Println(string(adminPassHash))
+
+	adminSQL := `INSERT INTO users (username, password, firstName, permissions
+) VALUES (?, ?, ?, ?)`
+	statement, err := newDB.Prepare(adminSQL)
+	if err != nil {
+		removeDatabase()
+		log.Println("FATAL ERROR: SQL statement for admin account incorrect.")
+		log.Fatal(err.Error())
+	}
+
+	_, err = statement.Exec(username, adminPassHash, firstName, 2)
+	if err != nil {
+		removeDatabase()
+		log.Println("FATAL ERROR: Unable to insert administrative information into database.")
+		log.Fatal(err.Error())
+	}
+	// -------------------- END Administrative Account --------------------
+
+	// -------------------- Login Sessions --------------------
+	log.Println("Creating login sessions table...")
+
+	loginSQL := `CREATE TABLE loginSessions (id INTEGER PRIMARY KEY, cookie TEXT NOT NULL, username TEXT NOT NULL, permissions INTEGER NOT NULL)`
+	_, err = newDB.Exec(loginSQL)	
+	if err != nil {
+		removeDatabase()
+		log.Println("FATAL ERROR: Unable to create login sessions table.")
+		log.Fatal(err.Error())
+	}
+	// -------------------- END Login Sessions --------------------
+}
+
+func removeDatabase() {
+	os.Remove("./data/jablko.db")	
 }
