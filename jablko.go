@@ -16,6 +16,7 @@ intense route.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"sync"
@@ -264,9 +265,11 @@ func timingMiddleware(next http.Handler) http.Handler {
 
 func authenticationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), "foo", "bar")
+		log.Println(r.Context())
 		if r.URL.Path == "/login" {
 			// If path is login, send to login handler
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 			return 
 		} else {
 			http.ServeFile(w, r, "./public_html/login/login.html")
@@ -320,6 +323,8 @@ type loginHolder struct {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	var loginData loginHolder
+
+	log.Println(r.Context().Value("foo"))
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
