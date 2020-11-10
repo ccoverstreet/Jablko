@@ -347,6 +347,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("User \"" + loginData.Username + "\" has logged in.")
 
 		// Generate Cookie String
+		rand.Seed(time.Now().UnixNano())
 		var newCookieVal strings.Builder
 		charSet := "qwertyuiopasdfghjklzxcvbnm,.?!@#$%^&"
 		for i := 0; i < 48; i++ {
@@ -358,7 +359,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			Name: "jablkologin",
 			Value: newCookieVal.String(),
 			Expires: time.Now().Add(1 * time.Hour),
-			HttpOnly: false,
 		}
 
 		log.Println(cookie)
