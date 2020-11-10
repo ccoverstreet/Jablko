@@ -24,7 +24,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"math/rand"
+	"crypto/rand"
 	"strings"
 	"database/sql"
 	"encoding/json"
@@ -347,13 +347,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("User \"" + loginData.Username + "\" has logged in.")
 
 		// Generate Cookie String
-		rand.Seed(time.Now().UnixNano())
 		var newCookieVal strings.Builder
 		charSet := "qwertyuiopasdfghjklzxcvbnm,.?!@#$%^&"
-		for i := 0; i < 48; i++ {
-			randomChar := charSet[rand.Intn(len(charSet))]
-			newCookieVal.WriteString(string(randomChar))
-		}
 
 		cookie := http.Cookie {
 			Name: "jablkologin",
