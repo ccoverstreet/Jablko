@@ -36,7 +36,6 @@ func Initialize() *sql.DB {
 
 	newDB, _ := sql.Open("sqlite3", "./data/jablko.db")		
 
-	log.Println(newDB)
 	return newDB
 }
 
@@ -130,4 +129,44 @@ func AddUser(db *sql.DB, username string, password string, firstName string, per
 	}
 
 	return nil
+}
+
+type userData struct {
+	id int64
+	username string
+	password string
+	firstName string
+	permissions int
+}
+
+func AuthenticateUser(database *sql.DB, username string, password string) bool {	
+	statement, err := database.Prepare("SELECT * FROM users WHERE username=(?)")
+	if err != nil {
+		log.Println("ERROR: Authenticate user SQL is invalid.")
+	}
+
+	res, err := statement.Query(username)
+	if err != nil {
+		log.Println("ERROR: Unable to retrieve user data.")
+	}
+
+	var authenticated = false
+
+	for res.Next() {
+		var user userData
+		
+		err = res.Scan(&user.id, &user.username, &user.password, &user.firstName, &user.permissions)
+
+		log.Println(err)
+		log.Println(user)
+
+		err = bcrypt.CompareHashAndPassword([]byte(user.password), []byte(password))
+
+		if err == nil {
+			authenticated = true
+			break
+		}
+	}
+
+	return authenticated
 }

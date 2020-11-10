@@ -16,14 +16,17 @@ intense route.
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"sync"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+	"math/rand"
 	"strings"
 	"database/sql"
+	"encoding/json"
 
 	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
@@ -149,8 +152,6 @@ func main() {
 	jablkoDB = database.Initialize()
 	defer jablkoDB.Close()
 
-	database.AddUser(jablkoDB, "ASDASD", "ASDASD", "Cameron", 2)
-
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
@@ -217,6 +218,7 @@ func initializeRoutes() *mux.Router {
 
 	r.HandleFunc("/", dashboardHandler).Methods("GET")
 	r.HandleFunc("/jablkomods/{mod}/{func}", moduleHandler).Methods("POST")
+	r.HandleFunc("/login", loginHandler).Methods("POST")
 
 	return r
 }
@@ -262,8 +264,23 @@ func timingMiddleware(next http.Handler) http.Handler {
 
 func authenticationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
-		log.Println(r.Form)
+		if r.URL.Path == "/login" {
+			// If path is login, send to login handler
+			next.ServeHTTP(w, r)
+			return 
+		} else {
+			http.ServeFile(w, r, "./public_html/login/login.html")
+			return
+		}
+
+		log.Println("ASDASDASDASDAS")
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Println("Unable to read body.")
+		}
+
+		log.Println("Body", string(body))
 
 		authenticated := false
 		cookieValue := ""
@@ -282,6 +299,7 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 		}
 
 		log.Println(authenticated)
+		log.Println(r.URL)
 
 		/*
 		if val := r.Cookies()[0] {
@@ -293,6 +311,58 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 		
 		next.ServeHTTP(w, r)
 	})
+}
+
+type loginHolder struct {
+	Username string `json: "username"`
+	Password string `json: "password"`
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	var loginData loginHolder
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("Unable to read login body")
+		log.Println(err)
+	}
+
+	err = json.Unmarshal(body, &loginData)
+	if err != nil {
+		log.Println("Unable to unmarshal JSON data.")
+		log.Println(err)
+	}
+
+	log.Println(string(body))
+	log.Println(loginData)
+	
+	isCorrect := database.AuthenticateUser(jablkoDB, loginData.Username, loginData.Password)
+
+	if isCorrect {
+		log.Println("User \"" + loginData.Username + "\" has logged in.")
+
+		// Generate Cookie String
+		var newCookieVal strings.Builder
+		charSet := "qwertyuiopasdfghjklzxcvbnm,.?!@#$%^&"
+		for i := 0; i < 48; i++ {
+			randomChar := charSet[rand.Intn(len(charSet))]
+			newCookieVal.WriteString(string(randomChar))
+		}
+
+		cookie := http.Cookie {
+			Name: "jablkologin",
+			Value: newCookieVal.String(),
+			Expires: time.Now().Add(1 * time.Hour),
+			HttpOnly: false,
+		}
+
+		log.Println(cookie)
+
+		http.SetCookie(w, &cookie)
+		fmt.Fprintln(w, []byte(`{"status": "good", "message": "Login succesful"}`))
+	} else {
+		w.Write([]byte(`{"status": "fail", "message": "Login data is wrong"}`))	
+	}
 }
 
 func dashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -310,14 +380,6 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < len(jablkoConfig.ModuleOrder); i++ {
 		sb.WriteString(jablkomods.ModMap[jablkoConfig.ModuleOrder[i]].Card(&x))	
 	}
-
-	cookie := http.Cookie {
-		Name: "jablkologin",
-		Value: "11111",
-		Expires: time.Now().Add(1 * time.Minute),
-	}
-
-	http.SetCookie(w, &cookie)
 
 	w.Write([]byte(strings.Replace(template, "$JABLKO_MODULES", sb.String(), 1)))
 }
