@@ -24,7 +24,6 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"crypto/rand"
 	"strings"
 	"database/sql"
 	"encoding/json"
@@ -348,7 +347,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Generate Cookie String
 		var newCookieVal strings.Builder
-		charSet := "qwertyuiopasdfghjklzxcvbnm,.?!@#$%^&"
 
 		cookie := http.Cookie {
 			Name: "jablkologin",
