@@ -264,53 +264,41 @@ func timingMiddleware(next http.Handler) http.Handler {
 
 func authenticationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "foo", "bar")
-		log.Println(r.Context())
+		ctx := context.WithValue(r.Context(), "foo", "bar") // How to pass data
 		if r.URL.Path == "/login" {
 			// If path is login, send to login handler
 			next.ServeHTTP(w, r.WithContext(ctx))
 			return 
-		} else {
-			http.ServeFile(w, r, "./public_html/login/login.html")
-			return
-		}
-
-		log.Println("ASDASDASDASDAS")
-
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Println("Unable to read body.")
-		}
-
-		log.Println("Body", string(body))
+		} 
 
 		authenticated := false
 		cookieValue := ""
 
+		// First check if the key is present
 		for key, val := range(r.Cookies()) {
 			log.Println(key, val)
 
-			if val.Name == "jablkologin" {
+			if val.Name == "jablkoLogin" {
 				cookieValue = val.Value
 				break;
 			}
 		}
 
 		if cookieValue == "" {
-			log.Println("No login cookie found.")
+			http.ServeFile(w, r, "./public_html/login/login.html")
+			return
 		}
+
+		authenticated, err = database.Vali
 
 		log.Println(authenticated)
 		log.Println(r.URL)
 
-		/*
-		if val := r.Cookies()[0] {
-			log.Println(val)
-		} else {
-			log.Println("ASDASDASD")
+		if !authenticated {
+			http.ServeFile(w, r, "./public_html/login/login.html")
+			return
 		}
-		*/
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -340,18 +328,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(string(body))
 	log.Println(loginData)
 	
-	isCorrect := database.AuthenticateUser(jablkoDB, loginData.Username, loginData.Password)
+	isCorrect, permissions := database.AuthenticateUser(jablkoDB, loginData.Username, loginData.Password)
+	log.Println(permissions)
 
 	if isCorrect {
 		log.Println("User \"" + loginData.Username + "\" has logged in.")
 
-		// Generate Cookie String
-		var newCookieVal strings.Builder
-
-		cookie := http.Cookie {
-			Name: "jablkologin",
-			Value: newCookieVal.String(),
-			Expires: time.Now().Add(1 * time.Hour),
+		cookie, err := database.CreateSession(jablkoDB, loginData.Username, permissions)
+		if err != nil {
+			log.Println("ERROR: Unable to create session for login")
+			log.Println(err)
 		}
 
 		log.Println(cookie)

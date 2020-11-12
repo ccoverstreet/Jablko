@@ -13,11 +13,15 @@ import (
 	"log"
 	"os"
 	"fmt"
+	"time"
+	"net/http"
 
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/ccoverstreet/Jablko/src/jablkorandom"
 )
 
 func Initialize() *sql.DB {
@@ -113,7 +117,6 @@ func removeDatabase() {
 }
 
 func AddUser(db *sql.DB, username string, password string, firstName string, permissions int) error {
-
 	userSQL := `INSERT INTO users (username, password, firstName, permissions) VALUES(?, ?, ?, ?)`
 
 	statement, err := db.Prepare(userSQL)
@@ -139,7 +142,7 @@ type userData struct {
 	permissions int
 }
 
-func AuthenticateUser(database *sql.DB, username string, password string) bool {	
+func AuthenticateUser(database *sql.DB, username string, password string) (bool, int) {	
 	statement, err := database.Prepare("SELECT * FROM users WHERE username=(?)")
 	if err != nil {
 		log.Println("ERROR: Authenticate user SQL is invalid.")
@@ -149,11 +152,13 @@ func AuthenticateUser(database *sql.DB, username string, password string) bool {
 	if err != nil {
 		log.Println("ERROR: Unable to retrieve user data.")
 	}
+	defer res.Close()
 
 	var authenticated = false
 
+	var user userData
+
 	for res.Next() {
-		var user userData
 		
 		err = res.Scan(&user.id, &user.username, &user.password, &user.firstName, &user.permissions)
 
@@ -168,5 +173,38 @@ func AuthenticateUser(database *sql.DB, username string, password string) bool {
 		}
 	}
 
-	return authenticated
+	return authenticated, user.permissions
+}
+
+func CreateSession(database *sql.DB, username string, permissions int) (http.Cookie, error) {
+	cookieValue, err := jablkorandom.GenRandomStr(128)
+	if err != nil {
+		log.Println("ERROR: Unable to generate random string for cookie");
+		return http.Cookie{}, err
+	}
+
+	statement, err := database.Prepare("INSERT INTO loginSessions (cookie, username, permissions) VALUES (?, ?, ?)")	
+	if err != nil {
+		log.Println("ERROR: Unable to prepare loginSessions INSERT SQL statement.")
+		return http.Cookie{}, err
+	}
+
+	_, err = statement.Exec(cookieValue, username, permissions)
+	if err != nil {
+		log.Println("ERROR: Unable to insert session info into loginSessions")
+		return http.Cookie{}, err
+	}
+
+	newCookie := http.Cookie {
+		Name: "jablkoLogin",
+		Value: cookieValue,
+		Expires: time.Now().Add(6 * time.Hour),
+	}
+
+	return newCookie, nil
+}
+
+func ValidateSession(database *sql.DB, cookieValue string) (bool, error) {
+
+	return true, nil
 }
