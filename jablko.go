@@ -264,13 +264,13 @@ func timingMiddleware(next http.Handler) http.Handler {
 
 func authenticationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "foo", "bar") // How to pass data
 		if r.URL.Path == "/login" {
 			// If path is login, send to login handler
-			next.ServeHTTP(w, r.WithContext(ctx))
+			next.ServeHTTP(w, r)
 			return 
 		} 
 
+		// Default values
 		authenticated := false
 		cookieValue := ""
 
@@ -289,17 +289,25 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		authenticated, err = database.Vali
+		authenticated, sessionData, err := database.ValidateSession(jablkoDB, cookieValue)
+		log.Println(sessionData)
+		if err != nil {
+			log.Println("ERROR: Unable to validate session.")
+			log.Println(err)
+		}
 
 		log.Println(authenticated)
-		log.Println(r.URL)
 
 		if !authenticated {
 			http.ServeFile(w, r, "./public_html/login/login.html")
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		// How to pass data
+		ctx := context.WithValue(r.Context(), "permissions", sessionData.Permissions) 
+		ctx = context.WithValue(ctx, "username", sessionData.Username)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
@@ -310,8 +318,6 @@ type loginHolder struct {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	var loginData loginHolder
-
-	log.Println(r.Context().Value("foo"))
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -350,6 +356,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func dashboardHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("User \"%s\" has requested dashboard (permission: %d)", r.Context().Value("username"), r.Context().Value("permissions"))
+
 	templateBytes, err := ioutil.ReadFile("./public_html/dashboard/template.html")
 	if err != nil {
 		log.Println("Unable to read template.html for dashboard")
@@ -357,12 +365,10 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	template := string(templateBytes)
 
-	var x http.Request
-
 	var sb strings.Builder
 	
 	for i := 0; i < len(jablkoConfig.ModuleOrder); i++ {
-		sb.WriteString(jablkomods.ModMap[jablkoConfig.ModuleOrder[i]].Card(&x))	
+		sb.WriteString(jablkomods.ModMap[jablkoConfig.ModuleOrder[i]].Card(r))	
 	}
 
 	w.Write([]byte(strings.Replace(template, "$JABLKO_MODULES", sb.String(), 1)))

@@ -18,3 +18,11 @@ type JablkoMod interface{
 func StructToMod(inputStruct JablkoMod) JablkoMod {
 	return inputStruct
 }
+
+type SessionHolder struct {
+	Id int
+	Cookie string
+	Username string
+	Permissions int
+	CreationTime int
+}
