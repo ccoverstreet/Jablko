@@ -13,16 +13,11 @@ import (
 	"log"
 	"os"
 	"fmt"
-	"time"
-	"net/http"
 
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 
 	"golang.org/x/crypto/bcrypt"
-
-	"github.com/ccoverstreet/Jablko/types"
-	"github.com/ccoverstreet/Jablko/src/jablkorandom"
 )
 
 func Initialize() *sql.DB {
@@ -175,70 +170,4 @@ func AuthenticateUser(database *sql.DB, username string, password string) (bool,
 	}
 
 	return authenticated, user.permissions
-}
-
-func CreateSession(database *sql.DB, username string, permissions int) (http.Cookie, error) {
-	cookieValue, err := jablkorandom.GenRandomStr(128)
-	if err != nil {
-		log.Println("ERROR: Unable to generate random string for cookie");
-		return http.Cookie{}, err
-	}
-
-	statement, err := database.Prepare("INSERT INTO loginSessions (cookie, username, permissions, creationTime) VALUES (?, ?, ?, strftime('%s', 'now'))")	
-	if err != nil {
-		log.Println("ERROR: Unable to prepare loginSessions INSERT SQL statement.")
-		return http.Cookie{}, err
-	}
-
-	_, err = statement.Exec(cookieValue, username, permissions)
-	if err != nil {
-		log.Println("ERROR: Unable to insert session info into loginSessions")
-		return http.Cookie{}, err
-	}
-
-	newCookie := http.Cookie {
-		Name: "jablkoLogin",
-		Value: cookieValue,
-		Expires: time.Now().Add(6 * time.Hour),
-	}
-
-	return newCookie, nil
-}
-
-func ValidateSession(database *sql.DB, cookieValue string) (bool, types.SessionHolder, error) {
-	hold := types.SessionHolder{}
-	isValid := false
-
-	statement, err := database.Prepare("SELECT * FROM loginSessions WHERE cookie=(?)")		
-	if err != nil {
-		return false, hold, err
-	}
-
-	res, err := statement.Query(cookieValue)
-	if err != nil {
-		return false, hold, err
-	}
-	defer res.Close()
-
-	for res.Next() {
-		
-		err = res.Scan(&hold.Id, &hold.Cookie, &hold.Username, &hold.Permissions, &hold.CreationTime)
-		log.Println(err)
-		if err == nil {
-			break
-		}
-	}
-	
-	log.Println("ASDASDAS", hold.CreationTime, time.Now().Unix())
-
-	if int64(hold.CreationTime + 8) < time.Now().Unix() {
-		// If cookie is expired
-		// Delete all cookies from table that are expired
-
-		return false, hold, nil
-	} else {
-		isValid = true
-	}
-
-	return isValid, hold, nil
 }
