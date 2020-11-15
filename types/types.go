@@ -19,10 +19,19 @@ func StructToMod(inputStruct JablkoMod) JablkoMod {
 	return inputStruct
 }
 
+type UserData struct {
+	Id int
+	Username string
+	Password string
+	FirstName string
+	Permissions int
+}
+
 type SessionHolder struct {
 	Id int
 	Cookie string
 	Username string
+	FirstName string
 	Permissions int
 	CreationTime int
 }

@@ -12,20 +12,20 @@ import (
 	"github.com/ccoverstreet/Jablko/src/jablkorandom"
 )
 
-func CreateSession(database *sql.DB, username string, permissions int) (http.Cookie, error) {
+func CreateSession(database *sql.DB, username string, userData types.UserData) (http.Cookie, error) {
 	cookieValue, err := jablkorandom.GenRandomStr(128)
 	if err != nil {
 		log.Println("ERROR: Unable to generate random string for cookie");
 		return http.Cookie{}, err
 	}
 
-	statement, err := database.Prepare("INSERT INTO loginSessions (cookie, username, permissions, creationTime) VALUES (?, ?, ?, strftime('%s', 'now'))")	
+	statement, err := database.Prepare("INSERT INTO loginSessions (cookie, username, firstName, permissions, creationTime) VALUES (?, ?, ?, ?, strftime('%s', 'now'))")	
 	if err != nil {
 		log.Println("ERROR: Unable to prepare loginSessions INSERT SQL statement.")
 		return http.Cookie{}, err
 	}
 
-	_, err = statement.Exec(cookieValue, username, permissions)
+	_, err = statement.Exec(cookieValue, username, userData.FirstName, userData.Permissions)
 	if err != nil {
 		log.Println("ERROR: Unable to insert session info into loginSessions")
 		return http.Cookie{}, err
@@ -90,7 +90,7 @@ func ValidateSession(database *sql.DB, cookieValue string) (bool, types.SessionH
 
 	for res.Next() {
 		
-		err = res.Scan(&hold.Id, &hold.Cookie, &hold.Username, &hold.Permissions, &hold.CreationTime)
+		err = res.Scan(&hold.Id, &hold.Cookie, &hold.Username, &hold.FirstName, &hold.Permissions, &hold.CreationTime)
 		log.Println(err)
 		if err == nil {
 			break

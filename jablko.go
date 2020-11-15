@@ -334,13 +334,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(string(body))
 	log.Println(loginData)
 	
-	isCorrect, permissions := database.AuthenticateUser(jablkoDB, loginData.Username, loginData.Password)
-	log.Println(permissions)
+	isCorrect, userData := database.AuthenticateUser(jablkoDB, loginData.Username, loginData.Password)
+	log.Println(userData)
 
 	if isCorrect {
 		log.Println("User \"" + loginData.Username + "\" has logged in.")
 
-		cookie, err := database.CreateSession(jablkoDB, loginData.Username, permissions)
+		cookie, err := database.CreateSession(jablkoDB, loginData.Username, userData)
 		if err != nil {
 			log.Println("ERROR: Unable to create session for login")
 			log.Println(err)

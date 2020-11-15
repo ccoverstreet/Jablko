@@ -18,6 +18,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/ccoverstreet/Jablko/types"
 )
 
 func Initialize() *sql.DB {
@@ -98,7 +100,7 @@ func createDatabase() {
 	// -------------------- Login Sessions --------------------
 	log.Println("Creating login sessions table...")
 
-	loginSQL := `CREATE TABLE loginSessions (id INTEGER PRIMARY KEY, cookie TEXT NOT NULL, username TEXT NOT NULL, permissions INTEGER NOT NULL, creationTime INTEGER NOT NULL)`
+	loginSQL := `CREATE TABLE loginSessions (id INTEGER PRIMARY KEY, cookie TEXT NOT NULL, username TEXT NOT NULL, firstName TEXT NOT NULL, permissions INTEGER NOT NULL, creationTime INTEGER NOT NULL)`
 	_, err = newDB.Exec(loginSQL)	
 	if err != nil {
 		removeDatabase()
@@ -130,15 +132,7 @@ func AddUser(db *sql.DB, username string, password string, firstName string, per
 	return nil
 }
 
-type userData struct {
-	id int64
-	username string
-	password string
-	firstName string
-	permissions int
-}
-
-func AuthenticateUser(database *sql.DB, username string, password string) (bool, int) {	
+func AuthenticateUser(database *sql.DB, username string, password string) (bool, types.UserData) {	
 	statement, err := database.Prepare("SELECT * FROM users WHERE username=(?)")
 	if err != nil {
 		log.Println("ERROR: Authenticate user SQL is invalid.")
@@ -152,16 +146,16 @@ func AuthenticateUser(database *sql.DB, username string, password string) (bool,
 
 	var authenticated = false
 
-	var user userData
+	user := types.UserData{}
 
 	for res.Next() {
 		
-		err = res.Scan(&user.id, &user.username, &user.password, &user.firstName, &user.permissions)
+		err = res.Scan(&user.Id, &user.Username, &user.Password, &user.FirstName, &user.Permissions)
 
 		log.Println(err)
 		log.Println(user)
 
-		err = bcrypt.CompareHashAndPassword([]byte(user.password), []byte(password))
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
 		if err == nil {
 			authenticated = true
@@ -169,5 +163,5 @@ func AuthenticateUser(database *sql.DB, username string, password string) (bool,
 		}
 	}
 
-	return authenticated, user.permissions
+	return authenticated, user
 }
