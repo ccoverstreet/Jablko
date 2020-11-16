@@ -1,0 +1,20 @@
+<script>
+	const $MODULE_ID = {
+		"warn": function() {
+			fetch("/jablkomods/$MODULE_ID/fart", {
+				method: "POST"
+			})
+				.then(async (data) => {
+					console.log(await data.json())
+				})
+		}
+	}
+</script>
+<div class="module_card">
+	<div class="module_title">
+		<div>$MODULE_TITLE</div>
+		<div style="background-color: red;"> </div>
+	</div>
+	<p>Module ID: $MODULE_ID</p>
+	<p>Update Interval: $UPDATE_INTERVAL s</p>
+</div>

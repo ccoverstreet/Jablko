@@ -7,10 +7,14 @@
 	},
 	"jablkoModules": {
 		"test1":{"Title":"My Test 1","Source":"./test_modules/interfacestatus","UpdateInterval":11},
-		"test2":{"Title":"My Test 2","Source":"./test_modules/interfacestatus","UpdateInterval":5}
+		"test2":{"Title":"My Test 2","Source":"./test_modules/interfacestatus","UpdateInterval":5},
+		"test3":{"Title":"My Test 3","Source":"./test_modules/interfacestatus","UpdateInterval":5},
+		"test4":{"Title":"My Test 4","Source":"./test_modules/interfacestatus","UpdateInterval":5}
 	},
 	"moduleOrder": [
 		"test1",
-		"test2"
+		"test2",
+		"test3",
+		"test4"
 	]
 }

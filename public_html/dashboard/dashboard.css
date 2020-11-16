@@ -1,7 +1,43 @@
 body {
-	background-color: var(--color-background)
+	font-family: Arial !important;
+	background-color: var(--color-background);
+	margin: 0px;
+}
+
+.fonts {
+	--font-size-header: 30px;
 }
 
 .dark_theme {
-	--color-background: #121212
+	--color-background: #121212;
+	--color-surface-1: #1d1d1d;
+	--color-surface-2: #2d2d2d;
+	--color-font-high: #d9d9d9;
+	--color-font-med: #999999;
+	--color-font-low: #666666;
+}
+
+#module_holder {
+	columns: 3 350px;
+	column-gap: 0px;
+	margin-top: 60px;
+}
+
+.module_card {
+	display: inline-block;
+	background-color: var(--color-surface-1);
+	border-radius: 5px;
+	padding: 10px;
+	margin: 10px;
+	width: calc(100% - 40px);
+	color: var(--color-font-med);
+}
+
+.module_title {
+	display: grid;
+	grid-template-columns: auto 50px;
+	padding: 5px 5px 5px 5px;	
+	font-size: var(--font-size-header);
+	font-weight: bold;
+	color: var(--color-font-high);
 }

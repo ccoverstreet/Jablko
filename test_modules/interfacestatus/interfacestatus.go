@@ -7,6 +7,7 @@ import (
 	"strings"
 	"strconv"
 	"encoding/json"
+	"io/ioutil"
 )
 
 var jablko types.JablkoInterface
@@ -50,6 +51,13 @@ func (instance *intStatus) Card(*http.Request) string {
 	"$MODULE_ID", instance.id,
 	"$MODULE_TITLE", instance.Title)
 
+	loadedTemplateBytes, err := ioutil.ReadFile(instance.Source + "/interfacestatus.html")
+	if err != nil {
+		log.Println("ERROR: Unable to read interfacestatus.html template file")
+	}
+
+	htmlTemplate := string(loadedTemplateBytes)
+
 	return r.Replace(htmlTemplate)
 }
 
@@ -80,24 +88,3 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("No call found.")	
 	}
 }
-
-const htmlTemplate = `
-<script>
-	const $MODULE_ID = {
-		"warn": function() {
-			fetch("/jablkomods/$MODULE_ID/fart", {
-				method: "POST"
-			})
-				.then(async (data) => {
-					console.log(await data.json())
-				})
-		}
-	}
-</script>
-<div class="module_card">
-	<h1>$MODULE_TITLE</h1>
-	<p>Module ID: $MODULE_ID</p>
-	<p>Update Interval: $UPDATE_INTERVAL s</p>
-</div>
-`
-
