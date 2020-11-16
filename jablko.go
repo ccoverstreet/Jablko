@@ -218,7 +218,9 @@ func initializeRoutes() *mux.Router {
 
 	r.HandleFunc("/", dashboardHandler).Methods("GET")
 	r.HandleFunc("/jablkomods/{mod}/{func}", moduleHandler).Methods("POST")
+	r.HandleFunc("/{pubdir}/{file}", publicHTMLHandler).Methods("GET")
 	r.HandleFunc("/login", loginHandler).Methods("POST")
+	r.HandleFunc("/logout", logoutHandler).Methods("POST")
 
 	return r
 }
@@ -268,7 +270,10 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 			// If path is login, send to login handler
 			next.ServeHTTP(w, r)
 			return 
-		} 
+		} else if r.URL.Path == "/logout" {
+			next.ServeHTTP(w, r)
+			return
+		}
 
 		// Default values
 		authenticated := false
@@ -331,11 +336,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	log.Println(string(body))
-	log.Println(loginData)
-	
 	isCorrect, userData := database.AuthenticateUser(jablkoDB, loginData.Username, loginData.Password)
-	log.Println(userData)
 
 	if isCorrect {
 		log.Println("User \"" + loginData.Username + "\" has logged in.")
@@ -349,15 +350,47 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(cookie)
 
 		http.SetCookie(w, &cookie)
-		fmt.Fprintln(w, []byte(`{"status": "good", "message": "Login succesful"}`))
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprintln(w, `{"status": "good", "message": "Login succesful"}`)
 	} else {
 		w.Write([]byte(`{"status": "fail", "message": "Login data is wrong"}`))	
 	}
 }
 
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	cookieValue := ""
+
+	// First check if the key is present
+	for key, val := range(r.Cookies()) {
+		log.Println(key, val)
+
+		if val.Name == "jablkoLogin" {
+			cookieValue = val.Value
+			break;
+		}
+	}
+
+	if cookieValue == "" {
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprintln(w, `{"status": "fail", "message": "No matching cookie."}`)	
+		return
+	}
+
+	err := database.DeleteSession(jablkoDB, cookieValue)	
+	if err != nil {
+		w.Header().Set("content-type", "application/json")
+		fmt.Fprintln(w, `{"status": "fail", "message": "Failed to delete session."}`)	
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	fmt.Fprintln(w, `{"status": "good", "message": "Logged out."}`)	
+}
+
 func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("User \"%s\" has requested dashboard (permission: %d)", r.Context().Value("username"), r.Context().Value("permissions"))
 
+	// Read in dashboard template
 	templateBytes, err := ioutil.ReadFile("./public_html/dashboard/template.html")
 	if err != nil {
 		log.Println("Unable to read template.html for dashboard")
@@ -365,13 +398,31 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	template := string(templateBytes)
 
+	// Read in toolbar
+	toolbarBytes, err := ioutil.ReadFile("./public_html/toolbar/toolbar.html")
+	if err != nil {
+		log.Println("Unable to read template.html for dashboard")
+		log.Println(err)
+	}
+
+	toolbar := string(toolbarBytes)
+
 	var sb strings.Builder
 	
 	for i := 0; i < len(jablkoConfig.ModuleOrder); i++ {
 		sb.WriteString(jablkomods.ModMap[jablkoConfig.ModuleOrder[i]].Card(r))	
 	}
 
-	w.Write([]byte(strings.Replace(template, "$JABLKO_MODULES", sb.String(), 1)))
+	replacer := strings.NewReplacer("$TOOLBAR", toolbar,
+		"$JABLKO_MODULES", sb.String())
+
+	w.Write([]byte(replacer.Replace(template)))
+}
+
+func publicHTMLHandler(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	log.Println(pathParams)
+	http.ServeFile(w, r, "./public_html/" + pathParams["pubdir"] + "/" + pathParams["file"])
 }
 
 func moduleHandler(w http.ResponseWriter, r *http.Request) {

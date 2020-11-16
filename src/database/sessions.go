@@ -12,6 +12,8 @@ import (
 	"github.com/ccoverstreet/Jablko/src/jablkorandom"
 )
 
+const sessionLength = 3600 // Session duration in seconds
+
 func CreateSession(database *sql.DB, username string, userData types.UserData) (http.Cookie, error) {
 	cookieValue, err := jablkorandom.GenRandomStr(128)
 	if err != nil {
@@ -46,7 +48,6 @@ func DeleteSession(database *sql.DB, cookieValue string) error {
 		return err
 	}
 
-	log.Println("Prepared statement")
 	_, err = statement.Exec(cookieValue)
 	if err != nil {
 		return err
@@ -66,7 +67,7 @@ func CleanSessions(database *sql.DB) error {
 		return err
 	}
 
-	_, err = statement.Exec(time.Now().Unix())
+	_, err = statement.Exec(time.Now().Unix() - sessionLength)
 	if err != nil {
 		return err
 	}
@@ -99,7 +100,7 @@ func ValidateSession(database *sql.DB, cookieValue string) (bool, types.SessionH
 
 	res.Close()
 
-	if int64(hold.CreationTime + 8) < time.Now().Unix() {
+	if int64(hold.CreationTime + sessionLength) < time.Now().Unix() {
 		// If cookie is expired
 		// Delete all cookies from table that are expired
 		err = DeleteSession(database, cookieValue)

@@ -1,0 +1,90 @@
+<div id="toolbar" style="position: fixed; top: 0px; left: 0px; display: grid; grid-template-rows: 100%; grid-template-columns: 50px auto 50px; background-color: #1f1f1f; width: 100vw; height: 50px; z-index: 1000">
+	<button id="menu_button" onclick="toggle_dropdown()" style="grid-column: 1; height: 100%; border-width: 0px; background-color: inherit; outline: none;">
+		<svg class="module_icon" viewBox="0 0 150 150" style="margin-right: 0px;">
+			<path d="M 10 75 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
+			<path d="M 10 35 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
+			<path d="M 10 115 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
+		</svg>
+	</button>
+</div>
+
+<script>
+	document.addEventListener("click", function(event) {
+		const dropdown = document.getElementById("menu_dropdown");
+		const toolbar = document.getElementById("toolbar");
+		if (!dropdown.contains(event.target) && !toolbar.contains(event.target)) {
+			dropdown.style.display = "none";
+		}
+	}); 
+
+	function toggle_dropdown() {
+		const dropdown = document.getElementById("menu_dropdown");
+
+		if (dropdown.style.display == "grid") {
+			dropdown.style.display = "none";
+		} else {
+			dropdown.style.display = "grid";
+		}
+	}
+
+	async function logout() {
+		await fetch("/logout", {method: "POST"});
+		document.location.reload();
+	}
+</script>
+
+<style>
+::-webkit-scrollbar {
+	display: none;
+}
+
+#menu_button:hover {
+	opacity: 70%;
+}
+
+.dropdown_item {
+	background-color: #1f1f1f;
+	display: grid;
+	grid-template-columns: 40px auto;
+	height: 50px;	
+	width: 100%;
+	color: #f5f6fa;
+	font-size: 25px;
+	font-weight: bold;
+	border-width: 0px;
+	text-align: left;
+	vertical-align: middle;
+}
+.dropdown_label {
+	padding-left: 10px;
+	display: flex;
+	align-items: center;
+	height: 100%;
+}
+
+.toolbar_icon {
+	height: 90%;
+	width: 90%;
+}
+</style>
+
+<div id="menu_dropdown" style="position: fixed; top: 50px; left: 0px; background-color: #000000; display: none; z-index: 200">
+	<button class="dropdown_item" onclick="location.replace('/')"> 
+		<svg class="toolbar_icon" viewBox="0 0 150 150"> 
+			<rect x="10" y="10" width="130" height="130" rx="15" stroke="#ffffff" stroke-width="20px" fill="transparent"/>
+			<circle cx="65" cy="65" r="35" fill="#ffffff"/>
+		</svg>
+		<div class="dropdown_label">
+			Dashboard
+		</div>
+	</button>
+	<button class="dropdown_item" onclick="logout()">
+		<svg class="toolbar_icon" viewBox="0 0 150 150">
+			<path d="M 10 10 L 140 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round" fill="transparent"/>
+			<path d="M 140 10 L 10 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round" fill="transparent"/>
+		</svg>
+		<div class="dropdown_label"> 
+			Logout
+		</div>
+	</button>
+</div>

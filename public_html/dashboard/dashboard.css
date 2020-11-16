@@ -1,0 +1,7 @@
+body {
+	background-color: var(--color-background)
+}
+
+.dark_theme {
+	--color-background: #121212
+}

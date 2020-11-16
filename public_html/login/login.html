@@ -15,15 +15,20 @@
 						"Content-Type": "application/json"
 					},
 					body: JSON.stringify({username: submitted_username, password: submitted_password})
-				});
+				})
+					.then(async (data) => {
+						res = await data.json();
 
-				const response = await raw_response.json();
-				console.log(response);
-				if (response.status == "good") {
-					document.location.replace("/");
-				} else {
-					document.getElementById("status").textContent = "Invalid Login";
-				}
+						if (res.status == "good") {
+							document.location.reload();
+						} else {
+							throw new Error("Incorrect Login");
+						}
+					})
+					.catch(err => {
+						document.getElementById("status").textContent = "Invalid Login";
+						console.error(err);
+					})
 			}
 
 			$(document).on("keypress", function(e) {
@@ -36,7 +41,7 @@
 		<style>
 body {
 	margin: 0px;
-	background-color: #2f3640;
+	background-color: #121212;
 	color: #f5f6fa;
 	outline: none;
 	font-family: Arial;
@@ -50,8 +55,9 @@ body {
 	width: 250px;
 	grid-row-gap: 5px;
 	padding: 20px;
-	border-radius: 5px;
-	background-color: #353b48;
+	border-radius: 0px;
+	color: #d9d9d9;
+	background-color: #1d1d1d;
 }
 
 .field {
@@ -67,14 +73,24 @@ button {
 }
 
 input {
+	background-color: #ffffff;
+	border-radius: 0px;
 	width: 150px;
+	margin: 0px;
+	border: 1px solid #ffffff;
+}
+input:focus {
+	outline: none;
+	outline-offset: 0;
+	margin: 0px;
+	border: 1px solid #03dac6;
 }
 
 #status {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	color: #c23616;
+	color: #cf6679;
 }
 
 .field_label {
@@ -103,7 +119,7 @@ input {
 				
 			<div id="submission_box">
 				<div id="status"></div>
-				<button id="login_button" onclick="login()" style="background-color: #44bd32; color: #f5f6fa;">Login</button>
+				<button id="login_button" onclick="login()" style="background-color: #03dac6; color: #000000; font-size: 14px;">Login</button>
 			</div>
 		</div>
 	</body>
