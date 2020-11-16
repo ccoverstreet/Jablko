@@ -9,17 +9,21 @@ body {
 }
 
 .dark_theme {
-	--color-background: #121212;
-	--color-surface-1: #1d1d1d;
+	--color-background: #222831;
+	--color-surface-1: #393e46;
 	--color-surface-2: #2d2d2d;
 	--color-font-high: #d9d9d9;
 	--color-font-med: #999999;
 	--color-font-low: #666666;
+	--color-primary: #4db6ac;
+	--color-accent: #82e9de;
+	--color-good: #03dac6
 }
 
 #module_holder {
 	columns: 3 350px;
-	column-gap: 0px;
+	column-gap: 10px;
+	padding: 10px;
 	margin-top: 60px;
 }
 
@@ -28,9 +32,9 @@ body {
 	background-color: var(--color-surface-1);
 	border-radius: 5px;
 	padding: 10px;
-	margin: 10px;
-	width: calc(100% - 40px);
-	color: var(--color-font-med);
+	margin: 5px 0px 5px 0px;
+	width: calc(100% - 20px);
+	color: var(--color-font-high);
 }
 
 .module_title {
@@ -39,5 +43,5 @@ body {
 	padding: 5px 5px 5px 5px;	
 	font-size: var(--font-size-header);
 	font-weight: bold;
-	color: var(--color-font-high);
+	color: var(--color-font-med);
 }
