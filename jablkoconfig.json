@@ -6,7 +6,7 @@
 		"port": -1
 	},
 	"jablkoModules": {
-		"test4":{"Title":"My Test 4","Source":"./test_modules/interfacestatus","UpdateInterval":6},
+		"test4":{"Title":"My Test 4","Source":"./test_modules/interfacestatus","UpdateInterval":7},
 		"test1":{"Title":"My Test 1","Source":"./test_modules/interfacestatus","UpdateInterval":11},
 		"test2":{"Title":"My Test 2","Source":"./test_modules/interfacestatus","UpdateInterval":5},
 		"test3":{"Title":"My Test 3","Source":"./test_modules/interfacestatus","UpdateInterval":5}

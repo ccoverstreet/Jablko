@@ -9,9 +9,9 @@ body {
 }
 
 .dark_theme {
-	--color-background: #222831;
-	--color-surface-1: #393e46;
-	--color-surface-2: #2d2d2d;
+	--color-background: #1a1a1a;
+	--color-surface-1: #262626;
+	--color-surface-2: #333333;
 	--color-font-high: #d9d9d9;
 	--color-font-med: #999999;
 	--color-font-low: #666666;
@@ -24,7 +24,7 @@ body {
 	columns: 3 350px;
 	column-gap: 10px;
 	padding: 10px;
-	margin-top: 60px;
+	margin-top: 50px;
 }
 
 .module_card {
