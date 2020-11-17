@@ -1,5 +1,6 @@
 body {
 	font-family: Arial !important;
+	font-size: 16px;
 	background-color: var(--color-background);
 	margin: 0px;
 }
@@ -17,14 +18,16 @@ body {
 	--color-font-low: #666666;
 	--color-primary: #4db6ac;
 	--color-accent: #82e9de;
-	--color-good: #03dac6
+	--color-good: #44bd32;
+	--color-bad: #e84118;
+	--color-warn: #efef61;
 }
 
 #module_holder {
 	columns: 3 350px;
-	column-gap: 10px;
-	padding: 10px;
-	margin-top: 50px;
+	column-gap: 5px;
+	padding: 5px;
+	margin-top: 55px;
 }
 
 .module_card {
@@ -32,7 +35,7 @@ body {
 	background-color: var(--color-surface-1);
 	border-radius: 5px;
 	padding: 10px;
-	margin: 5px 0px 5px 0px;
+	margin: 0px 0px 5px 0px;
 	width: calc(100% - 20px);
 	color: var(--color-font-high);
 }
@@ -45,3 +48,25 @@ body {
 	font-weight: bold;
 	color: var(--color-font-med);
 }
+
+hr {
+	border-color: var(--color-accent);
+}
+
+.label_value_pair {
+	display: grid;
+	grid-template-columns: 50% 50%;
+}
+.label_value_pair>div:nth-of-type(1) {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	padding: 2px 5px 2px 5px;
+}
+.label_value_pair>div:nth-of-type(2) {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	padding: 2px 5px 2px 5px;
+}
+

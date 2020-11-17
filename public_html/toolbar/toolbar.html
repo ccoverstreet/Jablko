@@ -1,4 +1,4 @@
-<div id="toolbar" style="position: fixed; top: 0px; left: 0px; display: grid; grid-template-rows: 100%; grid-template-columns: 50px auto 50px; background-color: #262626; width: 100vw; height: 50px; z-index: 1000">
+<div id="toolbar" style="position: fixed; top: 0px; left: 0px; display: grid; grid-template-rows: 100%; grid-template-columns: 50px auto 50px; background-color: #262626; width: 100vw; height: 50px; z-index: 100; box-shadow: 0px 5px 10px;">
 	<button id="menu_button" onclick="toggle_dropdown()" style="grid-column: 1; height: 100%; border-width: 0px; background-color: inherit; outline: none;">
 		<svg class="module_icon" viewBox="0 0 150 150" style="margin-right: 0px;">
 			<path d="M 10 75 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
@@ -46,12 +46,12 @@
 }
 
 .dropdown_item {
-	background-color: #1f1f1f;
+	background-color: var(--color-surface-1);
 	display: grid;
 	grid-template-columns: 40px auto;
 	height: 50px;	
 	width: 100%;
-	color: #f5f6fa;
+	color: var(--color-font-high);
 	font-size: 25px;
 	font-weight: bold;
 	border-width: 0px;
@@ -71,11 +71,11 @@
 }
 </style>
 
-<div id="menu_dropdown" style="position: fixed; top: 50px; left: 0px; background-color: #000000; display: none; z-index: 200">
+<div id="menu_dropdown" style="position: fixed; top: 50px; left: 0px; background-color: #000000; display: none; z-index: 100">
 	<button class="dropdown_item" onclick="location.replace('/')"> 
 		<svg class="toolbar_icon" viewBox="0 0 150 150"> 
-			<rect x="10" y="10" width="130" height="130" rx="15" stroke="#ffffff" stroke-width="20px" fill="transparent"/>
-			<circle cx="65" cy="65" r="35" fill="#ffffff"/>
+			<rect x="10" y="10" width="130" height="130" rx="15" stroke="var(--color-primary)" stroke-width="20px" fill="transparent"/>
+			<circle cx="65" cy="65" r="35" fill="var(--color-primary)"/>
 		</svg>
 		<div class="dropdown_label">
 			Dashboard
@@ -83,8 +83,8 @@
 	</button>
 	<button class="dropdown_item" onclick="logout()">
 		<svg class="toolbar_icon" viewBox="0 0 150 150">
-			<path d="M 10 10 L 140 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round" fill="transparent"/>
-			<path d="M 140 10 L 10 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round" fill="transparent"/>
+			<path d="M 10 10 L 140 140" stroke="var(--color-bad)" stroke-width="20px" stroke-linecap="round" fill="transparent"/>
+			<path d="M 140 10 L 10 140" stroke="var(--color-bad)" stroke-width="20px" stroke-linecap="round" fill="transparent"/>
 		</svg>
 		<div class="dropdown_label"> 
 			Logout

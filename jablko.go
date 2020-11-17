@@ -280,9 +280,7 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 		cookieValue := ""
 
 		// First check if the key is present
-		for key, val := range(r.Cookies()) {
-			log.Println(key, val)
-
+		for _, val := range(r.Cookies()) {
 			if val.Name == "jablkoLogin" {
 				cookieValue = val.Value
 				break;
@@ -295,13 +293,10 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 		}
 
 		authenticated, sessionData, err := database.ValidateSession(jablkoDB, cookieValue)
-		log.Println(sessionData)
 		if err != nil {
 			log.Println("ERROR: Unable to validate session.")
 			log.Println(err)
 		}
-
-		log.Println(authenticated)
 
 		if !authenticated {
 			http.ServeFile(w, r, "./public_html/login/login.html")
@@ -421,7 +416,6 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 func publicHTMLHandler(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
-	log.Println(pathParams)
 	http.ServeFile(w, r, "./public_html/" + pathParams["pubdir"] + "/" + pathParams["file"])
 }
 

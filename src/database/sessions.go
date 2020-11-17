@@ -90,9 +90,7 @@ func ValidateSession(database *sql.DB, cookieValue string) (bool, types.SessionH
 	}
 
 	for res.Next() {
-		
 		err = res.Scan(&hold.Id, &hold.Cookie, &hold.Username, &hold.FirstName, &hold.Permissions, &hold.CreationTime)
-		log.Println(err)
 		if err == nil {
 			break
 		}
