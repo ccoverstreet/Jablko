@@ -62,6 +62,17 @@ func (instance *intStatus) Card(*http.Request) string {
 }
 
 func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
+	// Use mux.Vars(r) to route incoming requests
+	pathParams = mux.Vars(r)
+
+	switch {
+	case pathParams["func"] == "banana":
+		log.Println("ASDASDASDSA")
+	default:
+		log.Println("Nothing Found")
+	}
+	
+	/*
 	log.Println(r.URL.Path)
 
 	splitPath := strings.Split(r.URL.Path, "/")
@@ -87,4 +98,5 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		log.Println("No call found.")	
 	}
+	*/
 }
