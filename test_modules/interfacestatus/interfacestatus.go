@@ -3,20 +3,31 @@ package main
 import (
 	"github.com/ccoverstreet/Jablko/types"
 	"net/http"
+	"fmt"
 	"log"
+	"time"
 	"strings"
 	"strconv"
 	"encoding/json"
 	"io/ioutil"
+
+	"github.com/gorilla/mux"
 )
 
 var jablko types.JablkoInterface
+
+var serverStartTime int
 
 type intStatus struct {
 	id string
 	Title string
 	Source string
 	UpdateInterval int
+}
+
+func init() {
+	serverStartTime = int(time.Now().Unix())
+	log.Println(serverStartTime)
 }
 
 func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInterface) (types.JablkoMod, error) {
@@ -63,40 +74,33 @@ func (instance *intStatus) Card(*http.Request) string {
 
 func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 	// Use mux.Vars(r) to route incoming requests
-	pathParams = mux.Vars(r)
+	pathParams := mux.Vars(r)
+
+	var err error = nil
 
 	switch {
 	case pathParams["func"] == "banana":
 		log.Println("ASDASDASDSA")
+	case pathParams["func"] == "getStatus":
+		err = getStatus(w, r)	
 	default:
 		log.Println("Nothing Found")
 	}
-	
-	/*
-	log.Println(r.URL.Path)
 
-	splitPath := strings.Split(r.URL.Path, "/")
-	log.Println(splitPath)
-	if len(splitPath) != 4 {
-		// Incorrect path received
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"message": "Invalid path received."}`))
-
-		return
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"status": "fail", "message": "Unable to find an appropriate action."}`)
 	}
+}
 
-	switch {
-	case splitPath[3] == "fart":
-		log.Println("Fart was called by client")
-		jablko.Tester()
+func getStatus(w http.ResponseWriter, r *http.Request) error {
+	resTemplate := `{"status": "$STATUS", "message": "$MESSAGE", "uptime": $UPTIME}`
 
-		instance.UpdateInterval = instance.UpdateInterval + 1
+	replacer := strings.NewReplacer("$STATUS", "good",
+		"$MESSAGE", "Status normal.",
+		"$UPTIME", strconv.Itoa(int(time.Now().Unix()) - serverStartTime))
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintln(w, replacer.Replace(resTemplate))
 
-		jablko.SyncConfig(instance.id)
-	case splitPath[3] == "getStatus":
-		log.Println("Get status called")
-	default:
-		log.Println("No call found.")	
-	}
-	*/
+	return nil
 }

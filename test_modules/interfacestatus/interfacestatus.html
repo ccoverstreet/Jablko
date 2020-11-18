@@ -1,13 +1,5 @@
 <script>
 	const $MODULE_ID = {
-		"warn": function() {
-			fetch("/jablkomods/$MODULE_ID/fart", {
-				method: "POST"
-			})
-				.then(async (data) => {
-					console.log(await data.json())
-				})
-		},
 		getStatus: function() {
 			fetch("/jablkomods/$MODULE_ID/getStatus", {
 				method: "POST",
@@ -16,20 +8,37 @@
 				}
 			})
 				.then(async (data) => {
-					console.log(await data.text());
+					res = await data.json();
+					console.log(res);
+
+					hours = Math.floor((res.uptime) / 3600);
+					minutes = Math.floor((res.uptime - hours * 3600) / 60)
+					seconds = res.uptime - hours * 3600 - minutes * 60;
+
+					uptimeElem = document.getElementById("$MODULE_ID_uptime");
+					uptimeElem.textContent = `${hours} : ${minutes} : ${seconds} s`;
+					uptimeElem.style.color = "var(--color-good)";
+
+					messageElem = document.getElementById("$MODULE_ID_message");
+					messageElem.textContent = res.message;
+					messageElem.style.color = "var(--color-font-med)";
 				})
 				.catch(err => {
 					console.log("ERROR: Unable to use interfacestatus/getStatus.");
 					console.log(err);
 				});
 		}
-
 	}
+
+	$MODULE_ID.getStatus();
+	setInterval($MODULE_ID.getStatus, $UPDATE_INTERVAL * 1000);
 </script>
 <div class="module_card">
 	<div class="module_title">
 		<div>$MODULE_TITLE</div>
-		<div style="background-color: var(--color-primary);"> </div>
+		<svg class="module_icon" viewBox="0 0 150 150">
+			<path d="M 20 75 H 40 L 60 30 L 90 120 L 110 75 H 130" fill="transparent" stroke="var(--color-primary)" stroke-width="20px" stroke-linejoin="round" stroke-linecap="round"/>
+		</svg>
 	</div>
 	<hr>
 
@@ -41,5 +50,15 @@
 	<div id="$MODULE_ID_pair"class="label_value_pair">
 		<div>Update Interval:</div>
 		<div style="color: var(--color-warn)">$UPDATE_INTERVAL</div>
+	</div>
+
+	<div class="label_value_pair">
+		<div>Uptime:</div>
+		<div id="$MODULE_ID_uptime" style="color: var(--color-warn)">$UPDATE_INTERVAL s</div>
+	</div>
+
+	<div class="label_value_pair">
+		<div>Message:</div>
+		<div id="$MODULE_ID_message" style="color: var(--color-warn)"></div>
 	</div>
 </div>
