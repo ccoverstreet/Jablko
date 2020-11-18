@@ -342,8 +342,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 
-		log.Println(cookie)
-
 		http.SetCookie(w, &cookie)
 		w.Header().Set("content-type", "application/json")
 		fmt.Fprintln(w, `{"status": "good", "message": "Login succesful"}`)

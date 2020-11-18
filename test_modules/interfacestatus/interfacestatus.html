@@ -9,7 +9,19 @@
 				})
 		},
 		getStatus: function() {
-			await fetch("/jablkomods/$MODULE_ID/getStatus")
+			fetch("/jablkomods/$MODULE_ID/getStatus", {
+				method: "POST",
+				header: {
+					"Content-Type": "application/json"
+				}
+			})
+				.then(async (data) => {
+					console.log(await data.text());
+				})
+				.catch(err => {
+					console.log("ERROR: Unable to use interfacestatus/getStatus.");
+					console.log(err);
+				});
 		}
 
 	}

@@ -152,9 +152,6 @@ func AuthenticateUser(database *sql.DB, username string, password string) (bool,
 		
 		err = res.Scan(&user.Id, &user.Username, &user.Password, &user.FirstName, &user.Permissions)
 
-		log.Println(err)
-		log.Println(user)
-
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
 		if err == nil {
