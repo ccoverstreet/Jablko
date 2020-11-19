@@ -218,6 +218,7 @@ func initializeRoutes() *mux.Router {
 
 	r.HandleFunc("/", dashboardHandler).Methods("GET")
 	r.HandleFunc("/jablkomods/{mod}/{func}", moduleHandler).Methods("POST")
+	r.HandleFunc("/local/{mod}/{func}", moduleHandler).Methods("POST")
 	r.HandleFunc("/{pubdir}/{file}", publicHTMLHandler).Methods("GET")
 	r.HandleFunc("/login", loginHandler).Methods("POST")
 	r.HandleFunc("/logout", logoutHandler).Methods("POST")
@@ -271,6 +272,9 @@ func authenticationMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return 
 		} else if r.URL.Path == "/logout" {
+			next.ServeHTTP(w, r)
+			return
+		} else if strings.HasPrefix(r.URL.Path, "/local") {
 			next.ServeHTTP(w, r)
 			return
 		}

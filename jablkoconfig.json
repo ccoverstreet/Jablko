@@ -14,7 +14,8 @@
 		"test4":{"Title":"My Test 4","Source":"./test_modules/interfacestatus","UpdateInterval":33},
 		"test7":{"Title":"My Test 7","Source":"./test_modules/interfacestatus","UpdateInterval":38},
 		"test8":{"Title":"My Test 8","Source":"./test_modules/interfacestatus","UpdateInterval":43},
-		"test9":{"Title":"My Test 9","Source":"./test_modules/interfacestatus","UpdateInterval":45}
+		"test9":{"Title":"My Test 9","Source":"./test_modules/interfacestatus","UpdateInterval":45},
+		"hamstermonitor1": {"Title": "Hamster View", "Source": "./test_modules/hamstermonitor"}
 	},
 	"moduleOrder": [
 		"test1",
@@ -25,6 +26,7 @@
 		"test6",
 		"test7",
 		"test8",
-		"test9"
+		"test9",
+		"hamstermonitor1"
 	]
 }
