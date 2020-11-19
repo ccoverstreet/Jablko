@@ -6,15 +6,15 @@
 		"port": -1
 	},
 	"jablkoModules": {
-		"test1":{"Title":"My Test 1","Source":"./test_modules/interfacestatus","UpdateInterval":30},
-		"test2":{"Title":"My Test 2","Source":"./test_modules/interfacestatus","UpdateInterval":60},
-		"test3":{"Title":"My Test 3","Source":"./test_modules/interfacestatus","UpdateInterval":60},
-		"test5":{"Title":"My Test 5","Source":"./test_modules/interfacestatus","UpdateInterval":60},
-		"test6":{"Title":"My Test 6","Source":"./test_modules/interfacestatus","UpdateInterval":60},
-		"test4":{"Title":"My Test 4","Source":"./test_modules/interfacestatus","UpdateInterval":60},
-		"test7":{"Title":"My Test 7","Source":"./test_modules/interfacestatus","UpdateInterval":60},
-		"test8":{"Title":"My Test 8","Source":"./test_modules/interfacestatus","UpdateInterval":60},
-		"test9":{"Title":"My Test 9","Source":"./test_modules/interfacestatus","UpdateInterval":60}
+		"test1":{"Title":"My Test 1","Source":"./test_modules/interfacestatus","UpdateInterval":25},
+		"test2":{"Title":"My Test 2","Source":"./test_modules/interfacestatus","UpdateInterval":30},
+		"test3":{"Title":"My Test 3","Source":"./test_modules/interfacestatus","UpdateInterval":35},
+		"test5":{"Title":"My Test 5","Source":"./test_modules/interfacestatus","UpdateInterval":40},
+		"test6":{"Title":"My Test 6","Source":"./test_modules/interfacestatus","UpdateInterval":27},
+		"test4":{"Title":"My Test 4","Source":"./test_modules/interfacestatus","UpdateInterval":33},
+		"test7":{"Title":"My Test 7","Source":"./test_modules/interfacestatus","UpdateInterval":38},
+		"test8":{"Title":"My Test 8","Source":"./test_modules/interfacestatus","UpdateInterval":43},
+		"test9":{"Title":"My Test 9","Source":"./test_modules/interfacestatus","UpdateInterval":45}
 	},
 	"moduleOrder": [
 		"test1",

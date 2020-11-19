@@ -22,8 +22,33 @@
 					messageElem = document.getElementById("$MODULE_ID_message");
 					messageElem.textContent = res.message;
 					messageElem.style.color = "var(--color-font-med)";
+
+					messageElem = document.getElementById("$MODULE_ID_curAlloc");
+					messageElem.textContent = (res.curAlloc / 1000000).toFixed(1) + " MB";
+
+					messageElem.style.color = "var(--color-good)";
+
+					messageElem = document.getElementById("$MODULE_ID_sysAlloc");
+					messageElem.textContent = (res.sysAlloc / 1000000).toFixed(1) + " MB";
+					messageElem.style.color = "var(--color-good)";
 				})
 				.catch(err => {
+					uptimeElem = document.getElementById("$MODULE_ID_uptime");
+					uptimeElem.textContent = "N/A"
+					uptimeElem.style.color = "var(--color-bad)";
+
+					curAllocElem = document.getElementById("$MODULE_ID_curAlloc");
+					curAllocElem.textContent = "N/A"
+					curAllocElem.style.color = "var(--color-bad)";
+
+					sysAllocElem = document.getElementById("$MODULE_ID_sysAlloc");
+					sysAllocElem.textContent = "N/A"
+					sysAllocElem.style.color = "var(--color-bad)";
+
+					messageElem = document.getElementById("$MODULE_ID_message");
+					messageElem.textContent = "Unable to communicate with interface.";
+					messageElem.style.color = "var(--color-bad)";
+
 					console.log("ERROR: Unable to use interfacestatus/getStatus.");
 					console.log(err);
 				});
@@ -33,7 +58,7 @@
 	$MODULE_ID.getStatus();
 	setInterval($MODULE_ID.getStatus, $UPDATE_INTERVAL * 1000);
 </script>
-<div class="module_card">
+<div class="module_card" style="column-span: all;">
 	<div class="module_title">
 		<div>$MODULE_TITLE</div>
 		<svg class="module_icon" viewBox="0 0 150 150">
@@ -41,24 +66,23 @@
 		</svg>
 	</div>
 	<hr>
-
-	<div id="$MODULE_ID_pair"class="label_value_pair">
-		<div>Module UUID:</div>
-		<div style="color: var(--color-good)">$MODULE_ID</div>
-	</div>
-
-	<div id="$MODULE_ID_pair"class="label_value_pair">
-		<div>Update Interval:</div>
-		<div style="color: var(--color-warn)">$UPDATE_INTERVAL</div>
+	<div class="label_value_pair">
+		<div>Uptime:</div>
+		<div id="$MODULE_ID_uptime" style="color: var(--color-warn)">N/A</div>
 	</div>
 
 	<div class="label_value_pair">
-		<div>Uptime:</div>
-		<div id="$MODULE_ID_uptime" style="color: var(--color-warn)">$UPDATE_INTERVAL s</div>
+		<div>Memory in Use:</div>
+		<div id="$MODULE_ID_curAlloc" style="color: var(--color-warn)">N/A</div>
+	</div>
+
+	<div class="label_value_pair">
+		<div>Virtual Space:</div>
+		<div id="$MODULE_ID_sysAlloc" style="color: var(--color-warn)">N/A</div>
 	</div>
 
 	<div class="label_value_pair">
 		<div>Message:</div>
-		<div id="$MODULE_ID_message" style="color: var(--color-warn)"></div>
+		<div id="$MODULE_ID_message" style="color: var(--color-warn)">N/A</div>
 	</div>
 </div>

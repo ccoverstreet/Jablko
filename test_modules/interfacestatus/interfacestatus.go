@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"runtime"
 	"strings"
 	"strconv"
 	"encoding/json"
@@ -94,11 +95,18 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getStatus(w http.ResponseWriter, r *http.Request) error {
-	resTemplate := `{"status": "$STATUS", "message": "$MESSAGE", "uptime": $UPTIME}`
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	log.Println(m.Alloc)
+	log.Println(m.Sys)
+
+	resTemplate := `{"status": "$STATUS", "message": "$MESSAGE", "uptime": $UPTIME, "curAlloc": $CUR_ALLOC, "sysAlloc": $SYS_ALLOC}`
 
 	replacer := strings.NewReplacer("$STATUS", "good",
 		"$MESSAGE", "Status normal.",
-		"$UPTIME", strconv.Itoa(int(time.Now().Unix()) - serverStartTime))
+		"$UPTIME", strconv.Itoa(int(time.Now().Unix()) - serverStartTime),
+		"$CUR_ALLOC", strconv.Itoa(int(m.Alloc)),
+		"$SYS_ALLOC", strconv.Itoa(int(m.Sys)))
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintln(w, replacer.Replace(resTemplate))
 
