@@ -22,6 +22,7 @@ type hamsterMonitor struct {
 	id string
 	Title string
 	Source string
+	HamsterName string
 	active int
 	lastActive int64 
 }
@@ -56,7 +57,8 @@ func (instance *hamsterMonitor) ConfigStr() ([]byte, error) {
 
 func (instance *hamsterMonitor) Card(*http.Request) string {
 	r := strings.NewReplacer("$MODULE_ID", instance.id,
-		"$UPDATE_INTERVAL", strconv.Itoa(10))
+		"$UPDATE_INTERVAL", strconv.Itoa(10), 
+		"$HAMSTER_NAME", instance.HamsterName)
 
 	templateBytes, err := ioutil.ReadFile(instance.Source + "/hamstermonitor.html")
 	if err != nil {
