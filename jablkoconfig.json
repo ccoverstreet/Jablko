@@ -7,18 +7,10 @@
 	},
 	"jablkoModules": {
 		"test1":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25},
-		"test2":{"Title":"My Test 2","Source":"./test_modules/interfacestatus","UpdateInterval":30},
-		"test3":{"Title":"My Test 3","Source":"./test_modules/interfacestatus","UpdateInterval":35},
-		"test5":{"Title":"My Test 5","Source":"./test_modules/interfacestatus","UpdateInterval":40},
-		"test6":{"Title":"My Test 6","Source":"./test_modules/interfacestatus","UpdateInterval":27},
 		"hamstermonitor1": {"Title": "Hamster View", "Source": "./test_modules/hamstermonitor", "HamsterName": "Pip"}
 	},
 	"moduleOrder": [
 		"test1",
-		"hamstermonitor1",
-		"test2",
-		"test3",
-		"test5",
-		"test6"
+		"hamstermonitor1"
 	]
 }
