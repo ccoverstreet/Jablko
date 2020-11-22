@@ -204,9 +204,6 @@ func initializeConfig() {
 
 	// Print Config
 	log.Println(jablkoConfig)
-
-	// Print module map
-	log.Println(jablkomods.ModMap)
 }
 
 func initializeRoutes() *mux.Router {
