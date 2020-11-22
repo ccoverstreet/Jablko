@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel"shortcut icon" type="image/png" href="/assets/logo.png"/>
+
+		<script>
+			function change_theme() {
+				document.body.classList.toggle("theme_light");
+				document.body.classList.toggle("theme_dark");
+			}
+
+			function time_check() {
+				const x = new Date().toLocaleTimeString("sv-SE");
+				const seconds = parseInt(x.split(":")[0]) * 3600 + parseInt(x.split(":")[1]) * 60 + parseInt(x.split(":")[2]);
+
+				if (seconds < 23400 || seconds > 72000) {
+					change_theme();
+					console.log("ASDAS");
+				}
+			}
+
+
+			const jablko = {
+				hsl_to_rgb: function (hsl_array) {
+					const h = hsl_array[0];
+					const s = hsl_array[1];
+					const l = hsl_array[2];
+
+					var C = (1 - Math.abs(2 * l - 1)) * s;
+					var X = C * (1 - Math.abs((h / 60) % 2 - 1));
+					var m = l - C / 2;
+
+					var prime = [0, 0, 0]
+
+					if (h >= 0 && h < 60) {
+						prime[0] = C;
+						prime[1] = X;
+						prime[2] = 0;
+					} else if (h >= 60 && h < 120) {
+						prime[0] = X;
+						prime[1] = C;
+						prime[2] = 0;
+					} else if (h >= 120 && h < 180) {
+						prime[0] = 0;
+						prime[1] = C;
+						prime[2] = X;
+					} else if (h >= 180 && h < 240) {
+						prime[0] = 0;
+						prime[1] = X;
+						prime[2] = C;
+					} else if (h >= 240 && h < 300) {
+						prime[0] = X;
+						prime[1] = 0;
+						prime[2] = C;
+					} else if (h >= 300 && h < 360) {
+						prime[0] = C;
+						prime[1] = 0;
+						prime[2] = X;
+					}
+
+					return [(prime[0] + m) * 255, (prime[1] + m) * 255, (prime[2] + m) * 255];
+				},
+				rgb_to_hsl: function(rgb_array) {
+					const r_p = rgb_array[0] / 255;
+					const g_p = rgb_array[1] / 255;
+					const b_p = rgb_array[2] / 255;
+
+					const c_max = Math.max(r_p, g_p, b_p);
+					const c_min = Math.min(r_p, g_p, b_p);
+					const delta = c_max - c_min;
+
+					var H = 0;
+					if (c_max == r_p) {
+						const k = ((g_p - b_p) / delta) % 6;
+						H = (60 * k + 360) % 360;
+					} else if (c_max == g_p) {
+						H = 60 * (((b_p - r_p) / delta) + 2);
+					} else if (c_max == b_p) {
+						H = 60 * (((r_p - g_p) / delta) + 4);
+					}
+
+					const L = (c_max - c_min) / 2;
+
+					var S = 0;
+					if (delta >= 0) {
+						S = delta / (1 - (2 * L - 1));
+					}
+
+					return [H, S, L];
+				},
+				interpolate_rgb: function(lower, rgb_1, upper, rgb_2, value) {
+					// Interpolate using HSL space
+
+					if (value < lower) {
+						return rgb_1;
+					} else if (value > upper) {
+						return rgb_2;
+					}
+
+					const hsl_1 = jablko.rgb_to_hsl(rgb_1);
+					const hsl_2 = jablko.rgb_to_hsl(rgb_2);
+
+					const res_hsl = [
+						(hsl_2[0] - hsl_1[0]) / (upper - lower) * (value - lower) + hsl_1[0],
+						(hsl_2[1] - hsl_1[1]) / (upper - lower) * (value - lower) + hsl_1[1],
+						(hsl_2[2] - hsl_1[2]) / (upper - lower) * (value - lower) + hsl_1[2]
+					]
+
+					return jablko.hsl_to_rgb(res_hsl);
+				}
+
+			}
+
+			var focused_element = undefined;
+
+			function focus_card() {
+				focused_element = this.parentElement;
+
+				const blur_element = document.getElementById("blur");
+				blur_element.style.display = "block";
+
+				this.parentElement.style.position = "fixed";
+				this.parentElement.style.top = "calc(100vh / 6)";
+				this.parentElement.style.left = "calc((100vw - 350px) / 2)";
+				this.parentElement.style.width = "calc(330px)";
+				this.parentElement.style.zIndex = "1000";
+				console.log("ASDASDAS");
+			}
+
+			document.addEventListener("DOMContentLoaded", (event) => {
+				time_check();
+
+				const cards = document.getElementsByClassName("module_header");
+
+				for (var i = 0; i < cards.length; i++) {
+					cards[i].addEventListener("click", focus_card);
+				}
+
+				const blur_element = document.getElementById("blur");
+				blur_element.addEventListener("click", function() {
+					focused_element.style.zIndex = "10";
+					focused_element.style.position = "relative";
+					focused_element.style.top = "0px";
+					focused_element.style.left = "0px";
+					focused_element.style.width = "calc(100% - 20px)";
+
+					this.style.display = "none";
+				});
+			});
+		</script>
+	</head>
+<style>
+.module_card {
+	transition: width 0.25s, top 0.25s, left 0.25s, z-index 1s;
+}
+</style>
+
+	<body class="theme_light">
+		$TOOLBAR
+
+		<div id="blur" style="display: none; position: fixed; top: 0px; left: 0px; z-index: 500; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.7);">
+		</div>
+
+		<div id="module_container">
+			$JABLKO_MODULES
+		</div>
+	</body>
+</html>

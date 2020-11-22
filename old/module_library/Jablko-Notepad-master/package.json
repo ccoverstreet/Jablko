@@ -1,0 +1,22 @@
+{
+	"name": "jablko_notepad",
+	"version": "1.0.0",
+	"description": "Jablko Notepad Module",
+	"main": "module.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ccoverstreet/Jablko-Notepad.git"
+	},
+	"author": "Cale Overstreet",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/ccoverstreet/Jablko-Notepad/issues"
+	},
+	"homepage": "https://github.com/ccoverstreet/Jablko-Notepad#readme",
+	"jablko": {
+		"label": "Notepad"
+	}
+}

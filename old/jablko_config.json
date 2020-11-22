@@ -1,0 +1,70 @@
+{
+    "http": {
+        "port": 8080
+    },
+    "https": {
+        "port": null,
+        "cert_file": "../Certs/cert.pem",
+        "key_file": "../Certs/privkey.pem"
+    },
+    "database": {
+        "path": "./database/primary.db",
+        "session_lifetime": 21600000
+    },
+    "GroupMe": {
+        "access_token": "EOG67suiemqP1q6Jttj1emNnOpcSou6zWCZpqrYS",
+        "group_name": "Jablko Home",
+        "group_id": "60780309",
+        "bot_id": "5a886bd067ae3cbf00014993bc"
+    },
+    "jablko_modules": {
+        "Jablko_Mantle_RGB": {
+            "repo_archive": "https://github.com/ccoverstreet/Jablko-Mantle-RGB/archive/master.zip",
+            "install_dir": "/home/coverstreet/Coding/Jablko_Modules/Jablko_Mantle_RGB",
+            "controller_ip": "10.0.0.46",
+            "label": "Fart",
+            "chatbot": {
+                "turn_off": {
+                    "activation_phrase": "turn off mantle light",
+                    "function": "chatbot_turn_off"
+                }
+            }
+        },
+        "Jablko_Food_Inventory": {
+            "repo_archive": null,
+            "install_dir": "/home/coverstreet/Coding/Jablko_Modules/Jablko_Food_Inventory"
+        },
+        "Jablko_Notepad": {
+            "repo_archive": "https://github.com/ccoverstreet/Jablko-Notepad/archive/master.zip",
+            "install_dir": "./jablko_modules/Jablko_Notepad",
+            "label": "Notepad 1"
+        },
+        "Jablko_Chat_Box": {
+            "install_dir": "/home/coverstreet/Coding/Jablko_Modules/Jablko_Chat_Box"
+        },
+        "Interface_Status": {
+            "repo_archive": "https://github.com/ccoverstreet/Jablko-Interface-Status/archive/master.zip",
+            "install_dir": "/home/coverstreet/Coding/Jablko_Modules/Interface_Status",
+            "update_interval": 15000,
+            "chatbot": {
+                "uptime": {
+                    "activation_phrase": "uptime",
+                    "function": "chatbot_uptime"
+                }
+            }
+        },
+        "weather": {
+            "repo_archive": "https://github.com/ccoverstreet/Jablko-Weather/archive/master.zip",
+            "install_dir": "./jablko_modules/weather",
+            "chatbot": {
+                "current_weather": {
+                    "activation_phrase": "current weather",
+                    "function": "chatbot_current_weather"
+                }
+            }
+        }
+    },
+    "weather": {
+        "key": "d98654a11790b6acd21edd34c8c9269d"
+    }
+}

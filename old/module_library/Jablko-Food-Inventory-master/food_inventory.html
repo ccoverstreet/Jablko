@@ -1,0 +1,20 @@
+<script>
+	const $MODULE_NAME = {
+		test: async () => {
+			console.log("Hello");
+		}
+	}
+</script>
+<div id="$MODULE_NAME" class="module_card">
+	<div class="module_header">
+		<h1>Food Inventory</h1>
+		<svg class="module_icon" viewBox="0 0 150 150">
+			<path d="M 130 40 A 40 50 0 0 1 20 40 H 130" fill="transparent" stroke="#0097e6" stroke-width="20px" stroke-linecap="round" stroke-linejoin="round"/>
+			<circle cx="55" cy="65" r="10" fill="#0097e6" />
+			<circle cx="95" cy="65" r="10" fill="#0097e6" />
+			<circle cx="75" cy="80" r="10" fill="#0097e6" />
+		</svg>
+	</div>
+	<hr>
+	<button onclick="$MODULE_NAME.test()">Test</button>
+</div>

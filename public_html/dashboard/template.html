@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="/dashboard/dashboard.css">
+		<script type="text/javascript">
+			async function logout1() {
+				await fetch("/logout", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(async (data) => {
+						res = await data.json();
+
+						if (res.status == "good") {
+							document.location.reload();
+						} else {
+							throw new Error("Failed to logout.")
+						}
+					})
+					.catch(err => {
+						alert("Failed to logout.")
+						console.error(err);
+					})
+			}
+		</script>
+	</head>
+	<body class="dark_theme fonts">
+		$TOOLBAR
+		<div id="module_holder">
+			$JABLKO_MODULES
+		</div>
+	</body>
+</html>

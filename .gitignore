@@ -1,13 +1,2 @@
-/node_modules
-/package-lock.json
-jablko_config.json
-/database/*.db
-/public_html/dashboard/dashboard.html
-/ESP*/*/config.h
-/jablko_modules/*
-!/jablko_modules/jablko_modules.md
-*.swp
-/module_library/*
-!/module_library/module_library.md
-/log/*
-!/log/*.md
+test_modules/*
+!test_modules/TESTMODULES.md

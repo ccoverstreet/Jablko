@@ -1,0 +1,26 @@
+#!/bin/bash
+
+IPTABLES_FLAG=0
+
+for arguments in "$@"
+do 
+	if [ $arguments = "--iptables" ]
+	then
+		IPTABLES_FLAG=1
+	fi
+done
+
+if [[ $IPTABLES_FLAG -eq 1 ]] 
+then 
+	sudo ./src/setup_iptables.sh
+fi
+
+echo Running as user \"$(whoami)\"
+while true
+do
+	npm start -- $@
+	if (($? != 240))
+	then
+		exit $?
+	fi
+done
