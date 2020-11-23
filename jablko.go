@@ -264,7 +264,7 @@ func timingMiddleware(next http.Handler) http.Handler {
 
 		end := time.Now()
 
-		log.Printf("Request \"%s\" took %d ns\n", r.URL.Path, end.Sub(start))
+		log.Printf("Request \"%s\" took %7.3f ms\n", r.URL.Path, float32(end.Sub(start)) / 1000000)
 	})
 }
 
