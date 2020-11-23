@@ -32,7 +32,7 @@ import (
 	"github.com/buger/jsonparser"
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/ccoverstreet/Jablko/jablkomods"
+	"github.com/ccoverstreet/Jablko/src/jablkomods"
 	"github.com/ccoverstreet/Jablko/src/database"
 )
 
