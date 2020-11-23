@@ -12,7 +12,7 @@ Jablko is a smart home system written in Go that is extendible by user created J
 
 1. `git clone https://github.com/ccoverstreet/Jablko`
 2. `go build .`
-3. `./jablko`
+3. `./Jablko`
 4. Follow any directions that may pop up.
 
 
