@@ -60,6 +60,12 @@ func (jablko MainApp) Tester() {
 	log.Println("Shit")
 }
 
+func (jablko MainApp) SendMessage(message string) error {
+	log.Printf("Message: %s\n", message)
+
+	return nil
+}
+
 var jablkoDB *sql.DB // Database handle
 
 func (jablko MainApp) SyncConfig(modId string) {

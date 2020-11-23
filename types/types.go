@@ -7,6 +7,7 @@ import (
 type JablkoInterface interface {
 	Tester()
 	SyncConfig(string)
+	SendMessage(string) error
 }
 
 type JablkoMod interface{

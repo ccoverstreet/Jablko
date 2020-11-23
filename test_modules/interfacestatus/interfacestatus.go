@@ -39,7 +39,6 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 		return nil, err		
 	}
 
-	log.Println(instance)
 	instance.id = instanceId
 
 	jablko = jablkoRef
@@ -97,8 +96,6 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 func getStatus(w http.ResponseWriter, r *http.Request) error {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	log.Println(m.Alloc)
-	log.Println(m.Sys)
 
 	resTemplate := `{"status": "$STATUS", "message": "$MESSAGE", "uptime": $UPTIME, "curAlloc": $CUR_ALLOC, "sysAlloc": $SYS_ALLOC}`
 
