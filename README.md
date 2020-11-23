@@ -23,10 +23,9 @@ In Progress
 ## Future work
 
 - Messaging functionality (likely groupme, possible email) 
-- Robust jablko mod manager.
+- Robust Jablko Mod manager.
   - Users should be able to install from dashboard (end goal)
   - Terminal usage is a short-term goal
-  
 
 ## Reason for Using Go
 
