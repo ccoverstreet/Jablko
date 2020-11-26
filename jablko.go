@@ -34,6 +34,7 @@ import (
 
 	"github.com/ccoverstreet/Jablko/src/jablkomods"
 	"github.com/ccoverstreet/Jablko/src/database"
+	"github.com/ccoverstreet/Jablko/src/mainapp"
 )
 
 const startingStatement = `Jablko Smart Home
@@ -55,10 +56,6 @@ var jablkoConfig = generalConfig{HttpPort: 8080, HttpsPort: -1}
 type MainApp struct {} // Placeholder struct for implementing the JablkoInterface interface
 
 var Jablko MainApp // Creating the MainApp instance
- 
-func (jablko MainApp) Tester() {
-	log.Println("Shit")
-}
 
 func (jablko MainApp) SendMessage(message string) error {
 	log.Printf("Message: %s\n", message)
