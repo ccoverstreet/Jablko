@@ -6,16 +6,26 @@ import (
 	"fmt"
 	"os"
 	"plugin"
+	"log"
 
 	"github.com/ccoverstreet/Jablko/types"
 
 	"github.com/buger/jsonparser"
 )
 
+type JablkoModuleHolder struct {
+	Mods map[string]types.JablkoMod
+	Config map[string]string
+}
+
 var ModMap = make(map[string]types.JablkoMod)
 
 func Initialize(jablkoModConfig []byte, jablko types.JablkoInterface) (map[string]string, error) {
 	// Iterate through the JSON object to initialize all instances
+
+	x := new(JablkoModuleHolder)
+	x.Mods = make(map[string]types.JablkoMod)
+	x.Config = make(map[string]string)
 
 	configMap := make(map[string]string)
 	
@@ -25,6 +35,7 @@ func Initialize(jablkoModConfig []byte, jablko types.JablkoInterface) (map[strin
 		// will attempt to build the plugin.
 
 		configMap[string(key)] = string(value)
+		x.Config[string(key)] = string(value)
 
 
 		// DEV WARNING: ONLY WORKS FOR LOCAL MODULES WITH ABSOLUTE PATH
@@ -63,7 +74,10 @@ func Initialize(jablkoModConfig []byte, jablko types.JablkoInterface) (map[strin
 			return err
 		}
 
+		x.Mods[string(key)] = modInstance
 		ModMap[string(key)] = modInstance
+
+		log.Println(x)
 
 		return nil
 	}) 

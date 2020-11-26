@@ -9,6 +9,8 @@ import (
 	"log"
 
 	"github.com/buger/jsonparser"
+
+	"github.com/ccoverstreet/Jablko/src/jablkomods"
 )
 
 type generalConfig struct {
@@ -20,6 +22,7 @@ var jablkoConfig = generalConfig{HttpPort: 8080, HttpsPort: -1}
 
 type MainApp struct {
 	Config generalConfig
+	ModHolder jablkomods.JablkoModuleHolder
 }
 
 func CreateMainApp(configData []byte) (*MainApp, error) {
