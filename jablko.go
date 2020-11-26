@@ -155,6 +155,19 @@ func main() {
 	jablkoDB = database.Initialize()
 	defer jablkoDB.Close()
 
+	// TESTING NEW MAINAPP
+	ConfigData, err := ioutil.ReadFile("./jablkoconfig.json")
+	if err != nil {
+		log.Printf("%v\n", err)
+		panic("Error opening and reading Config file\n")
+	}
+
+	x, err := mainapp.CreateMainApp(ConfigData)
+	if err != nil {
+		log.Panic("Unable to create main app.")
+	}
+	log.Println(x)
+
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
