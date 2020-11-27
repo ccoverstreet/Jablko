@@ -22,7 +22,7 @@ var jablkoConfig = generalConfig{HttpPort: 8080, HttpsPort: -1}
 
 type MainApp struct {
 	Config generalConfig
-	ModHolder jablkomods.JablkoModuleHolder
+	ModHolder *jablkomods.JablkoModuleHolder
 }
 
 func CreateMainApp(configData []byte) (*MainApp, error) {
@@ -44,6 +44,18 @@ func CreateMainApp(configData []byte) (*MainApp, error) {
 	instance.Config.HttpPort = int(httpPort)
 	instance.Config.HttpsPort = int(httpsPort)
 
+	jablkoModulesSlice, _, _, err := jsonparser.Get(configData, "jablkoModules")
+	if err != nil {
+		panic("Error get Jablko Modules Config\n")
+	}
+
+	newModHolder, err := jablkomods.Initialize2(jablkoModulesSlice, instance)
+	if err != nil {
+		panic(err)
+	}
+
+	instance.ModHolder = newModHolder
+
 	return instance, nil
 }
 
@@ -52,3 +64,7 @@ func (app MainApp) SendMessage(message string) error {
 
 	return nil
 } 
+
+func (app MainApp) SyncConfig(modName string) {
+		
+}
