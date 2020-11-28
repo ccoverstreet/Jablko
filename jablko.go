@@ -168,11 +168,15 @@ func main() {
 	}
 	log.Println(x)
 	log.Println(x.ModHolder)
+	x.ModHolder.tester()
+
+	/*
 	data, err := x.ModHolder.Mods["test1"].ConfigStr()
 	if err != nil {
 		panic(err)
 	}
 	log.Println(string(data))
+	*/
 
 
 	// Start HTTP and HTTPS depending on Config

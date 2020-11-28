@@ -91,7 +91,6 @@ func Initialize(jablkoModConfig []byte, jablko types.JablkoInterface) (map[strin
 		configMap[string(key)] = string(value)
 		x.Config[string(key)] = string(value)
 
-
 		// DEV WARNING: ONLY WORKS FOR LOCAL MODULES WITH ABSOLUTE PATH
 		pluginDir, err := jsonparser.GetString(value, "Source")
 		if err != nil {
