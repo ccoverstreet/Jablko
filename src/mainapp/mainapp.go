@@ -66,5 +66,5 @@ func (app MainApp) SendMessage(message string) error {
 } 
 
 func (app MainApp) SyncConfig(modName string) {
-		
+	log.Printf("Sync config called for module \"%s\"\n", modName)		
 }

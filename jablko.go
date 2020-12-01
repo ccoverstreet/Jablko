@@ -168,7 +168,9 @@ func main() {
 	}
 	log.Println(x)
 	log.Println(x.ModHolder)
-	x.ModHolder.tester()
+	//x.ModHolder.tester()
+
+	x.SyncConfig("test1")
 
 	/*
 	data, err := x.ModHolder.Mods["test1"].ConfigStr()
