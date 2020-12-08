@@ -56,6 +56,7 @@ var jablkoConfig = generalConfig{HttpPort: 8080, HttpsPort: -1}
 type MainApp struct {} // Placeholder struct for implementing the JablkoInterface interface
 
 var Jablko MainApp // Creating the MainApp instance
+var jablkoApp *mainapp.MainApp
 
 func (jablko MainApp) SendMessage(message string) error {
 	log.Printf("Message: %s\n", message)
@@ -162,24 +163,15 @@ func main() {
 		panic("Error opening and reading Config file\n")
 	}
 
-	x, err := mainapp.CreateMainApp(ConfigData)
+	jablkoApp, err = mainapp.CreateMainApp(ConfigData)
 	if err != nil {
 		log.Panic("Unable to create main app.")
 	}
-	log.Println(x)
-	log.Println(x.ModHolder)
-	//x.ModHolder.tester()
+	log.Println(jablkoApp)
+	log.Println(jablkoApp.ModHolder)
+	//jablkoApp.ModHolder.tester()
 
-	x.SyncConfig("test1")
-
-	/*
-	data, err := x.ModHolder.Mods["test1"].ConfigStr()
-	if err != nil {
-		panic(err)
-	}
-	log.Println(string(data))
-	*/
-
+	jablkoApp.SyncConfig("test1")
 
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
