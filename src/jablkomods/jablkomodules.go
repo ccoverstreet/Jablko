@@ -4,8 +4,10 @@ package jablkomods
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"plugin"
+	"encoding/json"
 
 	"github.com/ccoverstreet/Jablko/types"
 
@@ -15,14 +17,22 @@ import (
 type JablkoModuleHolder struct {
 	Mods map[string]types.JablkoMod
 	Config map[string]string
+	Order []string
 }
 
 var ModMap = make(map[string]types.JablkoMod)
 
-func Initialize2(jablkoModConfig []byte, jablko types.JablkoInterface) (*JablkoModuleHolder, error) {
+func Initialize2(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoInterface) (*JablkoModuleHolder, error) {
 	x := new(JablkoModuleHolder)
 	x.Mods = make(map[string]types.JablkoMod)
 	x.Config = make(map[string]string)
+
+	// Get the module order
+	err := json.Unmarshal(moduleOrder, &x.Order)
+	if err != nil {
+		log.Println("ERROR: Unable to unmarshal module order.")
+		log.Println(err)
+	}
 
 	return x, jsonparser.ObjectEach(jablkoModConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		// Checks if Jablko Module Package was initialized with 

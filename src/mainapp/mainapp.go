@@ -51,7 +51,9 @@ func CreateMainApp(configData []byte) (*MainApp, error) {
 		panic("Error get Jablko Modules Config\n")
 	}
 
-	newModHolder, err := jablkomods.Initialize2(jablkoModulesSlice, instance)
+	moduleOrderSlice, _, _, err := jsonparser.Get(configData, "moduleOrder")
+
+	newModHolder, err := jablkomods.Initialize2(jablkoModulesSlice, moduleOrderSlice, instance)
 	if err != nil {
 		panic(err)
 	}
@@ -63,12 +65,12 @@ func CreateMainApp(configData []byte) (*MainApp, error) {
 	return instance, nil
 }
 
-func (app MainApp) SendMessage(message string) error {
+func (app *MainApp) SendMessage(message string) error {
 	log.Printf("Message: %s\n", message)	
 
 	return nil
 } 
 
-func (app MainApp) SyncConfig(modName string) {
+func (app *MainApp) SyncConfig(modName string) {
 	log.Printf("Sync config called for module \"%s\"\n", modName)		
 }

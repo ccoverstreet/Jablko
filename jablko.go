@@ -146,12 +146,6 @@ func (jablko MainApp) SyncConfig(modId string) {
 func main() {
 	log.Printf(startingStatement)
 
-	initializeConfig()
-
-	router := initializeRoutes()
-
-
-	// TESTING NEW MAINAPP
 	ConfigData, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
 		log.Printf("%v\n", err)
@@ -159,10 +153,15 @@ func main() {
 	}
 
 	// Create an instance of MainApp
-	jablkoApp, err = mainapp.CreateMainApp(ConfigData)
+	jablkoApp, err := mainapp.CreateMainApp(ConfigData)
 	if err != nil {
 		log.Panic("Unable to create main app.")
 	}
+
+	initializeConfig()
+
+	router := initializeRoutes(jablkoApp)
+
 	log.Println(jablkoApp)
 	log.Println(jablkoApp.ModHolder)
 	//jablkoApp.ModHolder.tester()
@@ -223,21 +222,20 @@ func initializeConfig() {
 	log.Println(jablkoConfig)
 }
 
-func initializeRoutes() *mux.Router {
+func initializeRoutes(app *mainapp.MainApp) *mux.Router {
 	r := mux.NewRouter()
 
 	// Timing Middleware
 	r.Use(timingMiddleware)
-	//r.Use(authenticationMiddleware)
+	r.Use(app.AuthenticationMiddleware)
 
-	/*
-	r.HandleFunc("/", dashboardHandler).Methods("GET")
-	r.HandleFunc("/jablkomods/{mod}/{func}", moduleHandler).Methods("POST")
-	r.HandleFunc("/local/{mod}/{func}", moduleHandler).Methods("POST")
-	r.HandleFunc("/{pubdir}/{file}", publicHTMLHandler).Methods("GET")
-	r.HandleFunc("/login", loginHandler).Methods("POST")
-	r.HandleFunc("/logout", logoutHandler).Methods("POST")
-	*/
+	r.HandleFunc("/", app.DashboardHandler).Methods("GET")
+
+	r.HandleFunc("/jablkomods/{mod}/{func}", app.ModuleHandler).Methods("POST")
+	r.HandleFunc("/local/{mod}/{func}", app.ModuleHandler).Methods("POST")
+	r.HandleFunc("/{pubdir}/{file}", app.PublicHTMLHandler).Methods("GET")
+	r.HandleFunc("/login", app.LoginHandler).Methods("POST")
+	r.HandleFunc("/logout", app.LogoutHandler).Methods("POST")
 
 	return r
 }
