@@ -6,8 +6,8 @@
 		"port": -1
 	},
 	"jablkoModules": {
-		"test1":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25},
-		"hamstermonitor1": {"Title": "Hamster View", "Source": "./test_modules/hamstermonitor", "HamsterName": "Pip"}
+		"hamstermonitor1":{"Title": "Hamster View", "Source": "./test_modules/hamstermonitor", "HamsterName": "Pip"},
+		"test1":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25}
 	},
 	"moduleOrder": [
 		"test1",

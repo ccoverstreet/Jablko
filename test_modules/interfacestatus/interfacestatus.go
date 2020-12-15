@@ -52,8 +52,6 @@ func (instance *intStatus) ConfigStr() ([]byte, error) {
 		return nil, err
 	}
 
-	log.Println(instance)
-
 	return res, nil
 }
 

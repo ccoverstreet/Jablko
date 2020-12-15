@@ -7,6 +7,9 @@ package mainapp
 
 import (
 	"log"
+	"strconv"
+	"strings"
+	"io/ioutil"
 
 	"github.com/buger/jsonparser"
 
@@ -71,6 +74,87 @@ func (app *MainApp) SendMessage(message string) error {
 	return nil
 } 
 
-func (app *MainApp) SyncConfig(modName string) {
-	log.Printf("Sync config called for module \"%s\"\n", modName)		
+func (app *MainApp) SyncConfig(modId string) {
+	log.Printf("Sync config called for module \"%s\"\n", modId)		
+	log.Println("Initial")
+	log.Println(app.ModHolder.Config[modId])
+
+	ConfigTemplate:= `{
+	"http": {
+		"port": $httpPort
+	},
+	"https": {
+		"port": $httpsPort
+	},
+	"jablkoModules": {
+		$moduleString
+	},
+	"moduleOrder": [
+		$moduleOrder
+	]
+}
+`
+
+	if _, ok := app.ModHolder.Mods[modId]; !ok {
+		log.Printf("Cannot find module %s", modId)
+		return 
+	}
+
+	newConfByte, err := app.ModHolder.Mods[modId].ConfigStr()
+	newConfStr := string(newConfByte)
+	if err != nil {
+		log.Printf("Unable to get Config string for module %s\n", modId)
+	}
+
+	if app.ModHolder.Config[modId] == newConfStr {
+		// If there is no change in config
+		return 
+	}
+
+
+	app.ModHolder.Config[modId] = newConfStr
+
+	log.Println(string(newConfStr))
+
+	log.Println("Updated")
+	log.Println(app.ModHolder.Config)
+
+	// Create JSON to dump to Config file
+
+	// Prepare each module's string
+	jablkoModulesStr := ""
+	index := 0
+	for key, value := range app.ModHolder.Config {
+		if index > 0 {
+			jablkoModulesStr = jablkoModulesStr + ",\n\t\t\"" + key + "\":" + value
+		} else {
+			jablkoModulesStr = jablkoModulesStr + "\"" + key + "\":" + value
+		}
+
+		index = index + 1
+	}
+
+	// Prepare Module Order
+	orderStr := ""
+	for index, val := range app.ModHolder.Order {
+		if index > 0 {
+			orderStr = orderStr + ",\n" + "\t\t\"" + val + "\""
+		} else {
+			orderStr = orderStr + "\"" + val + "\""
+		}
+	}
+
+	log.Println(orderStr)
+
+	r := strings.NewReplacer("$httpPort", strconv.Itoa(jablkoConfig.HttpPort),
+	"$httpsPort", strconv.Itoa(jablkoConfig.HttpsPort),
+	"$moduleString", jablkoModulesStr,
+	"$moduleOrder", orderStr)
+
+	ConfigDumpStr := r.Replace(ConfigTemplate)
+
+	err = ioutil.WriteFile("./jablkoconfig.json", []byte(ConfigDumpStr), 0022)
+	if err != nil {
+		log.Println(`Unable to write to "jablkoconfig.json".`)
+	}
 }
