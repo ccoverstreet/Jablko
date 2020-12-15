@@ -16,8 +16,8 @@ intense route.
 package main
 
 import (
-	"context"
-	"fmt"
+	//"context"
+	//"fmt"
 	"io/ioutil"
 	"sync"
 	"log"
@@ -25,15 +25,13 @@ import (
 	"strconv"
 	"time"
 	"strings"
-	"database/sql"
-	"encoding/json"
+	//"encoding/json"
 
 	"github.com/gorilla/mux"
 	"github.com/buger/jsonparser"
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/ccoverstreet/Jablko/src/jablkomods"
-	"github.com/ccoverstreet/Jablko/src/database"
 	"github.com/ccoverstreet/Jablko/src/mainapp"
 )
 
@@ -64,7 +62,6 @@ func (jablko MainApp) SendMessage(message string) error {
 	return nil
 }
 
-var jablkoDB *sql.DB // Database handle
 
 func (jablko MainApp) SyncConfig(modId string) {
 	log.Println("Initial")
@@ -153,8 +150,6 @@ func main() {
 
 	router := initializeRoutes()
 
-	jablkoDB = database.Initialize()
-	defer jablkoDB.Close()
 
 	// TESTING NEW MAINAPP
 	ConfigData, err := ioutil.ReadFile("./jablkoconfig.json")
@@ -163,6 +158,7 @@ func main() {
 		panic("Error opening and reading Config file\n")
 	}
 
+	// Create an instance of MainApp
 	jablkoApp, err = mainapp.CreateMainApp(ConfigData)
 	if err != nil {
 		log.Panic("Unable to create main app.")
@@ -232,14 +228,16 @@ func initializeRoutes() *mux.Router {
 
 	// Timing Middleware
 	r.Use(timingMiddleware)
-	r.Use(authenticationMiddleware)
+	//r.Use(authenticationMiddleware)
 
+	/*
 	r.HandleFunc("/", dashboardHandler).Methods("GET")
 	r.HandleFunc("/jablkomods/{mod}/{func}", moduleHandler).Methods("POST")
 	r.HandleFunc("/local/{mod}/{func}", moduleHandler).Methods("POST")
 	r.HandleFunc("/{pubdir}/{file}", publicHTMLHandler).Methods("GET")
 	r.HandleFunc("/login", loginHandler).Methods("POST")
 	r.HandleFunc("/logout", logoutHandler).Methods("POST")
+	*/
 
 	return r
 }
@@ -283,6 +281,7 @@ func timingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+/*
 func authenticationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/login" {
@@ -445,3 +444,4 @@ func moduleHandler(w http.ResponseWriter, r *http.Request) {
 
 	jablkomods.ModMap[pathParams["mod"]].WebHandler(w, r)
 }
+*/

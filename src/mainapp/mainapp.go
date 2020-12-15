@@ -11,6 +11,7 @@ import (
 	"github.com/buger/jsonparser"
 
 	"github.com/ccoverstreet/Jablko/src/jablkomods"
+	"github.com/ccoverstreet/Jablko/src/database"
 )
 
 type generalConfig struct {
@@ -23,6 +24,7 @@ var jablkoConfig = generalConfig{HttpPort: 8080, HttpsPort: -1}
 type MainApp struct {
 	Config generalConfig
 	ModHolder *jablkomods.JablkoModuleHolder
+	Db *database.JablkoDB
 }
 
 func CreateMainApp(configData []byte) (*MainApp, error) {
@@ -55,6 +57,8 @@ func CreateMainApp(configData []byte) (*MainApp, error) {
 	}
 
 	instance.ModHolder = newModHolder
+
+	instance.Db = database.Initialize()
 
 	return instance, nil
 }

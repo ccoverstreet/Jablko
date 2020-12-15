@@ -5,23 +5,20 @@ import (
 	"net/http"
 	"time"
 
-	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
-
 	"github.com/ccoverstreet/Jablko/types"
 	"github.com/ccoverstreet/Jablko/src/jablkorandom"
 )
 
 const sessionLength = 3600 // Session duration in seconds
 
-func CreateSession(database *sql.DB, username string, userData types.UserData) (http.Cookie, error) {
+func (instance *JablkoDB) CreateSession(username string, userData types.UserData) (http.Cookie, error) {
 	cookieValue, err := jablkorandom.GenRandomStr(128)
 	if err != nil {
 		log.Println("ERROR: Unable to generate random string for cookie");
 		return http.Cookie{}, err
 	}
 
-	statement, err := database.Prepare("INSERT INTO loginSessions (cookie, username, firstName, permissions, creationTime) VALUES (?, ?, ?, ?, strftime('%s', 'now'))")	
+	statement, err := instance.Db.Prepare("INSERT INTO loginSessions (cookie, username, firstName, permissions, creationTime) VALUES (?, ?, ?, ?, strftime('%s', 'now'))")	
 	if err != nil {
 		log.Println("ERROR: Unable to prepare loginSessions INSERT SQL statement.")
 		return http.Cookie{}, err
@@ -42,8 +39,8 @@ func CreateSession(database *sql.DB, username string, userData types.UserData) (
 	return newCookie, nil
 }
 
-func DeleteSession(database *sql.DB, cookieValue string) error {
-	statement, err := database.Prepare("DELETE FROM loginSessions WHERE cookie=(?)")
+func (instance *JablkoDB) DeleteSession(cookieValue string) error {
+	statement, err := instance.Db.Prepare("DELETE FROM loginSessions WHERE cookie=(?)")
 	if err != nil {
 		return err
 	}
@@ -53,7 +50,7 @@ func DeleteSession(database *sql.DB, cookieValue string) error {
 		return err
 	}
 
-	err = CleanSessions(database)
+	err = instance.CleanSessions()
 	if err != nil {
 		return err
 	}
@@ -61,8 +58,8 @@ func DeleteSession(database *sql.DB, cookieValue string) error {
 	return nil
 }
 
-func CleanSessions(database *sql.DB) error {
-	statement, err := database.Prepare("DELETE FROM loginSessions WHERE creationTime < (?)")
+func (instance *JablkoDB) CleanSessions() error {
+	statement, err := instance.Db.Prepare("DELETE FROM loginSessions WHERE creationTime < (?)")
 	if err != nil {
 		return err
 	}
@@ -73,13 +70,14 @@ func CleanSessions(database *sql.DB) error {
 	}
 
 	return nil
+
 }
 
-func ValidateSession(database *sql.DB, cookieValue string) (bool, types.SessionHolder, error) {
+func (instance *JablkoDB) ValidateSession(cookieValue string) (bool, types.SessionHolder, error) {
 	hold := types.SessionHolder{}
 	isValid := false
 
-	statement, err := database.Prepare("SELECT * FROM loginSessions WHERE cookie=(?)")		
+	statement, err := instance.Db.Prepare("SELECT * FROM loginSessions WHERE cookie=(?)")		
 	if err != nil {
 		return false, hold, err
 	}
@@ -101,7 +99,7 @@ func ValidateSession(database *sql.DB, cookieValue string) (bool, types.SessionH
 	if int64(hold.CreationTime + sessionLength) < time.Now().Unix() {
 		// If cookie is expired
 		// Delete all cookies from table that are expired
-		err = DeleteSession(database, cookieValue)
+		err = instance.DeleteSession(cookieValue)
 
 		return false, hold, err
 	} else {
@@ -109,4 +107,5 @@ func ValidateSession(database *sql.DB, cookieValue string) (bool, types.SessionH
 	}
 
 	return isValid, hold, nil
+
 }

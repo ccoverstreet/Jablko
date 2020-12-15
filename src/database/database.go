@@ -22,7 +22,12 @@ import (
 	"github.com/ccoverstreet/Jablko/types"
 )
 
-func Initialize() *sql.DB {
+type JablkoDB struct {
+	Db *sql.DB
+}
+
+func Initialize() *JablkoDB {
+	newDB := new(JablkoDB)
 	log.Println("Initializing Jablko Database...")
 
 	// Check if database exists
@@ -36,7 +41,7 @@ func Initialize() *sql.DB {
 		log.Println("Issue determining if database file exists. Please check file permisions.")
 	}
 
-	newDB, _ := sql.Open("sqlite3", "./data/jablko.db")		
+	newDB.Db, _ = sql.Open("sqlite3", "./data/jablko.db")		
 
 	return newDB
 }
@@ -114,10 +119,10 @@ func removeDatabase() {
 	os.Remove("./data/jablko.db")	
 }
 
-func AddUser(db *sql.DB, username string, password string, firstName string, permissions int) error {
+func (instance *JablkoDB) AddUser(username string, password string, firstName string, permissions int) error {
 	userSQL := `INSERT INTO users (username, password, firstName, permissions) VALUES(?, ?, ?, ?)`
 
-	statement, err := db.Prepare(userSQL)
+	statement, err := instance.Db.Prepare(userSQL)
 	if err != nil {
 		log.Println("Error in preparing user create SQL statement")
 		return err
@@ -132,8 +137,8 @@ func AddUser(db *sql.DB, username string, password string, firstName string, per
 	return nil
 }
 
-func AuthenticateUser(database *sql.DB, username string, password string) (bool, types.UserData) {	
-	statement, err := database.Prepare("SELECT * FROM users WHERE username=(?)")
+func (instance *JablkoDB) AuthenticateUser(username string, password string) (bool, types.UserData) {
+	statement, err := instance.Db.Prepare("SELECT * FROM users WHERE username=(?)")
 	if err != nil {
 		log.Println("ERROR: Authenticate user SQL is invalid.")
 	}
