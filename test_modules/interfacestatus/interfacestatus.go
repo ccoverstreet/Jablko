@@ -15,9 +15,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ---------- Module Globals ----------
 var jablko types.JablkoInterface
+var templateCaching bool
+var cachedTemplate string
 
 var serverStartTime int
+// ---------- END Module Globals ----------
 
 type intStatus struct {
 	id string
@@ -27,8 +31,8 @@ type intStatus struct {
 }
 
 func init() {
+	// Initialiaze globals
 	serverStartTime = int(time.Now().Unix())
-	log.Println(serverStartTime)
 }
 
 func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInterface) (types.JablkoMod, error) {
@@ -42,7 +46,18 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 	instance.id = instanceId
 
 	jablko = jablkoRef
+	
+	templateCaching = !jablko.GetFlagValue("--debug-mode")
 
+	if templateCaching {
+		loadedTemplateBytes, err := ioutil.ReadFile(instance.Source + "/interfacestatus.html")
+		if err != nil {
+			log.Println("ERROR: Unable to read interfacestatus.html template file")
+		}
+
+		cachedTemplate = string(loadedTemplateBytes)
+	}
+	
 	return types.StructToMod(instance), nil
 }
 
@@ -59,6 +74,10 @@ func (instance *intStatus) Card(*http.Request) string {
 	r := strings.NewReplacer("$UPDATE_INTERVAL", strconv.Itoa(instance.UpdateInterval),
 	"$MODULE_ID", instance.id,
 	"$MODULE_TITLE", instance.Title)
+
+	if templateCaching {
+		return r.Replace(cachedTemplate)
+	}
 
 	loadedTemplateBytes, err := ioutil.ReadFile(instance.Source + "/interfacestatus.html")
 	if err != nil {
