@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"io/ioutil"
+	"os"
 
 	"github.com/buger/jsonparser"
 
@@ -28,10 +29,31 @@ type MainApp struct {
 	Config generalConfig
 	ModHolder *jablkomods.JablkoModuleHolder
 	Db *database.JablkoDB
+	flags map[string]bool
 }
 
-func CreateMainApp(configData []byte) (*MainApp, error) {
+func CreateMainApp(configFilePath string) (*MainApp, error) {
+
+	configData, err := ioutil.ReadFile("./jablkoconfig.json")
+	if err != nil {
+		log.Printf("%v\n", err)
+		panic(err)
+	}
+
 	instance := new(MainApp)
+
+	instance.flags = make(map[string]bool)
+
+	// Parse and set flags
+	// First set defaults
+	for _, val := range os.Args {
+		switch val {
+		case "--build-all":
+			instance.flags[val] = true
+		case "--debug-mode":
+			instance.flags[val] = true
+		}
+	}
 
 	httpPort, err := jsonparser.GetInt(configData, "http", "port")
 	if err != nil {
@@ -73,6 +95,14 @@ func (app *MainApp) SendMessage(message string) error {
 
 	return nil
 } 
+
+func (app *MainApp) GetFlagValue(flag string) bool {
+	if val, ok := app.flags[flag]; ok {
+		return val
+	} else {
+		return false
+	}
+}
 
 func (app *MainApp) SyncConfig(modId string) {
 	log.Printf("Sync config called for module \"%s\"\n", modId)		

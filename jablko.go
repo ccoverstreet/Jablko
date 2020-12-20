@@ -16,17 +16,15 @@ intense route.
 package main
 
 import (
-	"io/ioutil"
 	"sync"
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
-	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/ccoverstreet/Jablko/src/mainapp"
+	"github.com/ccoverstreet/Jablko/src/middleware"
 )
 
 const startingStatement = `Jablko Smart Home
@@ -39,14 +37,8 @@ License: GPLv3
 func main() {
 	log.Printf(startingStatement)
 
-	ConfigData, err := ioutil.ReadFile("./jablkoconfig.json")
-	if err != nil {
-		log.Printf("%v\n", err)
-		panic("Error opening and reading Config file\n")
-	}
-
 	// Create an instance of MainApp
-	jablkoApp, err := mainapp.CreateMainApp(ConfigData)
+	jablkoApp, err := mainapp.CreateMainApp("./jablkoconfig.json")
 	if err != nil {
 		log.Panic("Unable to create main app.")
 	}
@@ -69,7 +61,7 @@ func initializeRoutes(app *mainapp.MainApp) *mux.Router {
 	r := mux.NewRouter()
 
 	// Timing Middleware
-	r.Use(timingMiddleware)
+	r.Use(middleware.TimingMiddleware)
 	r.Use(app.AuthenticationMiddleware)
 
 	r.HandleFunc("/", app.DashboardHandler).Methods("GET")
@@ -107,17 +99,4 @@ func startJablko(app *mainapp.MainApp, router *mux.Router, wg *sync.WaitGroup) c
 	}
 
 	return errs
-}
-
-func timingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		// Calling next handler
-		next.ServeHTTP(w, r)
-
-		end := time.Now()
-
-		log.Printf("Request \"%s\" took %7.3f ms\n", r.URL.Path, float32(end.Sub(start)) / 1000000)
-	})
 }

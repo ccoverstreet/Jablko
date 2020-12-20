@@ -6,11 +6,17 @@
 		"port": -1
 	},
 	"jablkoModules": {
-		"hamstermonitor1":{"Title": "Hamster View", "Source": "./test_modules/hamstermonitor", "HamsterName": "Pip"},
-		"test1":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25}
+		"hamstermonitor1":{"Title": "Pip Monitor", "Source": "./test_modules/hamstermonitor", "HamsterName": "Pip"},
+		"hamstermonitor2":{"Title": "Hamster View", "Source": "./test_modules/hamstermonitor", "HamsterName": "Pip"},
+		"test1":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25},
+		"test2":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25},
+		"test3":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25}
 	},
 	"moduleOrder": [
 		"test1",
-		"hamstermonitor1"
+		"hamstermonitor1",
+		"hamstermonitor2",
+		"test2",
+		"test3"
 	]
 }

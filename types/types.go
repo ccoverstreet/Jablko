@@ -7,6 +7,7 @@ import (
 type JablkoInterface interface {
 	SyncConfig(string)
 	SendMessage(string) error
+	GetFlagValue(string) bool
 }
 
 type JablkoMod interface{
