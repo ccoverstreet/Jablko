@@ -9,6 +9,7 @@ import (
 	"plugin"
 	"encoding/json"
 	"os/exec"
+	"strings"
 
 	"github.com/ccoverstreet/Jablko/types"
 
@@ -54,6 +55,18 @@ func Initialize2(jablkoModConfig []byte, moduleOrder []byte, jablko types.Jablko
 			fmt.Printf("%v\n", err)
 		}
 
+		// Check if package needs to be downloaded
+		if _, err := os.Stat(pluginDir); os.IsNotExist(err) {
+			log.Printf("Unable to find jablkomod directory %s.\n", pluginDir)	
+			if strings.HasPrefix(pluginDir, "github.com") {
+				log.Printf("Downloading plugin source\n")
+				downloadPlugin(pluginDir)
+				return nil
+			} else {
+				log.Printf("WARNING: Jablkomod %s not found and will not be downloaded. Jablkomod will not be enabled.\n", pluginDir)
+			}
+		}
+
 		// Build plugin if flagBuildAll is true
 		if flagBuildAll {
 			log.Printf("Checking if jablkomod \"%s\" needs to be built.\n", pluginDir)
@@ -74,7 +87,8 @@ func Initialize2(jablkoModConfig []byte, moduleOrder []byte, jablko types.Jablko
 
 		// Check if the plugin has already been built
 		if _, err := os.Stat(pluginFile); os.IsNotExist(err) {
-			fmt.Printf("Plugin file not found.\n")
+			fmt.Printf("Plugin file \"%s\"not found. Jablkomod will not be enabled\n", pluginFile)
+			return err
 		}
 
 		// Load plugin
@@ -113,4 +127,8 @@ func buildPlugin(buildDir string) error {
 	_, err := buildCMD.Output()
 
 	return err
+}
+
+func downloadPlugin(repoPath string) error {
+	return nil	
 }
