@@ -6,7 +6,7 @@ Jablko is a smart home system written in Go that is extendible by user created J
 
 The last release published is the last NodeJS version. This version is no longer being developed. Future versions will be written in Go.
 
-0.3.0 is the current development goal. Issues and suggested features should go in issues. Test.
+0.3.0 is the current development goal. Issues and suggested features should go in issues.
 
 ## Installing
 
