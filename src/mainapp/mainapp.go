@@ -79,8 +79,10 @@ func CreateMainApp(configFilePath string) (*MainApp, error) {
 	moduleOrderSlice, _, _, err := jsonparser.Get(configData, "moduleOrder")
 
 	newModHolder, err := jablkomods.Initialize2(jablkoModulesSlice, moduleOrderSlice, instance)
+
+	log.Println(newModHolder)
 	if err != nil {
-		panic(err)
+		log.Printf("JablkoMods ERROR: %s\n", err)
 	}
 
 	instance.ModHolder = newModHolder

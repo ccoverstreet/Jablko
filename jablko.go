@@ -48,8 +48,6 @@ func main() {
 	log.Println(jablkoApp)
 	log.Println(jablkoApp.ModHolder)
 
-	jablkoApp.SyncConfig("test1")
-
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup

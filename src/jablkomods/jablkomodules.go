@@ -60,8 +60,16 @@ func Initialize2(jablkoModConfig []byte, moduleOrder []byte, jablko types.Jablko
 			log.Printf("Unable to find jablkomod directory %s.\n", pluginDir)	
 			if strings.HasPrefix(pluginDir, "github.com") {
 				log.Printf("Downloading plugin source\n")
-				downloadPlugin(pluginDir)
-				return nil
+				downloadErr := downloadJablkoMod(pluginDir)
+
+				if downloadErr != nil {
+					log.Println("BIG TIME ERROR IN JABLKOMOD DOWNLOADING")
+					return nil // THIS IS KIND OF STRANGE
+					// Currently returns nil so all modules are parsed
+					// Is it worth allowing Jablko to start if not
+					// all mods are able to load? Either way, this should 
+					// fail loudly.
+				}
 			} else {
 				log.Printf("WARNING: Jablkomod %s not found and will not be downloaded. Jablkomod will not be enabled.\n", pluginDir)
 			}
@@ -72,10 +80,10 @@ func Initialize2(jablkoModConfig []byte, moduleOrder []byte, jablko types.Jablko
 			log.Printf("Checking if jablkomod \"%s\" needs to be built.\n", pluginDir)
 			if _, ok := buildCache[pluginDir]; !ok {
 				log.Printf("Building jablkomod \"%s\".\n", pluginDir)
-				err = buildPlugin(pluginDir)
+				err = buildJablkoMod(pluginDir)
 				if err != nil {
 					log.Printf("ERROR: Unable to build jablkomod located in \"%s\".\n", pluginDir)
-					panic(err)
+					log.Printf("WARNING: Jablko %s will not be activated.\n", pluginDir)
 				}
 				buildCache[pluginDir] = true
 			} else {
@@ -120,7 +128,7 @@ func Initialize2(jablkoModConfig []byte, moduleOrder []byte, jablko types.Jablko
 	})
 }
 
-func buildPlugin(buildDir string) error {
+func buildJablkoMod(buildDir string) error {
 	buildCMD := exec.Command("go", "build", "-buildmode=plugin", "-o", "jablkomod.so", ".")		
 	buildCMD.Dir = buildDir
 	log.Println(buildCMD)
@@ -129,6 +137,6 @@ func buildPlugin(buildDir string) error {
 	return err
 }
 
-func downloadPlugin(repoPath string) error {
-	return nil	
+func downloadJablkoMod(repoPath string) error {
+	return fmt.Errorf("Unable to download jablkomod repo \"%s\"\n", repoPath)
 }

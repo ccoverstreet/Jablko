@@ -90,8 +90,11 @@ func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	var sb strings.Builder
 	
-	for i := 0; i < len(app.ModHolder.Order); i++ {
-		sb.WriteString(app.ModHolder.Mods[app.ModHolder.Order[i]].Card(r))	
+	for _, modId := range app.ModHolder.Order {
+		log.Println(modId)
+		if curMod, ok := app.ModHolder.Mods[modId]; ok {
+			sb.WriteString(curMod.Card(r))	
+		}
 	}
 
 	replacer := strings.NewReplacer("$TOOLBAR", toolbar,
