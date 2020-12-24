@@ -25,17 +25,22 @@ import (
 
 	"github.com/ccoverstreet/Jablko/src/mainapp"
 	"github.com/ccoverstreet/Jablko/src/middleware"
+	"github.com/ccoverstreet/Jablko/src/jlog"
 )
 
 const startingStatement = `Jablko Smart Home
 Cale Overstreet
-Version 0.3.0
+Version 0.2.0
 License: GPLv3
 
 `
 
 func main() {
 	log.Printf(startingStatement)
+
+	jlog.Printf("Hello\n")
+	jlog.Warnf("Warning Log\n")
+	jlog.Errorf("Error Log\n")
 
 	// Create an instance of MainApp
 	jablkoApp, err := mainapp.CreateMainApp("./jablkoconfig.json")
