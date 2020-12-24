@@ -1,4 +1,4 @@
-// jablkomodules.go: Jablko Module Manager
+// jablkomods.go: Jablko Module Manager
 
 package jablkomods
 
