@@ -17,7 +17,6 @@ package main
 
 import (
 	"sync"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -30,28 +29,25 @@ import (
 
 const startingStatement = `Jablko Smart Home
 Cale Overstreet
-Version 0.2.0
+Version 0.3.0
 License: GPLv3
 
 `
 
 func main() {
-	log.Printf(startingStatement)
+	jlog.Printf(startingStatement)
 
-	jlog.Printf("Hello\n")
-	jlog.Warnf("Warning Log\n")
-	jlog.Errorf("Error Log\n")
 
 	// Create an instance of MainApp
 	jablkoApp, err := mainapp.CreateMainApp("./jablkoconfig.json")
 	if err != nil {
-		log.Panic("Unable to create main app.")
+		jlog.Panic("Unable to create main app.")
 	}
 
 	router := initializeRoutes(jablkoApp)
 
-	log.Println(jablkoApp)
-	log.Println(jablkoApp.ModHolder)
+	jlog.Println(jablkoApp)
+	jlog.Println(jablkoApp.ModHolder)
 
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
@@ -72,8 +68,8 @@ func initializeRoutes(app *mainapp.MainApp) *mux.Router {
 	r.HandleFunc("/jablkomods/{mod}/{func}", app.ModuleHandler).Methods("POST")
 	r.HandleFunc("/local/{mod}/{func}", app.ModuleHandler).Methods("POST")
 	r.HandleFunc("/{pubdir}/{file}", app.PublicHTMLHandler).Methods("GET")
-	r.HandleFunc("/login", app.LoginHandler).Methods("POST")
-	r.HandleFunc("/logout", app.LogoutHandler).Methods("POST")
+	r.HandleFunc("/jlogin", app.LoginHandler).Methods("POST")
+	r.HandleFunc("/jlogout", app.LogoutHandler).Methods("POST")
 
 	return r
 }
@@ -86,9 +82,9 @@ func startJablko(app *mainapp.MainApp, router *mux.Router, wg *sync.WaitGroup) c
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Printf("Starting HTTP Server on Port %d\n", app.Config.HttpPort)	
+			jlog.Printf("Starting HTTP Server on Port %d\n", app.Config.HttpPort)	
 
-			log.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(app.Config.HttpPort), router))
+			jlog.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(app.Config.HttpPort), router))
 		}()
 	}
 
@@ -97,7 +93,7 @@ func startJablko(app *mainapp.MainApp, router *mux.Router, wg *sync.WaitGroup) c
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Printf("Starting HTTPS Server on Port %d\n", app.Config.HttpsPort)	
+			jlog.Printf("Starting HTTPS Server on Port %d\n", app.Config.HttpsPort)	
 		}()
 	}
 

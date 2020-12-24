@@ -24,6 +24,16 @@ func prefix() string {
 	return "[" + time.Now().Format("2006-01-02 15:04:05") + "]: "
 }
 
+func Println(args ...interface{}) {
+	fmt.Printf(prefix())
+	fmt.Println(args...)
+}
+
+func Panic(args ...interface{}) {
+	Println(args)
+	panic(args)
+}
+
 func Printf(format string, args ...interface{}) {
 	fmt.Printf(prefix() + format, args...)
 }
