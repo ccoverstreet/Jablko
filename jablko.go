@@ -16,6 +16,7 @@ intense route.
 package main
 
 import (
+	"fmt"
 	"sync"
 	"net/http"
 	"strconv"
@@ -35,8 +36,7 @@ License: GPLv3
 `
 
 func main() {
-	jlog.Printf(startingStatement)
-
+	fmt.Printf(startingStatement)
 
 	// Create an instance of MainApp
 	jablkoApp, err := mainapp.CreateMainApp("./jablkoconfig.json")
@@ -46,9 +46,6 @@ func main() {
 
 	router := initializeRoutes(jablkoApp)
 
-	jlog.Println(jablkoApp)
-	jlog.Println(jablkoApp.ModHolder)
-
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
@@ -57,6 +54,7 @@ func main() {
 }
 
 func initializeRoutes(app *mainapp.MainApp) *mux.Router {
+	jlog.Printf("Initializing routes...\n")
 	r := mux.NewRouter()
 
 	// Timing Middleware
