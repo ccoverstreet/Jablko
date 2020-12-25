@@ -8,7 +8,7 @@ package middleware
 import (
 	"net/http"
 	"time"
-	"log"
+	"github.com/ccoverstreet/Jablko/src/jlog"
 )
 
 func TimingMiddleware(next http.Handler) http.Handler {
@@ -20,6 +20,6 @@ func TimingMiddleware(next http.Handler) http.Handler {
 
 		end := time.Now()
 
-		log.Printf("Request \"%s\" took %.3f ms\n", r.URL.Path, float32(end.Sub(start)) / 1000000)
+		jlog.Printf("Request \"%s\" took %.3f ms\n", r.URL.Path, float32(end.Sub(start)) / 1000000)
 	})
 }

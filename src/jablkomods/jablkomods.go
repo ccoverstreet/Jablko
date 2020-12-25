@@ -4,7 +4,6 @@ package jablkomods
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"plugin"
 	"encoding/json"
@@ -12,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/ccoverstreet/Jablko/types"
+	"github.com/ccoverstreet/Jablko/src/jlog"
 
 	"github.com/buger/jsonparser"
 )
@@ -38,7 +38,7 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 	// Get the module order
 	err := json.Unmarshal(moduleOrder, &x.Order)
 	if err != nil {
-		log.Println("ERROR: Unable to unmarshal module order.")
+		jlog.Errorf("ERROR: Unable to unmarshal module order.")
 		panic(err)
 	}
 
@@ -57,13 +57,13 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 
 		// Check if package needs to be downloaded
 		if _, err := os.Stat(pluginDir); os.IsNotExist(err) {
-			log.Printf("Unable to find jablkomod directory %s.\n", pluginDir)	
+			jlog.Printf("Unable to find jablkomod directory %s.\n", pluginDir)	
 			if strings.HasPrefix(pluginDir, "github.com") {
-				log.Printf("Downloading plugin source\n")
+				jlog.Printf("Downloading plugin source\n")
 				downloadErr := downloadJablkoMod(pluginDir)
 
 				if downloadErr != nil {
-					log.Println("BIG TIME ERROR IN JABLKOMOD DOWNLOADING")
+					jlog.Errorf("Unable to download plugin \"%s\"\n", pluginDir)
 					return nil // THIS IS KIND OF STRANGE
 					// Currently returns nil so all modules are parsed
 					// Is it worth allowing Jablko to start if not
@@ -71,23 +71,23 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 					// fail loudly.
 				}
 			} else {
-				log.Printf("WARNING: Jablkomod %s not found and will not be downloaded. Jablkomod will not be enabled.\n", pluginDir)
+				jlog.Warnf("WARNING: Jablkomod %s not found and will not be downloaded. Jablkomod will not be enabled.\n", pluginDir)
 			}
 		}
 
 		// Build plugin if flagBuildAll is true
 		if flagBuildAll {
-			log.Printf("Checking if jablkomod \"%s\" needs to be built.\n", pluginDir)
+			jlog.Printf("Checking if jablkomod \"%s\" needs to be built.\n", pluginDir)
 			if _, ok := buildCache[pluginDir]; !ok {
-				log.Printf("Building jablkomod \"%s\".\n", pluginDir)
+				jlog.Printf("Building jablkomod \"%s\".\n", pluginDir)
 				err = buildJablkoMod(pluginDir)
 				if err != nil {
-					log.Printf("ERROR: Unable to build jablkomod located in \"%s\".\n", pluginDir)
-					log.Printf("WARNING: Jablko %s will not be activated.\n", pluginDir)
+					jlog.Errorf("ERROR: Unable to build jablkomod located in \"%s\".\n", pluginDir)
+					jlog.Warnf("WARNING: Jablko %s will not be activated.\n", pluginDir)
 				}
 				buildCache[pluginDir] = true
 			} else {
-				log.Printf("Jablkomod already built.\n")
+				jlog.Printf("Jablkomod already built.\n")
 			}
 		}
 
@@ -95,7 +95,7 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 
 		// Check if the plugin has already been built
 		if _, err := os.Stat(pluginFile); os.IsNotExist(err) {
-			fmt.Printf("Plugin file \"%s\"not found. Jablkomod will not be enabled\n", pluginFile)
+			jlog.Warnf("Plugin file \"%s\"not found. Jablkomod will not be enabled\n", pluginFile)
 			return err
 		}
 
@@ -131,7 +131,7 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 func buildJablkoMod(buildDir string) error {
 	buildCMD := exec.Command("go", "build", "-buildmode=plugin", "-o", "jablkomod.so", ".")		
 	buildCMD.Dir = buildDir
-	log.Println(buildCMD)
+	jlog.Println(buildCMD)
 	_, err := buildCMD.Output()
 
 	return err

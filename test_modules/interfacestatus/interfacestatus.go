@@ -2,9 +2,10 @@ package main
 
 import (
 	"github.com/ccoverstreet/Jablko/types"
+	"github.com/ccoverstreet/Jablko/src/jlog"
+
 	"net/http"
 	"fmt"
-	"log"
 	"time"
 	"runtime"
 	"strings"
@@ -52,7 +53,7 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 	if templateCaching {
 		loadedTemplateBytes, err := ioutil.ReadFile(instance.Source + "/interfacestatus.html")
 		if err != nil {
-			log.Println("ERROR: Unable to read interfacestatus.html template file")
+			jlog.Errorf("ERROR: Unable to read interfacestatus.html template file\n")
 		}
 
 		cachedTemplate = string(loadedTemplateBytes)
@@ -81,7 +82,7 @@ func (instance *intStatus) Card(*http.Request) string {
 
 	loadedTemplateBytes, err := ioutil.ReadFile(instance.Source + "/interfacestatus.html")
 	if err != nil {
-		log.Println("ERROR: Unable to read interfacestatus.html template file")
+		jlog.Errorf("ERROR: Unable to read interfacestatus.html template file\n")
 	}
 
 	htmlTemplate := string(loadedTemplateBytes)
@@ -97,11 +98,11 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case pathParams["func"] == "banana":
-		log.Println("ASDASDASDSA")
+		jlog.Println("ASDASDASDSA")
 	case pathParams["func"] == "getStatus":
 		err = getStatus(w, r)	
 	default:
-		log.Println("Nothing Found")
+		jlog.Println("Nothing Found")
 	}
 
 	if err != nil {
