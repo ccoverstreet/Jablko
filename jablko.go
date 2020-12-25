@@ -20,6 +20,7 @@ import (
 	"sync"
 	"net/http"
 	"strconv"
+	"os"
 
 	"github.com/gorilla/mux"
 
@@ -37,6 +38,14 @@ License: GPLv3
 
 func main() {
 	fmt.Printf(startingStatement)
+
+	// Create tmp directory
+	err := os.Mkdir("./tmp", 0755)
+	if err != nil {
+		jlog.Warnf("Unable to make tmp directory: %v\n", err)
+	}
+
+	defer os.RemoveAll("./tmp")
 
 	// Create an instance of MainApp
 	jablkoApp, err := mainapp.CreateMainApp("./jablkoconfig.json")
@@ -66,8 +75,8 @@ func initializeRoutes(app *mainapp.MainApp) *mux.Router {
 	r.HandleFunc("/jablkomods/{mod}/{func}", app.ModuleHandler).Methods("POST")
 	r.HandleFunc("/local/{mod}/{func}", app.ModuleHandler).Methods("POST")
 	r.HandleFunc("/{pubdir}/{file}", app.PublicHTMLHandler).Methods("GET")
-	r.HandleFunc("/jlogin", app.LoginHandler).Methods("POST")
-	r.HandleFunc("/jlogout", app.LogoutHandler).Methods("POST")
+	r.HandleFunc("/login", app.LoginHandler).Methods("POST")
+	r.HandleFunc("/logout", app.LogoutHandler).Methods("POST")
 
 	return r
 }
