@@ -102,30 +102,37 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 		// Check if the plugin has already been built
 		if _, err := os.Stat(pluginFile); os.IsNotExist(err) {
 			jlog.Warnf("Plugin file \"%s\" not found. Jablkomod will not be enabled\n", pluginFile)
-			return err
+			jlog.Warnf("%v\n", err)
+			return nil
 		}
 
 		// Load plugin
 		plug, err := plugin.Open(pluginFile)	
 		if err != nil {
-			return err
+			jlog.Warnf("Unable to load jablkomod \"%s\"\n", pluginFile)
+			jlog.Warnf("%v\n", err)
+			return nil
 		}
 
 		// Look for Initialize function symbol in plugin
 		initSym, err := plug.Lookup("Initialize")
 		if err != nil {
-			return err
+			jlog.Warnf("Initialize function signature not found in \"%s\"\n", pluginFile)
+			jlog.Warnf("%v\n", err)
+			return nil
 		}
 
 		// Check if function signature matches
 		initFunc, ok := initSym.(func(string, []byte, types.JablkoInterface)(types.JablkoMod, error))
 		if !ok {
+			jlog.Warnf("Initialize function signature doesn't match \"%s\"\n", pluginFile)
 			return nil
 		}
 
 		modInstance, err := initFunc(string(key), value, jablko)
 		if err != nil {
-			return err
+			jlog.Warnf("Initialize function failed in \"%s\"\n", pluginFile)
+			return nil
 		}
 
 		x.Mods[string(key)] = modInstance

@@ -82,7 +82,6 @@ func CreateMainApp(configFilePath string) (*MainApp, error) {
 
 	if err != nil {
 		jlog.Errorf("JablkoMods ERROR: %s\n", err)
-		panic(err)
 	}
 
 	instance.ModHolder = newModHolder
