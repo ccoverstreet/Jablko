@@ -1,12 +1,12 @@
 package database
 
 import (
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/ccoverstreet/Jablko/types"
 	"github.com/ccoverstreet/Jablko/src/jablkorandom"
+	"github.com/ccoverstreet/Jablko/src/jlog"
 )
 
 const sessionLength = 3600 // Session duration in seconds
@@ -14,19 +14,19 @@ const sessionLength = 3600 // Session duration in seconds
 func (instance *JablkoDB) CreateSession(username string, userData types.UserData) (http.Cookie, error) {
 	cookieValue, err := jablkorandom.GenRandomStr(128)
 	if err != nil {
-		log.Println("ERROR: Unable to generate random string for cookie");
+		jlog.Errorf("ERROR: Unable to generate random string for cookie\n");
 		return http.Cookie{}, err
 	}
 
 	statement, err := instance.Db.Prepare("INSERT INTO loginSessions (cookie, username, firstName, permissions, creationTime) VALUES (?, ?, ?, ?, strftime('%s', 'now'))")	
 	if err != nil {
-		log.Println("ERROR: Unable to prepare loginSessions INSERT SQL statement.")
+		jlog.Errorf("ERROR: Unable to prepare loginSessions INSERT SQL statement.\n")
 		return http.Cookie{}, err
 	}
 
 	_, err = statement.Exec(cookieValue, username, userData.FirstName, userData.Permissions)
 	if err != nil {
-		log.Println("ERROR: Unable to insert session info into loginSessions")
+		jlog.Errorf("ERROR: Unable to insert session info into loginSessions\n")
 		return http.Cookie{}, err
 	}
 

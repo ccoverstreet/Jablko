@@ -10,12 +10,12 @@ import (
 	"net/http"
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"io/ioutil"
 	"encoding/json"
 
 	"github.com/gorilla/mux"
+	"github.com/ccoverstreet/Jablko/src/jlog"
 )
 
 func (app *MainApp) AuthenticationMiddleware(next http.Handler) http.Handler {
@@ -51,8 +51,8 @@ func (app *MainApp) AuthenticationMiddleware(next http.Handler) http.Handler {
 
 		authenticated, sessionData, err := app.Db.ValidateSession(cookieValue)
 		if err != nil {
-			log.Println("ERROR: Unable to validate session.")
-			log.Println(err)
+			jlog.Errorf("ERROR: Unable to validate session.\n")
+			jlog.Errorf("%v\n", err)
 		}
 
 		if !authenticated {
@@ -69,12 +69,13 @@ func (app *MainApp) AuthenticationMiddleware(next http.Handler) http.Handler {
 }
 
 func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("User \"%s\" has requested dashboard (permission: %d)", r.Context().Value("username"), r.Context().Value("permissions"))
+	jlog.Printf("User \"%s\" has requested dashboard (permission: %d)\n", r.Context().Value("username"), r.Context().Value("permissions"))
 
 	// Read in dashboard template
 	templateBytes, err := ioutil.ReadFile("./public_html/dashboard/template.html")
 	if err != nil {
-		log.Println("Unable to read template.html for dashboard")
+		jlog.Warnf("Unable to read template.html for dashboard\n")
+		jlog.Warnf("%v\n", err)
 	}
 
 	template := string(templateBytes)
@@ -82,8 +83,8 @@ func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	// Read in toolbar
 	toolbarBytes, err := ioutil.ReadFile("./public_html/toolbar/toolbar.html")
 	if err != nil {
-		log.Println("Unable to read template.html for dashboard")
-		log.Println(err)
+		jlog.Warnf("Unable to read template.html for dashboard\n")
+		jlog.Warnf("%v\n", err)
 	}
 
 	toolbar := string(toolbarBytes)
@@ -91,7 +92,7 @@ func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	var sb strings.Builder
 	
 	for _, modId := range app.ModHolder.Order {
-		log.Println(modId)
+		jlog.Println(modId)
 		if curMod, ok := app.ModHolder.Mods[modId]; ok {
 			sb.WriteString(curMod.Card(r))	
 		}
@@ -113,25 +114,25 @@ func (app *MainApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Println("Unable to read login body")
-		log.Println(err)
+		jlog.Warnf("Unable to read login body\n")
+		jlog.Warnf("%v\n")
 	}
 
 	err = json.Unmarshal(body, &loginData)
 	if err != nil {
-		log.Println("Unable to unmarshal JSON data.")
-		log.Println(err)
+		jlog.Warnf("Unable to unmarshal JSON data.\n")
+		jlog.Println("%v\n", err)
 	}
 
 	isCorrect, userData := app.Db.AuthenticateUser(loginData.Username, loginData.Password)
 
 	if isCorrect {
-		log.Println("User \"" + loginData.Username + "\" has logged in.")
+		jlog.Println("User \"" + loginData.Username + "\" has logged in.\n")
 
 		cookie, err := app.Db.CreateSession(loginData.Username, userData)
 		if err != nil {
-			log.Println("ERROR: Unable to create session for login")
-			log.Println(err)
+			jlog.Errorf("ERROR: Unable to create session for login\n")
+			jlog.Errorf("%v\n", err)
 		}
 
 		http.SetCookie(w, &cookie)
@@ -146,9 +147,7 @@ func (app *MainApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	cookieValue := ""
 
 	// First check if the key is present
-	for key, val := range(r.Cookies()) {
-		log.Println(key, val)
-
+	for _, val := range(r.Cookies()) {
 		if val.Name == "jablkoLogin" {
 			cookieValue = val.Value
 			break;

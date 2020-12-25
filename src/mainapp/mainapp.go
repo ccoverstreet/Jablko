@@ -6,7 +6,6 @@
 package mainapp
 
 import (
-	"log"
 	"strconv"
 	"strings"
 	"io/ioutil"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/ccoverstreet/Jablko/src/jablkomods"
 	"github.com/ccoverstreet/Jablko/src/database"
+	"github.com/ccoverstreet/Jablko/src/jlog"
 )
 
 type generalConfig struct {
@@ -36,7 +36,7 @@ func CreateMainApp(configFilePath string) (*MainApp, error) {
 
 	configData, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
-		log.Printf("%v\n", err)
+		jlog.Errorf("%v\n", err)
 		panic(err)
 	}
 
@@ -57,13 +57,13 @@ func CreateMainApp(configFilePath string) (*MainApp, error) {
 
 	httpPort, err := jsonparser.GetInt(configData, "http", "port")
 	if err != nil {
-		log.Printf("%v\n", err)
+		jlog.Errorf("%v\n", err)
 		panic("Error getting HTTP port data\n")
 	}
 
 	httpsPort, err := jsonparser.GetInt(configData, "https", "port")
 	if err != nil {
-		log.Printf("HTTPS port Config not set in Config file\n")
+		jlog.Warnf("HTTPS port Config not set in Config file\n")
 	} else {
 		jablkoConfig.HttpsPort = int(httpsPort)
 	}
@@ -80,9 +80,9 @@ func CreateMainApp(configFilePath string) (*MainApp, error) {
 
 	newModHolder, err := jablkomods.Initialize(jablkoModulesSlice, moduleOrderSlice, instance)
 
-	log.Println(newModHolder)
 	if err != nil {
-		log.Printf("JablkoMods ERROR: %s\n", err)
+		jlog.Errorf("JablkoMods ERROR: %s\n", err)
+		panic(err)
 	}
 
 	instance.ModHolder = newModHolder
@@ -93,7 +93,7 @@ func CreateMainApp(configFilePath string) (*MainApp, error) {
 }
 
 func (app *MainApp) SendMessage(message string) error {
-	log.Printf("Message: %s\n", message)	
+	jlog.Printf("Message: %s\n", message)	
 
 	return nil
 } 
@@ -107,9 +107,9 @@ func (app *MainApp) GetFlagValue(flag string) bool {
 }
 
 func (app *MainApp) SyncConfig(modId string) {
-	log.Printf("Sync config called for module \"%s\"\n", modId)		
-	log.Println("Initial")
-	log.Println(app.ModHolder.Config[modId])
+	jlog.Printf("Sync config called for module \"%s\"\n", modId)		
+	jlog.Println("Initial")
+	jlog.Println(app.ModHolder.Config[modId])
 
 	ConfigTemplate:= `{
 	"http": {
@@ -128,14 +128,14 @@ func (app *MainApp) SyncConfig(modId string) {
 `
 
 	if _, ok := app.ModHolder.Mods[modId]; !ok {
-		log.Printf("Cannot find module %s", modId)
+		jlog.Warnf("Cannot find module %s", modId)
 		return 
 	}
 
 	newConfByte, err := app.ModHolder.Mods[modId].ConfigStr()
 	newConfStr := string(newConfByte)
 	if err != nil {
-		log.Printf("Unable to get Config string for module %s\n", modId)
+		jlog.Warnf("Unable to get Config string for module %s\n", modId)
 	}
 
 	if app.ModHolder.Config[modId] == newConfStr {
@@ -146,10 +146,10 @@ func (app *MainApp) SyncConfig(modId string) {
 
 	app.ModHolder.Config[modId] = newConfStr
 
-	log.Println(string(newConfStr))
+	jlog.Println(string(newConfStr))
 
-	log.Println("Updated")
-	log.Println(app.ModHolder.Config)
+	jlog.Println("Updated")
+	jlog.Println(app.ModHolder.Config)
 
 	// Create JSON to dump to Config file
 
@@ -176,7 +176,7 @@ func (app *MainApp) SyncConfig(modId string) {
 		}
 	}
 
-	log.Println(orderStr)
+	jlog.Println(orderStr)
 
 	r := strings.NewReplacer("$httpPort", strconv.Itoa(jablkoConfig.HttpPort),
 	"$httpsPort", strconv.Itoa(jablkoConfig.HttpsPort),
@@ -187,6 +187,6 @@ func (app *MainApp) SyncConfig(modId string) {
 
 	err = ioutil.WriteFile("./jablkoconfig.json", []byte(ConfigDumpStr), 0022)
 	if err != nil {
-		log.Println(`Unable to write to "jablkoconfig.json".`)
+		jlog.Errorf("Unable to write to \"jablkoconfig.json\".\n")
 	}
 }
