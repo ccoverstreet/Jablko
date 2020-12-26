@@ -39,13 +39,7 @@ License: GPLv3
 func main() {
 	fmt.Printf(startingStatement)
 
-	// Create tmp directory
-	err := os.Mkdir("./tmp", 0755)
-	if err != nil {
-		jlog.Warnf("Unable to make tmp directory: %v\n", err)
-	}
-
-	defer os.RemoveAll("./tmp")
+	initializeDirectories()
 
 	// Create an instance of MainApp
 	jablkoApp, err := mainapp.CreateMainApp("./jablkoconfig.json")
@@ -60,6 +54,26 @@ func main() {
 	var wg sync.WaitGroup
 	startJablko(jablkoApp, router, &wg)
 	wg.Wait()
+}
+
+func initializeDirectories() {
+	// Create tmp directory
+	jlog.Printf("Making \"tmp\" directory...\n")
+	err := os.Mkdir("./tmp", 0755)
+	if err != nil {
+		jlog.Warnf("Unable to make \"tmp\" directory: %v\n", err)
+	}
+
+	jlog.Printf("Checking if \"data\" dir exists...\n")
+	if _, err := os.Stat("./data"); os.IsNotExist(err) {
+		jlog.Printf("\"data\" directory not found. Creating directory.\n")
+		err := os.Mkdir("./data", 0755)
+		if err != nil {
+			jlog.Errorf("Unable to make data directory: %v\n", err)
+			jlog.Errorf("%v\n", err)
+			panic(err)
+		}
+	}
 }
 
 func initializeRoutes(app *mainapp.MainApp) *mux.Router {
