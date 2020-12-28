@@ -22,8 +22,6 @@ type JablkoModuleHolder struct {
 	Order []string
 }
 
-var ModMap = make(map[string]types.JablkoMod)
-
 func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoInterface) (*JablkoModuleHolder, error) {
 	x := new(JablkoModuleHolder)
 	x.Mods = make(map[string]types.JablkoMod)
