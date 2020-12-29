@@ -19,8 +19,18 @@ import (
 )
 
 func DownloadJablkoMod(repoPath string) error {
-	// Download zip from github
-	resp, err := http.Get("https://" + repoPath + "/archive/master.zip")
+	// Download zip, branch based on provider
+	if strings.HasPrefix(repoPath, "github.com") {
+		return downloadGithub(repoPath)
+	}
+
+	return fmt.Errorf("Provider not supported")
+}
+
+func downloadGithub(sourcePath string) error {
+	downloadURL := GithubSourceToURL(sourcePath)
+
+	resp, err := http.Get(downloadURL)
 	if err != nil {
 		return err
 	}
@@ -32,12 +42,12 @@ func DownloadJablkoMod(repoPath string) error {
 	defer resp.Body.Close()
 
 	// Create file
-	err = os.MkdirAll("./tmp/" + repoPath, 0755)
+	err = os.MkdirAll("./tmp/" + sourcePath, 0755)
 	if err != nil {
 		return err
 	}
 
-	out, err := os.Create("./tmp/" + repoPath +  "/source.zip")
+	out, err := os.Create("./tmp/" + sourcePath +  "/source.zip")
 	if err != nil {
 		return err
 	}
@@ -50,37 +60,17 @@ func DownloadJablkoMod(repoPath string) error {
 		return err
 	}
 
-	err = os.MkdirAll("./" + repoPath, 0755)
+	err = os.MkdirAll("./" + sourcePath, 0755)
 	if err != nil {
 		return err
 	}
 
-	filenames, err := Unzip("./tmp/" + repoPath +  "/source.zip", "./" + repoPath)
+	splitSource := strings.Split(sourcePath, "/")
+
+	_, err = Unzip("./tmp/" + sourcePath +  "/source.zip", "./" + splitSource[0] + "/" + splitSource[1])
 	if err != nil {
 		return err
 	}
-
-	topLevelDirRaw := strings.Split(filenames[0], "/")
-	topLevelDir := topLevelDirRaw[len(topLevelDirRaw) - 1]
-	repoPathSplit := strings.Split(repoPath, "/")
-	authorDir := repoPathSplit[0] + "/" + repoPathSplit[1]
-
-	// Move directory up one level and rename correctly
-	err = os.Rename("./" + repoPath + "/" + topLevelDir, "./" + authorDir + "/" + topLevelDir)
-	if err != nil {
-		return err
-	}
-
-	err = os.RemoveAll("./" + repoPath)
-	if err != nil {
-		return err
-	}
-
-	err = os.Rename("./" + authorDir + "/" + topLevelDir, "./" + repoPath)
-	if err != nil {
-		return err
-	}
-
 	return err
 }
 

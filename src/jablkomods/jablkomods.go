@@ -66,32 +66,32 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 					jlog.Warnf("Module \"%s\" will not be enabled\n", pluginDir)
 					return nil // THIS IS KIND OF STRANGE
 					// Currently returns nil so all modules are parsed
-					// Is it worth allowing Jablko to start if not
-					// all mods are able to load? Either way, this should 
-					// fail loudly.
 				}
 			} else {
 				jlog.Warnf("WARNING: Jablkomod %s not found and will not be downloaded. Jablkomod will not be enabled.\n", pluginDir)
 			}
 		}
 
+		installDir := pluginDir
+
 		// Build plugin if flagBuildAll is true
 		if flagBuildAll {
-			jlog.Printf("Checking if jablkomod \"%s\" needs to be built.\n", pluginDir)
-			if _, ok := buildCache[pluginDir]; !ok {
-				jlog.Printf("Building jablkomod \"%s\".\n", pluginDir)
-				err = buildJablkoMod(pluginDir)
+			jlog.Printf("Checking if jablkomod \"%s\" needs to be built.\n", installDir)
+			if _, ok := buildCache[installDir]; !ok {
+				jlog.Printf("Building jablkomod \"%s\".\n", installDir)
+				err = buildJablkoMod(installDir)
+				jlog.Println(installDir)
 				if err != nil {
-					jlog.Errorf("ERROR: Unable to build jablkomod located in \"%s\".\n", pluginDir)
-					jlog.Warnf("WARNING: Jablko %s will not be activated.\n", pluginDir)
+					jlog.Errorf("ERROR: Unable to build jablkomod located in \"%s\".\n", installDir)
+					jlog.Warnf("WARNING: Jablko %s will not be activated.\n", installDir)
 				}
-				buildCache[pluginDir] = true
+				buildCache[installDir] = true
 			} else {
 				jlog.Printf("Jablkomod already built.\n")
 			}
 		}
 
-		pluginFile := pluginDir + "/jablkomod.so"
+		pluginFile := installDir + "/jablkomod.so"
 
 		// Check if the plugin has already been built
 		if _, err := os.Stat(pluginFile); os.IsNotExist(err) {
@@ -103,9 +103,8 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 		// Load plugin
 		plug, err := plugin.Open(pluginFile)	
 		if err != nil {
-			jlog.Warnf("Unable to load jablkomod \"%s\"\n", pluginFile)
+			jlog.Warnf("Error loading jablkomod \"%s\"\n", pluginFile)
 			jlog.Warnf("%v\n", err)
-			return nil
 		}
 
 		// Look for Initialize function symbol in plugin
@@ -133,6 +132,12 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 
 		return nil
 	})
+}
+
+func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
+	jlog.Println(GithubSourceToURL(modPath))					
+		
+	return nil
 }
 
 func buildJablkoMod(buildDir string) error {

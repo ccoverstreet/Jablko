@@ -33,7 +33,6 @@ type MainApp struct {
 }
 
 func CreateMainApp(configFilePath string) (*MainApp, error) {
-
 	configData, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
 		jlog.Errorf("%v\n", err)
@@ -110,7 +109,7 @@ func (app *MainApp) SyncConfig(modId string) {
 	jlog.Println("Initial")
 	jlog.Println(app.ModHolder.Config[modId])
 
-	ConfigTemplate:= `{
+	ConfigTemplate := `{
 	"http": {
 		"port": $httpPort
 	},

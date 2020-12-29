@@ -44,10 +44,14 @@ func main() {
 	// Create an instance of MainApp
 	jablkoApp, err := mainapp.CreateMainApp("./jablkoconfig.json")
 	if err != nil {
+		jlog.Errorf("%v\n", err)
 		jlog.Panic("Unable to create main app.")
 	}
 
 	router := initializeRoutes(jablkoApp)
+
+	// TESTING SECTION
+	jablkoApp.ModHolder.InstallMod("github.com/ccoverstreet/hamstermonitor-0.1.0")
 
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
