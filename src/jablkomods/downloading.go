@@ -94,6 +94,7 @@ func downloadGithub(sourcePath string) error {
 
 	goModFile.Close()
 
+	// Write sanitized file to go.mod
 	err = ioutil.WriteFile(sourcePath + "/go.mod", []byte(strings.Join(modLines, "\n")),0666)
 
 	return err
