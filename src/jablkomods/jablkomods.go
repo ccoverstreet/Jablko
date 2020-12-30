@@ -102,8 +102,21 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 		// Load plugin
 		plug, err := plugin.Open(pluginFile)	
 		if err != nil {
-			jlog.Warnf("Error loading jablkomod \"%s\"\n", pluginFile)
+			jlog.Warnf("Error loading jablkomod \"%s\".\n", pluginFile)
 			jlog.Warnf("%v\n", err)
+
+			if strings.Contains(err, "plugin was built with a different version") {
+				jlog.Warnf("Attempting to rebuild \"%s\"\n...", pluginFile)
+
+				// Attempt module rebuild
+				err = BuildJablkoMod(installDir)
+				if err != nil {
+					jlog.Errorf("Unable to rebuild \"%s\".\n")
+					jlog.Warnf("Plugin file \"%s\" not found. Jablkomod will not be enabled\n", pluginFile)
+					jlog.Warnf("%v\n", err)
+					return nil
+				}
+			}
 		}
 
 		// Look for Initialize function symbol in plugin
