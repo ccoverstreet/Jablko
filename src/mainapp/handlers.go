@@ -175,7 +175,12 @@ func (app *MainApp) ModuleHandler(w http.ResponseWriter, r *http.Request) {
 	// mod, func
 	pathParams := mux.Vars(r)
 
-	app.ModHolder.Mods[pathParams["mod"]].WebHandler(w, r)
+	// Check if handler
+	if curMod, ok := app.ModHolder.Mods[pathParams["mod"]]; ok {
+		curMod.WebHandler(w, r)
+	} else {
+		jlog.Errorf("Module \"%s\" not found in module map. Please check if it is installed\n", pathParams["mod"])
+	}
 }
 
 func (app *MainApp) PublicHTMLHandler(w http.ResponseWriter, r *http.Request) {

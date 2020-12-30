@@ -31,6 +31,12 @@ type intStatus struct {
 	UpdateInterval int
 }
 
+const defaultConfig = `{
+	"Title": "Interface Status",
+	"Source": "./test_modules/interfacestatus",
+	"UpdateInterval": 25
+}`
+
 func init() {
 	// Initialiaze globals
 	serverStartTime = int(time.Now().Unix())
@@ -70,6 +76,7 @@ func (instance *intStatus) ConfigStr() ([]byte, error) {
 
 	return res, nil
 }
+
 
 func (instance *intStatus) Card(*http.Request) string {
 	r := strings.NewReplacer("$UPDATE_INTERVAL", strconv.Itoa(instance.UpdateInterval),

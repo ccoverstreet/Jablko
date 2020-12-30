@@ -20,6 +20,7 @@ import (
 	"sync"
 	"net/http"
 	"strconv"
+	"os"
 
 	"github.com/gorilla/mux"
 
@@ -38,19 +39,45 @@ License: GPLv3
 func main() {
 	fmt.Printf(startingStatement)
 
+	initializeDirectories()
+
 	// Create an instance of MainApp
 	jablkoApp, err := mainapp.CreateMainApp("./jablkoconfig.json")
 	if err != nil {
+		jlog.Errorf("%v\n", err)
 		jlog.Panic("Unable to create main app.")
 	}
 
 	router := initializeRoutes(jablkoApp)
+
+	// TESTING SECTION
+	jablkoApp.ModHolder.InstallMod("github.com/ccoverstreet/hamstermonitor-0.1.0")
 
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
 	startJablko(jablkoApp, router, &wg)
 	wg.Wait()
+}
+
+func initializeDirectories() {
+	// Create tmp directory
+	jlog.Printf("Making \"tmp\" directory...\n")
+	err := os.Mkdir("./tmp", 0755)
+	if err != nil {
+		jlog.Warnf("Unable to make \"tmp\" directory: %v\n", err)
+	}
+
+	jlog.Printf("Checking if \"data\" dir exists...\n")
+	if _, err := os.Stat("./data"); os.IsNotExist(err) {
+		jlog.Printf("\"data\" directory not found. Creating directory.\n")
+		err := os.Mkdir("./data", 0755)
+		if err != nil {
+			jlog.Errorf("Unable to make data directory: %v\n", err)
+			jlog.Errorf("%v\n", err)
+			panic(err)
+		}
+	}
 }
 
 func initializeRoutes(app *mainapp.MainApp) *mux.Router {
@@ -66,8 +93,8 @@ func initializeRoutes(app *mainapp.MainApp) *mux.Router {
 	r.HandleFunc("/jablkomods/{mod}/{func}", app.ModuleHandler).Methods("POST")
 	r.HandleFunc("/local/{mod}/{func}", app.ModuleHandler).Methods("POST")
 	r.HandleFunc("/{pubdir}/{file}", app.PublicHTMLHandler).Methods("GET")
-	r.HandleFunc("/jlogin", app.LoginHandler).Methods("POST")
-	r.HandleFunc("/jlogout", app.LogoutHandler).Methods("POST")
+	r.HandleFunc("/login", app.LoginHandler).Methods("POST")
+	r.HandleFunc("/logout", app.LogoutHandler).Methods("POST")
 
 	return r
 }

@@ -34,9 +34,8 @@ func Initialize() *JablkoDB {
 	if _, err := os.Stat("./data/jablko.db"); err == nil {
 		jlog.Println(`Found "jablko.db" in "./data". Using as primary database.`)
 	} else if os.IsNotExist(err) {
-		jlog.Warnf("Database file does not exist. Creating database in \"./data\".")
+		jlog.Warnf("Database file does not exist. Creating database in \"./data\".\n")
 		createDatabase()
-		return nil
 	} else {
 		jlog.Errorf("Issue determining if database file exists. Please check file permisions.\n")
 	}
