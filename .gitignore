@@ -1,5 +1,4 @@
-test_modules/*
-!test_modules/TESTMODULES.md
+builtin_mods/interfacestatus/jablkomod.so
 jablko
 Jablko
 github.com/*
