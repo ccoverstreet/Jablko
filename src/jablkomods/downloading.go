@@ -66,7 +66,6 @@ func downloadGithub(sourcePath string) error {
 	}
 
 	splitSource := strings.Split(sourcePath, "/")
-	installPath := GithubSourceToInstallDir(sourcePath)
 
 	_, err = Unzip("./tmp/" + sourcePath +  "/source.zip", "./" + splitSource[0] + "/" + splitSource[1])
 	if err != nil {
@@ -74,7 +73,7 @@ func downloadGithub(sourcePath string) error {
 	}
 
 	// Replace module line in go.mod to include version
-	goModFile, err := os.Open(installPath + "/go.mod")
+	goModFile, err := os.Open(sourcePath + "/go.mod")
 	if err != nil {
 		return err
 	}

@@ -12,7 +12,19 @@ import (
 	"os"
 	"io"
 	"fmt"
+	"os/exec"
+
+	"github.com/ccoverstreet/Jablko/src/jlog"
 )
+
+func BuildJablkoMod(buildDir string) error {
+	buildCMD := exec.Command("go", "build", "-buildmode=plugin", "-o", "jablkomod.so", ".")		
+	buildCMD.Dir = buildDir
+	jlog.Println(buildCMD)
+	_, err := buildCMD.Output()
+
+	return err
+}
 
 func GithubSourceToURL(sourceStr string) string {
 	splitSource := strings.Split(sourceStr, "/")
@@ -22,10 +34,6 @@ func GithubSourceToURL(sourceStr string) string {
 	}
 
 	return "https://" + splitSource[0] + "/" + splitSource[1] + "/" + splitRepo[0] + "/archive/v" + splitRepo[1] + ".zip"
-}
-
-func GithubSourceToInstallDir(sourceStr string) string {
-	return sourceStr
 }
 
 func Unzip(src string, dest string) ([]string, error) {

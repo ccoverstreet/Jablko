@@ -7,7 +7,6 @@ import (
 	"os"
 	"plugin"
 	"encoding/json"
-	"os/exec"
 	"strings"
 
 	"github.com/ccoverstreet/Jablko/types"
@@ -138,13 +137,4 @@ func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
 	jlog.Println(GithubSourceToURL(modPath))					
 		
 	return nil
-}
-
-func BuildJablkoMod(buildDir string) error {
-	buildCMD := exec.Command("go", "build", "-buildmode=plugin", "-o", "jablkomod.so", ".")		
-	buildCMD.Dir = buildDir
-	jlog.Println(buildCMD)
-	_, err := buildCMD.Output()
-
-	return err
 }
