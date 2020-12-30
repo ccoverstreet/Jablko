@@ -96,6 +96,12 @@ func downloadGithub(sourcePath string) error {
 
 	// Write sanitized file to go.mod
 	err = ioutil.WriteFile(sourcePath + "/go.mod", []byte(strings.Join(modLines, "\n")),0666)
+	if err != nil {
+		return err
+	}
+
+	// Build newly downloaded and prepped module
+	err = BuildJablkoMod(sourcePath)
 
 	return err
 }

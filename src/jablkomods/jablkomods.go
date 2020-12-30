@@ -79,7 +79,7 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 			jlog.Printf("Checking if jablkomod \"%s\" needs to be built.\n", installDir)
 			if _, ok := buildCache[installDir]; !ok {
 				jlog.Printf("Building jablkomod \"%s\".\n", installDir)
-				err = buildJablkoMod(installDir)
+				err = BuildJablkoMod(installDir)
 				jlog.Println(installDir)
 				if err != nil {
 					jlog.Errorf("ERROR: Unable to build jablkomod located in \"%s\".\n", installDir)
@@ -140,7 +140,7 @@ func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
 	return nil
 }
 
-func buildJablkoMod(buildDir string) error {
+func BuildJablkoMod(buildDir string) error {
 	buildCMD := exec.Command("go", "build", "-buildmode=plugin", "-o", "jablkomod.so", ".")		
 	buildCMD.Dir = buildDir
 	jlog.Println(buildCMD)
