@@ -116,6 +116,14 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 					jlog.Warnf("%v\n", err)
 					return nil
 				}
+
+				plug, err := plugin.Open(pluginFile)	
+				if err != nil {
+					jlog.Errorf("Rebuild failed for \"%s\".\n")
+					jlog.Warnf("Plugin file \"%s\" not found. Jablkomod will not be enabled\n", pluginFile)
+					jlog.Warnf("%v\n", err)
+					return nil
+				}
 			}
 		}
 
