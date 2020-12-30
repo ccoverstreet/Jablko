@@ -5,6 +5,8 @@ package jablkomods
 import (
 	"fmt"
 	"os"
+    "os/exec"
+    "syscall"
 	"plugin"
 	"encoding/json"
 	"strings"
@@ -153,6 +155,22 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 
 	if flagRestart {
 		jlog.Println("ASDALSJKDHALKSJ RESTART ALKSJDLAKSJD")
+
+		binary, lookErr := exec.LookPath("go")
+		if lookErr != nil {
+			jlog.Errorf("Unable to automatically restart Jablko.\n")
+			jlog.Warnf("%v\n", lookErr)
+		}
+
+		args = []string{""}
+
+		env := os.Environ()
+
+		execErr := syscall.Exec(binary, args, env)
+		if execErr != nil {
+			jlog.Errorf("Unable to automatically restart Jablko.\n")
+			jlog.Warnf("%v\n", execErr)
+		}
 	}
 
 
@@ -163,4 +181,8 @@ func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
 	jlog.Println(GithubSourceToURL(modPath))					
 		
 	return nil
+}
+
+func restartJablko() {
+
 }
