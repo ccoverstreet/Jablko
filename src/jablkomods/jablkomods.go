@@ -182,7 +182,3 @@ func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
 		
 	return nil
 }
-
-func restartJablko() {
-
-}
