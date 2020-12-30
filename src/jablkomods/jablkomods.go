@@ -39,7 +39,9 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 		panic(err)
 	}
 
-	return x, jsonparser.ObjectEach(jablkoModConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+	flagRestart := false
+
+	initErr := jsonparser.ObjectEach(jablkoModConfig, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		// Checks if Jablko Module Package was initialized with 
 		// a compiled plugin. If jablkomod.so not found, Jablko
 		// will attempt to build the plugin.
@@ -117,9 +119,9 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 					return nil
 				}
 
-				jlog.Warnf("Rebuilt plugin \"%s\". Please restart Jablko to load.\n", pluginFile)
+				jlog.Warnf("Rebuilt plugin \"%s\". Jablko will restart after initialization.\n", pluginFile)
+				flagRestart = true
 				return nil
-
 			}
 		}
 
@@ -148,6 +150,13 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 
 		return nil
 	})
+
+	if flagRestart {
+		jlog.Println("ASDALSJKDHALKSJ RESTART ALKSJDLAKSJD")
+	}
+
+
+	return x, initErr
 }
 
 func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
