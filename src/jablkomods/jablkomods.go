@@ -162,7 +162,7 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 			jlog.Warnf("%v\n", lookErr)
 		}
 
-		args = []string{""}
+		args := []string{""}
 
 		env := os.Environ()
 
