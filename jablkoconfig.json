@@ -8,9 +8,9 @@
 	"jablkoModules": {
 		"hamstermonitor1":{"Title": "Pip Monitor", "Source": "github.com/ccoverstreet/hamstermonitor-master", "HamsterName": "Pip"},
 		"hamstermonitor2":{"Title": "Hamster View", "Source": "github.com/ccoverstreet/hamstermonitor-0.1.0", "HamsterName": "Pip"},
-		"test1":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25},
-		"test2":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25},
-		"test3":{"Title":"Status","Source":"./test_modules/interfacestatus","UpdateInterval":25}
+		"test1":{"Title":"Status","Source":"./builtin_mods/interfacestatus","UpdateInterval":25},
+		"test2":{"Title":"Status","Source":"./builtin_mods/interfacestatus","UpdateInterval":25},
+		"test3":{"Title":"Status","Source":"./builtin_mods/interfacestatus","UpdateInterval":25}
 	},
 	"moduleOrder": [
 		"test1",
