@@ -21,12 +21,14 @@ type JablkoModuleHolder struct {
 	Mods map[string]types.JablkoMod
 	Config map[string]string
 	Order []string
+	mainInterface types.JablkoInterface
 }
 
 func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoInterface) (*JablkoModuleHolder, error) {
 	x := new(JablkoModuleHolder)
 	x.Mods = make(map[string]types.JablkoMod)
 	x.Config = make(map[string]string)
+	x.mainInterface = jablko
 
 	flagBuildAll := jablko.GetFlagValue("--build-all")
 
@@ -96,20 +98,14 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 
 		pluginFile := installDir + "/jablkomod.so"
 
-		// Check if the plugin has already been built
-		if _, err := os.Stat(pluginFile); os.IsNotExist(err) {
-			jlog.Warnf("Plugin file \"%s\" not found. Jablkomod will not be enabled\n", pluginFile)
-			jlog.Warnf("%v\n", err)
-			return nil
-		}
-
-		// Load plugin
-		plug, err := plugin.Open(pluginFile)	
+		// Get init func
+		initFunc, err := GetPluginInitFunc(pluginFile)
 		if err != nil {
-			jlog.Warnf("Error loading jablkomod \"%s\".\n", pluginFile)
-			jlog.Warnf("%v\n", err)
+			jlog.Errorf("Error getting jablkomod init function.\n")
+			jlog.Errorf("%v\n", err)
 
-			if strings.Contains(err.Error(), "plugin was built with a different version") {
+			// Check if error is fixable
+			if strings.Contains(err.Error(), "plugin was built with a different version") || os.IsNotExist(err) {
 				jlog.Warnf("Attempting to rebuild \"%s\"...\n", pluginFile)
 
 				// Attempt module rebuild
@@ -125,20 +121,7 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 				flagRestart = true
 				return nil
 			}
-		}
 
-		// Look for Initialize function symbol in plugin
-		initSym, err := plug.Lookup("Initialize")
-		if err != nil {
-			jlog.Warnf("Initialize function signature not found in \"%s\"\n", pluginFile)
-			jlog.Warnf("%v\n", err)
-			return nil
-		}
-
-		// Check if function signature matches
-		initFunc, ok := initSym.(func(string, []byte, types.JablkoInterface)(types.JablkoMod, error))
-		if !ok {
-			jlog.Warnf("Initialize function signature doesn't match \"%s\"\n", pluginFile)
 			return nil
 		}
 
@@ -154,8 +137,6 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 	})
 
 	if flagRestart {
-		jlog.Println("ASDALSJKDHALKSJ RESTART ALKSJDLAKSJD")
-
 		binary, lookErr := exec.LookPath("go")
 		if lookErr != nil {
 			jlog.Errorf("Unable to automatically restart Jablko.\n")
@@ -169,16 +150,63 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 		execErr := syscall.Exec(binary, args, env)
 		if execErr != nil {
 			jlog.Errorf("Unable to automatically restart Jablko.\n")
-			jlog.Warnf("%v\n", execErr)
+			panic(execErr)
 		}
 	}
-
 
 	return x, initErr
 }
 
 func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
-	jlog.Println(GithubSourceToURL(modPath))					
+	// Check if source is already present
+	if _, err := os.Stat(modPath); os.IsNotExist(err) {
+		// Download source and build
+	}
+
+	modId := CreateUUID()
+
+	// Get pointer to plugin and calll initialize function
+	initFunc, err := GetPluginInitFunc(modPath + "/jablkomod.so")
+	if err != nil {
+		return err
+	}
+
+	newMod, err := initFunc(modId, nil, instance.mainInterface)
+	if err != nil {
+		return err
+	}
+
+	instance.Mods[modId] = newMod
+	instance.Order = append(instance.Order, modId)
+	instance.mainInterface.SyncConfig(modId)
 		
 	return nil
+}
+
+func GetPluginInitFunc(pluginFile string) (func(string, []byte, types.JablkoInterface)(types.JablkoMod, error), error) {
+	// Check if the plugin has already been built
+	if _, err := os.Stat(pluginFile); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	// Load plugin
+	plug, err := plugin.Open(pluginFile)	
+	if err != nil {
+		return nil,err
+	}
+
+	jlog.Println(plug)
+
+
+	initSym, err := plug.Lookup("Initialize")
+	if err != nil {
+		return nil, err
+	}
+
+	initFunc, ok := initSym.(func(string, []byte, types.JablkoInterface)(types.JablkoMod, error))
+	if !ok {
+		return nil, fmt.Errorf("Function signature does not match.")
+	}
+
+	return initFunc, nil
 }

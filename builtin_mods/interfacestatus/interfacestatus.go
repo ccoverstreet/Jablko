@@ -31,12 +31,6 @@ type intStatus struct {
 	UpdateInterval int
 }
 
-const defaultConfig = `{
-	"Title": "Interface Status",
-	"Source": "./test_modules/interfacestatus",
-	"UpdateInterval": 25
-}`
-
 func init() {
 	// Initialiaze globals
 	serverStartTime = int(time.Now().Unix())
@@ -44,13 +38,22 @@ func init() {
 
 func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInterface) (types.JablkoMod, error) {
 	instance := new(intStatus) 
+	instance.id = instanceId
 
+	// Return default config if no configData is supplied
+	if configData == nil {
+		instance.Title = "Interface Status"
+		instance.Source = "./builtin_mods/interfacestatus"
+		instance.UpdateInterval = 25
+
+		return instance, nil
+	}
+
+	// Initialize instance with configData
 	err := json.Unmarshal(configData, &instance)	
 	if err != nil {
 		return nil, err		
 	}
-
-	instance.id = instanceId
 
 	jablko = jablkoRef
 	

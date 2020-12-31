@@ -106,8 +106,6 @@ func (app *MainApp) GetFlagValue(flag string) bool {
 
 func (app *MainApp) SyncConfig(modId string) {
 	jlog.Printf("Sync config called for module \"%s\"\n", modId)		
-	jlog.Println("Initial")
-	jlog.Println(app.ModHolder.Config[modId])
 
 	ConfigTemplate := `{
 	"http": {

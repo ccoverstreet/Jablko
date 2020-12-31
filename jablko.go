@@ -51,7 +51,13 @@ func main() {
 	router := initializeRoutes(jablkoApp)
 
 	// TESTING SECTION
-	jablkoApp.ModHolder.InstallMod("github.com/ccoverstreet/hamstermonitor-0.1.0")
+	for i := 0; i < 3; i++ {
+		err = jablkoApp.ModHolder.InstallMod("builtin_mods/interfacestatus")
+		if err != nil {
+			jlog.Errorf("Unable to install jablkomod.\n")
+			jlog.Errorf("%v\n", err)
+		}
+	}
 
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
