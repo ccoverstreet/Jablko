@@ -52,7 +52,7 @@ func main() {
 
 	// TESTING SECTION
 	for i := 0; i < 3; i++ {
-		err = jablkoApp.ModHolder.InstallMod("builtin_mods/interfacestatus")
+		err = jablkoApp.ModHolder.InstallMod("builtin/interfacestatus")
 		if err != nil {
 			jlog.Errorf("Unable to install jablkomod.\n")
 			jlog.Errorf("%v\n", err)
