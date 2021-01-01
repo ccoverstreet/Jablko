@@ -221,6 +221,14 @@ func (app *MainApp) AdminHandler(w http.ResponseWriter, r *http.Request) {
 			jlog.Println("%v\n", err)
 		}
 
+		fmt.Fprintf(w, "hello")
+
 		app.ModHolder.InstallMod(parsedBody.SourcePath)
+	} else if pathParams["func"] == "deleteMod" {
+	} else if pathParams["func"] == "addUser" {
+		// Cannot add user that is an admin.	
+	} else if pathParams["func"] == "deleteUser" {
+	} else if pathParams["func"] == "updateMod" {
+	} else if pathParams["func"] == "getModConfig" {
 	}
 }
