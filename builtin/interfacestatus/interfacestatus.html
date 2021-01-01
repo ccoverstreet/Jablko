@@ -52,11 +52,34 @@
 					console.log("ERROR: Unable to use interfacestatus/getStatus.");
 					console.log(err);
 				});
+		},
+		speedTest: () => {
+			startTime = new Date().getTime();
+			fetch("/jablkomods/$MODULE_ID/speedTest", {
+				method: "POST",
+				header: {
+					"Content-Type": "application/json"
+				}
+			})
+				.then(async (data) => {
+					responseTime = new Date().getTime() - startTime
+					speedElem = document.getElementById("$MODULE_ID_speed")
+					speedElem.textContent = responseTime + " ms"
+					speedElem.style.color = "var(--color-good)"
+					console.log(await data.json())
+				})
+				.catch((err) => {
+					speedElem = document.getElementById("$MODULE_ID_speed")
+					speedElem.textContent = "N/A"
+					speedElem.style.color = "var(--color-bad)"
+				})
 		}
 	}
 
 	$MODULE_ID.getStatus();
+	$MODULE_ID.speedTest();
 	setInterval($MODULE_ID.getStatus, $UPDATE_INTERVAL * 1000);
+	setInterval($MODULE_ID.speedTest, $UPDATE_INTERVAL * 1000);
 </script>
 <div class="module_card" style="column-span: all;">
 	<div class="module_title">
@@ -79,6 +102,11 @@
 	<div class="label_value_pair">
 		<div>Virtual Space:</div>
 		<div id="$MODULE_ID_sysAlloc" style="color: var(--color-warn)">N/A</div>
+	</div>
+
+	<div class="label_value_pair">
+		<div>Response Time:</div>
+		<div id="$MODULE_ID_speed" style="color: var(--color-warn)">N/A</div>
 	</div>
 
 	<div class="label_value_pair">

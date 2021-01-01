@@ -111,6 +111,9 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 		jlog.Println("ASDASDASDSA")
 	case pathParams["func"] == "getStatus":
 		err = getStatus(w, r)	
+	case pathParams["func"] == "speedTest":
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"status":"good","message":"Speed test succesful"}`)
 	default:
 		jlog.Println("Nothing Found")
 	}
