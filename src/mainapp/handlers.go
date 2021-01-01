@@ -95,6 +95,8 @@ func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 		jlog.Println(modId)
 		if curMod, ok := app.ModHolder.Mods[modId]; ok {
 			sb.WriteString(curMod.Card(r))	
+		} else {
+			jlog.Warnf("Dashboard card not available for \"%s\". Module not found.\n", modId)
 		}
 	}
 
