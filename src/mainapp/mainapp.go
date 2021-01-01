@@ -8,6 +8,7 @@ package mainapp
 import (
 	"strconv"
 	"strings"
+	"io"
 	"io/ioutil"
 	"os"
 
@@ -33,6 +34,18 @@ type MainApp struct {
 }
 
 func CreateMainApp(configFilePath string) (*MainApp, error) {
+	if _, err := os.Stat("./jablkoconfig.json"); os.IsNotExist(err) {
+		err = copyDefaultConfig()
+
+		if err != nil {
+			jlog.Errorf("Unable to copy default config file. Aborting startup.\n")
+			panic (err)
+		}
+	} else if err != nil {
+		jlog.Errorf("Unable to check status of config file. Aborting startup.\n")
+		panic(err)
+	}
+
 	configData, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
 		jlog.Errorf("%v\n", err)
@@ -185,4 +198,26 @@ func (app *MainApp) SyncConfig(modId string) {
 	if err != nil {
 		jlog.Errorf("Unable to write to \"jablkoconfig.json\".\n")
 	}
+}
+
+func copyDefaultConfig() error {
+	defaultSrc, err := os.Open("./builtin/defaultconfig.json")	
+	if err != nil {
+		return err
+	}
+
+	defer defaultSrc.Close()
+
+	target, err := os.Create("./jablkoconfig.json")
+	if err != nil {
+		return err
+	}
+	defer target.Close()
+
+	_, err = io.Copy(target, defaultSrc)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
