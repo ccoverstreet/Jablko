@@ -1,6 +1,7 @@
 builtin_mods/interfacestatus/jablkomod.so
 jablko
 Jablko
+jablkoconfig.json
 github.com/*
 tmp
 data
