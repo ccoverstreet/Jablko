@@ -6,17 +6,9 @@
 		"port": -1
 	},
 	"jablkoModules": {
-		"hamstermonitor1":{"Title": "Pip Monitor", "Source": "github.com/ccoverstreet/hamstermonitor-master", "HamsterName": "Pip"},
-		"hamstermonitor2":{"Title": "Hamster View", "Source": "github.com/ccoverstreet/hamstermonitor-0.1.0", "HamsterName": "Pip"},
-		"test1":{"Title":"Status","Source":"./builtin/interfacestatus","UpdateInterval":25},
-		"test2":{"Title":"Status","Source":"./builtin/interfacestatus","UpdateInterval":25},
-		"test3":{"Title":"Status","Source":"./builtin/interfacestatus","UpdateInterval":25}
+		"test1":{"Title":"Status","Source":"./builtin/interfacestatus","UpdateInterval":30}
 	},
 	"moduleOrder": [
-		"test1",
-		"hamstermonitor1",
-		"hamstermonitor2",
-		"test2",
-		"test3"
+		"test1"
 	]
 }
