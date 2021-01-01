@@ -161,6 +161,12 @@ func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
 	// Check if source is already present
 	if _, err := os.Stat(modPath); os.IsNotExist(err) {
 		// Download source and build
+		err = DownloadJablkoMod(modPath)
+
+		if err != nil {
+			jlog.Errorf("Unable to install Jablko Mod.\n")
+			return err
+		}
 	}
 
 	modId := CreateUUID()

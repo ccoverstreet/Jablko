@@ -43,7 +43,7 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 	// Return default config if no configData is supplied
 	if configData == nil {
 		instance.Title = "Interface Status"
-		instance.Source = "./builtin_mods/interfacestatus"
+		instance.Source = "./builtin/interfacestatus"
 		instance.UpdateInterval = 25
 
 		return instance, nil
