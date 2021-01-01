@@ -187,3 +187,40 @@ func (app *MainApp) PublicHTMLHandler(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	http.ServeFile(w, r, "./public_html/" + pathParams["pubdir"] + "/" + pathParams["file"])
 }
+
+func (app *MainApp) AdminHandler(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	
+	ctx := r.Context()
+	permissions, ok := ctx.Value("permissions").(int)
+	if !ok {
+		jlog.Warnf("Permissions field incorrect. Access denied.\n")
+	} 
+
+	if permissions < 2 {
+		jlog.Warnf("User not authorized for this action. Ignoring request.\n")
+		return 
+	}
+
+	if pathParams["func"] == "addMod" {
+		type addModBody struct {
+			SourcePath string `json:"sourcePath"`
+		}
+
+		var parsedBody addModBody
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
+			jlog.Errorf("%v\n", err)
+		}
+
+		err = json.Unmarshal(body, &parsedBody)
+		if err != nil {
+			jlog.Warnf("Unable to unmarshal JSON data.\n")
+			jlog.Println("%v\n", err)
+		}
+
+		app.ModHolder.InstallMod(parsedBody.SourcePath)
+	}
+}

@@ -50,20 +50,6 @@ func main() {
 
 	router := initializeRoutes(jablkoApp)
 
-	// TESTING SECTION
-	for i := 0; i < 3; i++ {
-		err = jablkoApp.ModHolder.InstallMod("builtin/interfacestatus")
-		if err != nil {
-			jlog.Errorf("Unable to install jablkomod.\n")
-			jlog.Errorf("%v\n", err)
-		}
-	}
-
-	err = jablkoApp.ModHolder.InstallMod("github.com/ccoverstreet/hamstermonitor-master")
-	if err != nil {
-		jlog.Errorf("%v\n", err)
-	}
-
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
@@ -106,6 +92,7 @@ func initializeRoutes(app *mainapp.MainApp) *mux.Router {
 	r.HandleFunc("/{pubdir}/{file}", app.PublicHTMLHandler).Methods("GET")
 	r.HandleFunc("/login", app.LoginHandler).Methods("POST")
 	r.HandleFunc("/logout", app.LogoutHandler).Methods("POST")
+	r.HandleFunc("/admin/{func}", app.AdminHandler).Methods("POST")
 
 	return r
 }
