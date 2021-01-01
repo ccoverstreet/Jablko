@@ -59,12 +59,10 @@ func main() {
 		}
 	}
 
-	/*
 	err = jablkoApp.ModHolder.InstallMod("github.com/ccoverstreet/hamstermonitor-master")
 	if err != nil {
 		jlog.Errorf("%v\n", err)
 	}
-	*/
 
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
