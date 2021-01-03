@@ -3,7 +3,9 @@
 		"port": 8080
 	},
 	"https": {
-		"port": -1
+		"port": -1,
+		"cert": "~/Certs/cert.pem",
+		"privKey": "~/Certs/privkey.pem"
 	},
 	"jablkoModules": {
 		"test1":{"Title":"Status","Source":"./builtin/interfacestatus","UpdateInterval":30}
