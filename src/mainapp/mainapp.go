@@ -11,6 +11,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"sync"
 
 	"github.com/buger/jsonparser"
 
@@ -29,6 +30,7 @@ type generalConfig struct {
 var jablkoConfig = generalConfig{HttpPort: 8080, HttpsPort: -1}
 
 type MainApp struct {
+	sync.Mutex
 	Config generalConfig
 	ModHolder *jablkomods.JablkoModuleHolder
 	Db *database.JablkoDB
@@ -139,6 +141,9 @@ func (app *MainApp) GetFlagValue(flag string) bool {
 }
 
 func (app *MainApp) SyncConfig(modId string) {
+	app.Lock()
+	defer app.Unlock()
+
 	jlog.Printf("Sync config called for module \"%s\"\n", modId)		
 
 	ConfigTemplate := `{
@@ -157,29 +162,25 @@ func (app *MainApp) SyncConfig(modId string) {
 }
 `
 
-	if _, ok := app.ModHolder.Mods[modId]; !ok {
+	if modId == "" {
+		// Do nothing, should just dump current state
+	} else if _, ok := app.ModHolder.Mods[modId]; !ok {
 		jlog.Warnf("Cannot find module %s", modId)
 		return 
+	} else {
+		newConfByte, err := app.ModHolder.Mods[modId].ConfigStr()
+		newConfStr := string(newConfByte)
+		if err != nil {
+			jlog.Warnf("Unable to get Config string for module %s\n", modId)
+		}
+
+		if app.ModHolder.Config[modId] == newConfStr {
+			// If there is no change in config
+			return 
+		}
+
+		app.ModHolder.Config[modId] = newConfStr
 	}
-
-	newConfByte, err := app.ModHolder.Mods[modId].ConfigStr()
-	newConfStr := string(newConfByte)
-	if err != nil {
-		jlog.Warnf("Unable to get Config string for module %s\n", modId)
-	}
-
-	if app.ModHolder.Config[modId] == newConfStr {
-		// If there is no change in config
-		return 
-	}
-
-
-	app.ModHolder.Config[modId] = newConfStr
-
-	jlog.Println(string(newConfStr))
-
-	jlog.Println("Updated")
-	jlog.Println(app.ModHolder.Config)
 
 	// Create JSON to dump to Config file
 
@@ -215,7 +216,7 @@ func (app *MainApp) SyncConfig(modId string) {
 
 	ConfigDumpStr := r.Replace(ConfigTemplate)
 
-	err = ioutil.WriteFile("./jablkoconfig.json", []byte(ConfigDumpStr), 0022)
+	err := ioutil.WriteFile("./jablkoconfig.json", []byte(ConfigDumpStr), 0022)
 	if err != nil {
 		jlog.Errorf("Unable to write to \"jablkoconfig.json\".\n")
 	}

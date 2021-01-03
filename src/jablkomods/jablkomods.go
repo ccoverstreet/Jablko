@@ -10,6 +10,7 @@ import (
 	"plugin"
 	"encoding/json"
 	"strings"
+	"sync"
 
 	"github.com/ccoverstreet/Jablko/types"
 	"github.com/ccoverstreet/Jablko/src/jlog"
@@ -18,6 +19,7 @@ import (
 )
 
 type JablkoModuleHolder struct {
+	sync.Mutex
 	Mods map[string]types.JablkoMod
 	Config map[string]string
 	Order []string
@@ -85,7 +87,6 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 			if _, ok := buildCache[installDir]; !ok {
 				jlog.Printf("Building jablkomod \"%s\".\n", installDir)
 				err = BuildJablkoMod(installDir)
-				jlog.Println(installDir)
 				if err != nil {
 					jlog.Errorf("ERROR: Unable to build jablkomod located in \"%s\".\n", installDir)
 					jlog.Warnf("WARNING: Jablko %s will not be activated.\n", installDir)
@@ -158,6 +159,9 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 }
 
 func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
+	instance.Lock()
+	defer instance.Unlock()
+
 	// Check if source is already present
 	if _, err := os.Stat(modPath); os.IsNotExist(err) {
 		// Download source and build
@@ -182,10 +186,49 @@ func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
 		return err
 	}
 
+
 	instance.Mods[modId] = newMod
 	instance.Order = append(instance.Order, modId)
 	instance.mainInterface.SyncConfig(modId)
-		
+
+	return nil
+}
+
+func (instance *JablkoModuleHolder) DeleteMod(modId string) error {
+	instance.Lock()
+	defer instance.Unlock()
+
+	// Check if mod exists in ModHolder.Mods and delete
+	if _, ok := instance.Mods[modId]; ok {
+		jlog.Printf("Deleting \"%s\" from Mods.\n", modId)
+		delete(instance.Mods, modId)		
+	}
+
+	// Check if mod exists in ModHolder.Config and delete
+	if _, ok := instance.Config[modId]; ok {
+		jlog.Printf("Deleting \"%s\" from Config.\n", modId)
+		delete(instance.Config, modId)
+	}
+
+	// Remove mod from modOrder
+	modIndex := -1
+	for i := 0; i < len(instance.Order); i++ {
+		if instance.Order[i] == modId {
+			modIndex = i
+			break
+		}
+	}
+
+	// Delete from modOrder if index > 0
+	if modIndex > 0 {
+		instance.Order = append(instance.Order[:modIndex], instance.Order[modIndex + 1:]...)
+	} else {
+		return fmt.Errorf("Unable to delete mod \"%s\" from module order.", modId)
+	}
+
+
+	instance.mainInterface.SyncConfig("")
+	
 	return nil
 }
 
@@ -200,9 +243,6 @@ func GetPluginInitFunc(pluginFile string) (func(string, []byte, types.JablkoInte
 	if err != nil {
 		return nil,err
 	}
-
-	jlog.Println(plug)
-
 
 	initSym, err := plug.Lookup("Initialize")
 	if err != nil {
