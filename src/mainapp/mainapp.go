@@ -22,6 +22,8 @@ import (
 type generalConfig struct {
 	HttpPort int
 	HttpsPort int
+	CertPath string
+	PrivKeyPath string
 }
 
 var jablkoConfig = generalConfig{HttpPort: 8080, HttpsPort: -1}
@@ -78,6 +80,25 @@ func CreateMainApp(configFilePath string) (*MainApp, error) {
 		jlog.Warnf("HTTPS port Config not set in Config file\n")
 	} else {
 		jablkoConfig.HttpsPort = int(httpsPort)
+	}
+
+	if httpsPort > 0 {
+		certPath, err := jsonparser.GetString(configData, "https", "cert")
+		if err != nil {
+			jlog.Errorf("HTTPS cert path not readable.\n")
+			jlog.Errorf("%\v\n", err)
+			panic(err)
+		}
+
+		privKeyPath, err := jsonparser.GetString(configData, "https", "privKey")
+		if err != nil {
+			jlog.Errorf("HTTPS private key path not readable.\n")
+			jlog.Errorf("%\v\n", err)
+			panic(err)
+		}
+
+		instance.Config.CertPath = certPath
+		instance.Config.PrivKeyPath = privKeyPath
 	}
 
 	instance.Config.HttpPort = int(httpPort)

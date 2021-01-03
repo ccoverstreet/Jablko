@@ -107,7 +107,7 @@ func startJablko(app *mainapp.MainApp, router *mux.Router, wg *sync.WaitGroup) c
 			defer wg.Done()
 			jlog.Printf("Starting HTTP Server on Port %d\n", app.Config.HttpPort)	
 
-			jlog.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(app.Config.HttpPort), router))
+			jlog.Errorf("%v\n", http.ListenAndServe(":" + strconv.Itoa(app.Config.HttpPort), router))
 		}()
 	}
 
@@ -117,6 +117,7 @@ func startJablko(app *mainapp.MainApp, router *mux.Router, wg *sync.WaitGroup) c
 		go func() {
 			defer wg.Done()
 			jlog.Printf("Starting HTTPS Server on Port %d\n", app.Config.HttpsPort)	
+			jlog.Errorf("%v\n", http.ListenAndServeTLS(":" + strconv.Itoa(app.Config.HttpsPort), "/home/pi/Certs/cert.pem", "/home/pi/Certs/privkey.pem", router))
 		}()
 	}
 
