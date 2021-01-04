@@ -1,6 +1,6 @@
 <script>
 	const $MODULE_ID = {
-		getStatus: function() {
+		getStatus: () => {
 			fetch("/jablkomods/$MODULE_ID/getStatus", {
 				method: "POST",
 				header: {
@@ -81,7 +81,7 @@
 	setInterval($MODULE_ID.getStatus, $UPDATE_INTERVAL * 1000);
 	setInterval($MODULE_ID.speedTest, $UPDATE_INTERVAL * 1000);
 </script>
-<div class="module_card" style="column-span: all;">
+<div id="$MODULE_ID" class="module_card">
 	<div class="module_title">
 		<div>$MODULE_TITLE</div>
 		<svg class="module_icon" viewBox="0 0 150 150">
