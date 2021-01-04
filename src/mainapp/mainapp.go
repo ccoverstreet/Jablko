@@ -8,8 +8,11 @@ package mainapp
 import (
 	"strconv"
 	"strings"
+	"io"
 	"io/ioutil"
 	"os"
+	"sync"
+	"fmt"
 
 	"github.com/buger/jsonparser"
 
@@ -21,11 +24,14 @@ import (
 type generalConfig struct {
 	HttpPort int
 	HttpsPort int
+	CertPath string
+	PrivKeyPath string
 }
 
 var jablkoConfig = generalConfig{HttpPort: 8080, HttpsPort: -1}
 
 type MainApp struct {
+	sync.Mutex
 	Config generalConfig
 	ModHolder *jablkomods.JablkoModuleHolder
 	Db *database.JablkoDB
@@ -33,6 +39,18 @@ type MainApp struct {
 }
 
 func CreateMainApp(configFilePath string) (*MainApp, error) {
+	if _, err := os.Stat("./jablkoconfig.json"); os.IsNotExist(err) {
+		err = copyDefaultConfig()
+
+		if err != nil {
+			jlog.Errorf("Unable to copy default config file. Aborting startup.\n")
+			panic (err)
+		}
+	} else if err != nil {
+		jlog.Errorf("Unable to check status of config file. Aborting startup.\n")
+		panic(err)
+	}
+
 	configData, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
 		jlog.Errorf("%v\n", err)
@@ -65,6 +83,25 @@ func CreateMainApp(configFilePath string) (*MainApp, error) {
 		jlog.Warnf("HTTPS port Config not set in Config file\n")
 	} else {
 		jablkoConfig.HttpsPort = int(httpsPort)
+	}
+
+	if httpsPort > 0 {
+		certPath, err := jsonparser.GetString(configData, "https", "cert")
+		if err != nil {
+			jlog.Errorf("HTTPS cert path not readable.\n")
+			jlog.Errorf("%\v\n", err)
+			panic(err)
+		}
+
+		privKeyPath, err := jsonparser.GetString(configData, "https", "privKey")
+		if err != nil {
+			jlog.Errorf("HTTPS private key path not readable.\n")
+			jlog.Errorf("%\v\n", err)
+			panic(err)
+		}
+
+		instance.Config.CertPath = certPath
+		instance.Config.PrivKeyPath = privKeyPath
 	}
 
 	instance.Config.HttpPort = int(httpPort)
@@ -104,10 +141,11 @@ func (app *MainApp) GetFlagValue(flag string) bool {
 	}
 }
 
-func (app *MainApp) SyncConfig(modId string) {
+func (app *MainApp) SyncConfig(modId string) error {
+	app.Lock()
+	defer app.Unlock()
+
 	jlog.Printf("Sync config called for module \"%s\"\n", modId)		
-	jlog.Println("Initial")
-	jlog.Println(app.ModHolder.Config[modId])
 
 	ConfigTemplate := `{
 	"http": {
@@ -125,29 +163,26 @@ func (app *MainApp) SyncConfig(modId string) {
 }
 `
 
-	if _, ok := app.ModHolder.Mods[modId]; !ok {
+	if modId == "" {
+		// Do nothing, should just dump current state
+	} else if _, ok := app.ModHolder.Mods[modId]; !ok {
 		jlog.Warnf("Cannot find module %s", modId)
-		return 
+		return fmt.Errorf("Unable to find module.")
+	} else {
+		newConfByte, err := app.ModHolder.Mods[modId].ConfigStr()
+		newConfStr := string(newConfByte)
+		if err != nil {
+			jlog.Warnf("Unable to get Config string for module %s\n", modId)
+			return err
+		}
+
+		if app.ModHolder.Config[modId] == newConfStr {
+			// If there is no change in config
+			return nil
+		}
+
+		app.ModHolder.Config[modId] = newConfStr
 	}
-
-	newConfByte, err := app.ModHolder.Mods[modId].ConfigStr()
-	newConfStr := string(newConfByte)
-	if err != nil {
-		jlog.Warnf("Unable to get Config string for module %s\n", modId)
-	}
-
-	if app.ModHolder.Config[modId] == newConfStr {
-		// If there is no change in config
-		return 
-	}
-
-
-	app.ModHolder.Config[modId] = newConfStr
-
-	jlog.Println(string(newConfStr))
-
-	jlog.Println("Updated")
-	jlog.Println(app.ModHolder.Config)
 
 	// Create JSON to dump to Config file
 
@@ -183,8 +218,28 @@ func (app *MainApp) SyncConfig(modId string) {
 
 	ConfigDumpStr := r.Replace(ConfigTemplate)
 
-	err = ioutil.WriteFile("./jablkoconfig.json", []byte(ConfigDumpStr), 0022)
+	err := ioutil.WriteFile("./jablkoconfig.json", []byte(ConfigDumpStr), 0022)
+	return err
+}
+
+func copyDefaultConfig() error {
+	defaultSrc, err := os.Open("./builtin/defaultconfig.json")	
 	if err != nil {
-		jlog.Errorf("Unable to write to \"jablkoconfig.json\".\n")
+		return err
 	}
+
+	defer defaultSrc.Close()
+
+	target, err := os.Create("./jablkoconfig.json")
+	if err != nil {
+		return err
+	}
+	defer target.Close()
+
+	_, err = io.Copy(target, defaultSrc)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

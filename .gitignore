@@ -1,7 +1,7 @@
-test_modules/*
-!test_modules/TESTMODULES.md
+builtin/interfacestatus/jablkomod.so
 jablko
 Jablko
+jablkoconfig.json
 github.com/*
 tmp
 data

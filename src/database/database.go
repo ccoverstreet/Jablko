@@ -122,13 +122,19 @@ func removeDatabase() {
 func (instance *JablkoDB) AddUser(username string, password string, firstName string, permissions int) error {
 	userSQL := `INSERT INTO users (username, password, firstName, permissions) VALUES(?, ?, ?, ?)`
 
+	passHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		jlog.Errorf("Unable to hash password.\n")
+		return err
+	}
+
 	statement, err := instance.Db.Prepare(userSQL)
 	if err != nil {
 		jlog.Errorf("Error in preparing user create SQL statement\n")
 		return err
 	}
 
-	_, err = statement.Exec(username, password, firstName, permissions)
+	_, err = statement.Exec(username, passHash, firstName, permissions)
 	if err != nil {
 		jlog.Errorf("Error inserting new user in database.\n")
 		return err

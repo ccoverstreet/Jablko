@@ -1,0 +1,116 @@
+<script>
+	const $MODULE_ID = {
+		getStatus: function() {
+			fetch("/jablkomods/$MODULE_ID/getStatus", {
+				method: "POST",
+				header: {
+					"Content-Type": "application/json"
+				}
+			})
+				.then(async (data) => {
+					res = await data.json();
+					console.log(res);
+
+					hours = Math.floor((res.uptime) / 3600);
+					minutes = Math.floor((res.uptime - hours * 3600) / 60)
+					seconds = res.uptime - hours * 3600 - minutes * 60;
+
+					uptimeElem = document.getElementById("$MODULE_ID_uptime");
+					uptimeElem.textContent = `${hours} : ${minutes} : ${seconds} s`;
+					uptimeElem.style.color = "var(--color-good)";
+
+					messageElem = document.getElementById("$MODULE_ID_message");
+					messageElem.textContent = res.message;
+					messageElem.style.color = "var(--color-font-med)";
+
+					messageElem = document.getElementById("$MODULE_ID_curAlloc");
+					messageElem.textContent = (res.curAlloc / 1000000).toFixed(1) + " MB";
+
+					messageElem.style.color = "var(--color-good)";
+
+					messageElem = document.getElementById("$MODULE_ID_sysAlloc");
+					messageElem.textContent = (res.sysAlloc / 1000000).toFixed(1) + " MB";
+					messageElem.style.color = "var(--color-good)";
+				})
+				.catch(err => {
+					uptimeElem = document.getElementById("$MODULE_ID_uptime");
+					uptimeElem.textContent = "N/A"
+					uptimeElem.style.color = "var(--color-bad)";
+
+					curAllocElem = document.getElementById("$MODULE_ID_curAlloc");
+					curAllocElem.textContent = "N/A"
+					curAllocElem.style.color = "var(--color-bad)";
+
+					sysAllocElem = document.getElementById("$MODULE_ID_sysAlloc");
+					sysAllocElem.textContent = "N/A"
+					sysAllocElem.style.color = "var(--color-bad)";
+
+					messageElem = document.getElementById("$MODULE_ID_message");
+					messageElem.textContent = "Unable to communicate with interface.";
+					messageElem.style.color = "var(--color-bad)";
+
+					console.log("ERROR: Unable to use interfacestatus/getStatus.");
+					console.log(err);
+				});
+		},
+		speedTest: () => {
+			startTime = new Date().getTime();
+			fetch("/jablkomods/$MODULE_ID/speedTest", {
+				method: "POST",
+				header: {
+					"Content-Type": "application/json"
+				}
+			})
+				.then(async (data) => {
+					responseTime = new Date().getTime() - startTime
+					speedElem = document.getElementById("$MODULE_ID_speed")
+					speedElem.textContent = responseTime + " ms"
+					speedElem.style.color = "var(--color-good)"
+					console.log(await data.json())
+				})
+				.catch((err) => {
+					speedElem = document.getElementById("$MODULE_ID_speed")
+					speedElem.textContent = "N/A"
+					speedElem.style.color = "var(--color-bad)"
+				})
+		}
+	}
+
+	$MODULE_ID.getStatus();
+	$MODULE_ID.speedTest();
+	setInterval($MODULE_ID.getStatus, $UPDATE_INTERVAL * 1000);
+	setInterval($MODULE_ID.speedTest, $UPDATE_INTERVAL * 1000);
+</script>
+<div class="module_card" style="column-span: all;">
+	<div class="module_title">
+		<div>$MODULE_TITLE</div>
+		<svg class="module_icon" viewBox="0 0 150 150">
+			<path d="M 20 75 H 40 L 60 30 L 90 120 L 110 75 H 130" fill="transparent" stroke="var(--color-primary)" stroke-width="20px" stroke-linejoin="round" stroke-linecap="round"/>
+		</svg>
+	</div>
+	<hr>
+	<div class="label_value_pair">
+		<div>Uptime:</div>
+		<div id="$MODULE_ID_uptime" style="color: var(--color-warn)">N/A</div>
+	</div>
+
+	<div class="label_value_pair">
+		<div>Memory in Use:</div>
+		<div id="$MODULE_ID_curAlloc" style="color: var(--color-warn)">N/A</div>
+	</div>
+
+	<div class="label_value_pair">
+		<div>Virtual Space:</div>
+		<div id="$MODULE_ID_sysAlloc" style="color: var(--color-warn)">N/A</div>
+	</div>
+
+	<div class="label_value_pair">
+		<div>Response Time:</div>
+		<div id="$MODULE_ID_speed" style="color: var(--color-warn)">N/A</div>
+	</div>
+
+	<div class="label_value_pair">
+		<div>Message:</div>
+		<div id="$MODULE_ID_message" style="color: var(--color-warn)">N/A</div>
+	</div>
+</div>

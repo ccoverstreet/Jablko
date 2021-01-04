@@ -49,10 +49,7 @@ func main() {
 	}
 
 	router := initializeRoutes(jablkoApp)
-
-	// TESTING SECTION
-	jablkoApp.ModHolder.InstallMod("github.com/ccoverstreet/hamstermonitor-0.1.0")
-
+	
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
@@ -95,6 +92,7 @@ func initializeRoutes(app *mainapp.MainApp) *mux.Router {
 	r.HandleFunc("/{pubdir}/{file}", app.PublicHTMLHandler).Methods("GET")
 	r.HandleFunc("/login", app.LoginHandler).Methods("POST")
 	r.HandleFunc("/logout", app.LogoutHandler).Methods("POST")
+	r.HandleFunc("/admin/{func}", app.AdminHandler).Methods("POST")
 
 	return r
 }
@@ -109,7 +107,7 @@ func startJablko(app *mainapp.MainApp, router *mux.Router, wg *sync.WaitGroup) c
 			defer wg.Done()
 			jlog.Printf("Starting HTTP Server on Port %d\n", app.Config.HttpPort)	
 
-			jlog.Printf("%v\n", http.ListenAndServe(":" + strconv.Itoa(app.Config.HttpPort), router))
+			jlog.Errorf("%v\n", http.ListenAndServe(":" + strconv.Itoa(app.Config.HttpPort), router))
 		}()
 	}
 
@@ -119,6 +117,7 @@ func startJablko(app *mainapp.MainApp, router *mux.Router, wg *sync.WaitGroup) c
 		go func() {
 			defer wg.Done()
 			jlog.Printf("Starting HTTPS Server on Port %d\n", app.Config.HttpsPort)	
+			jlog.Errorf("%v\n", http.ListenAndServeTLS(":" + strconv.Itoa(app.Config.HttpsPort), "/home/pi/Certs/cert.pem", "/home/pi/Certs/privkey.pem", router))
 		}()
 	}
 

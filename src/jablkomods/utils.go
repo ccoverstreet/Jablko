@@ -13,6 +13,8 @@ import (
 	"io"
 	"fmt"
 	"os/exec"
+	"time"
+	"strconv"
 
 	"github.com/ccoverstreet/Jablko/src/jlog"
 )
@@ -34,6 +36,19 @@ func GithubSourceToURL(sourceStr string) string {
 	}
 
 	return "https://" + splitSource[0] + "/" + splitSource[1] + "/" + splitRepo[0] + "/archive/v" + splitRepo[1] + ".zip"
+}
+
+func CreateUUID() string {
+	curTime := time.Now().UnixNano()	
+
+	idStr := strconv.Itoa(int(curTime))
+	idBytes := []byte(idStr)
+
+	for i := 0; i < len(idBytes); i++ {
+		idBytes[i] = idBytes[i] + 17
+	}
+
+	return string(idBytes)
 }
 
 func Unzip(src string, dest string) ([]string, error) {
