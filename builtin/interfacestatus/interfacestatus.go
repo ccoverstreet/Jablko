@@ -96,9 +96,11 @@ func (instance *intStatus) Card(*http.Request) string {
 	"$MODULE_TITLE", instance.Title)
 
 	if templateCaching {
+		// If template is cached, use it for string replacement
 		return r.Replace(cachedTemplate)
 	}
 
+	// Since template is not cached, read in file
 	loadedTemplateBytes, err := ioutil.ReadFile(instance.Source + "/interfacestatus.html")
 	if err != nil {
 		jlog.Errorf("ERROR: Unable to read interfacestatus.html template file\n")
@@ -116,20 +118,18 @@ func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
 	var err error = nil
 
 	switch {
-	case pathParams["func"] == "banana":
-		jlog.Println("ASDASDASDSA")
 	case pathParams["func"] == "getStatus":
 		err = getStatus(w, r)	
 	case pathParams["func"] == "speedTest":
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintln(w, `{"status":"good","message":"Speed test succesful"}`)
 	default:
-		jlog.Println("Nothing Found")
+		err = fmt.Errorf("No corresponding function found.")
 	}
 
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, `{"status": "fail", "message": "Unable to find an appropriate action."}`)
+		fmt.Fprintln(w, `{"status": "fail", "message": "` + err.Error() + `"}`)
 	}
 }
 
