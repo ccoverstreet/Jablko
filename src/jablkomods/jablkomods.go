@@ -221,7 +221,7 @@ func (instance *JablkoModuleHolder) DeleteMod(modId string) error {
 	}
 
 	// Delete from modOrder if index > 0
-	if modIndex > 0 {
+	if modIndex >= 0 {
 		instance.Order = append(instance.Order[:modIndex], instance.Order[modIndex + 1:]...)
 	} else {
 		return fmt.Errorf("Unable to delete mod \"%s\" from module order.", modId)
