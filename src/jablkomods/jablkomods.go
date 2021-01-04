@@ -189,6 +189,7 @@ func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
 
 	instance.Mods[modId] = newMod
 	instance.Order = append(instance.Order, modId)
+	instance.UpdateMod(modId, `{"Source": "` + modPath + `"}`)
 	instance.mainInterface.SyncConfig(modId)
 
 	return nil
@@ -230,6 +231,14 @@ func (instance *JablkoModuleHolder) DeleteMod(modId string) error {
 	instance.mainInterface.SyncConfig("")
 	
 	return nil
+}
+
+func (instance *JablkoModuleHolder) UpdateMod(modId string, newConfig string) error {
+	if mod, ok := instance.Mods[modId]; ok {
+		return mod.UpdateConfig([]byte(newConfig))
+	} else {
+		return fmt.Errorf("Unable to update mod config.")
+	}
 }
 
 func GetPluginInitFunc(pluginFile string) (func(string, []byte, types.JablkoInterface)(types.JablkoMod, error), error) {

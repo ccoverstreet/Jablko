@@ -49,6 +49,20 @@ func main() {
 	}
 
 	router := initializeRoutes(jablkoApp)
+	
+	err = jablkoApp.ModHolder.UpdateMod("test1", `{"UpdateInterval": 400}`)
+	if err != nil {
+		jlog.Println(err)
+		panic(err)
+	}
+
+	err = jablkoApp.SyncConfig("test1")
+	if err != nil {
+		jlog.Println(err)
+		panic(err)
+	}
+
+	
 
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit

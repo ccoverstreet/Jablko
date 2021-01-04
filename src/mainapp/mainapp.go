@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sync"
+	"fmt"
 
 	"github.com/buger/jsonparser"
 
@@ -140,7 +141,7 @@ func (app *MainApp) GetFlagValue(flag string) bool {
 	}
 }
 
-func (app *MainApp) SyncConfig(modId string) {
+func (app *MainApp) SyncConfig(modId string) error {
 	app.Lock()
 	defer app.Unlock()
 
@@ -166,17 +167,18 @@ func (app *MainApp) SyncConfig(modId string) {
 		// Do nothing, should just dump current state
 	} else if _, ok := app.ModHolder.Mods[modId]; !ok {
 		jlog.Warnf("Cannot find module %s", modId)
-		return 
+		return fmt.Errorf("Unable to find module.")
 	} else {
 		newConfByte, err := app.ModHolder.Mods[modId].ConfigStr()
 		newConfStr := string(newConfByte)
 		if err != nil {
 			jlog.Warnf("Unable to get Config string for module %s\n", modId)
+			return err
 		}
 
 		if app.ModHolder.Config[modId] == newConfStr {
 			// If there is no change in config
-			return 
+			return nil
 		}
 
 		app.ModHolder.Config[modId] = newConfStr
@@ -217,9 +219,7 @@ func (app *MainApp) SyncConfig(modId string) {
 	ConfigDumpStr := r.Replace(ConfigTemplate)
 
 	err := ioutil.WriteFile("./jablkoconfig.json", []byte(ConfigDumpStr), 0022)
-	if err != nil {
-		jlog.Errorf("Unable to write to \"jablkoconfig.json\".\n")
-	}
+	return err
 }
 
 func copyDefaultConfig() error {

@@ -5,7 +5,7 @@ import (
 )
 
 type JablkoInterface interface {
-	SyncConfig(string)
+	SyncConfig(string) error
 	SendMessage(string) error
 	GetFlagValue(string) bool
 }
@@ -14,6 +14,7 @@ type JablkoMod interface{
 	ConfigStr() ([]byte, error)
 	Card(*http.Request) string
 	WebHandler(http.ResponseWriter, *http.Request)
+	UpdateConfig([]byte) error
 }
 
 func StructToMod(inputStruct JablkoMod) JablkoMod {

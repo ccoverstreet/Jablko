@@ -80,6 +80,15 @@ func (instance *intStatus) ConfigStr() ([]byte, error) {
 	return res, nil
 }
 
+func (instance *intStatus) UpdateConfig(newConfig []byte) error {
+	err := json.Unmarshal(newConfig, instance)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 
 func (instance *intStatus) Card(*http.Request) string {
 	r := strings.NewReplacer("$UPDATE_INTERVAL", strconv.Itoa(instance.UpdateInterval),
