@@ -205,32 +205,67 @@ func (app *MainApp) AdminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pathParams["func"] == "addMod" {
-		type addModBody struct {
-			SourcePath string `json:"sourcePath"`
-		}
-
-		var parsedBody addModBody
-
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-			jlog.Errorf("%v\n", err)
-		}
-
-		err = json.Unmarshal(body, &parsedBody)
-		if err != nil {
-			jlog.Warnf("Unable to unmarshal JSON data.\n")
-			jlog.Println("%v\n", err)
-		}
-
-		fmt.Fprintf(w, "hello")
-
-		app.ModHolder.InstallMod(parsedBody.SourcePath)
+		addMod(app, w, r)
 	} else if pathParams["func"] == "deleteMod" {
+		deleteMod(app, w, r)	
 	} else if pathParams["func"] == "addUser" {
 		// Cannot add user that is an admin.	
 	} else if pathParams["func"] == "deleteUser" {
 	} else if pathParams["func"] == "updateMod" {
 	} else if pathParams["func"] == "getModConfig" {
 	}
+}
+
+func addMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
+	type addModBody struct {
+		SourcePath string `json:"sourcePath"`
+	}
+
+	w.Header().Set("content-type", "application/json")
+
+	var parsedBody addModBody
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
+		jlog.Errorf("%v\n", err)
+	}
+
+	err = json.Unmarshal(body, &parsedBody)
+	if err != nil {
+		jlog.Warnf("Unable to unmarshal JSON data.\n")
+		jlog.Println("%v\n", err)
+	}
+
+	fmt.Fprintf(w, `{"status": "good"}`)
+
+	app.ModHolder.InstallMod(parsedBody.SourcePath)
+}
+
+func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
+	type deleteModBody struct {
+		ModId string `json:"modId"`
+	}
+
+	var parsedBody deleteModBody
+
+	w.Header().Set("content-type", "application/json")
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
+		jlog.Errorf("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail"}`)
+	}
+
+	err = json.Unmarshal(body, &parsedBody)
+	if err != nil {
+		jlog.Warnf("Unable to unmarshal JSON data.\n")
+		jlog.Println("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail"}`)
+	}
+
+	fmt.Fprintf(w, `{"status": "good"}`)
+
+	app.ModHolder.DeleteMod(parsedBody.ModId)
 }
