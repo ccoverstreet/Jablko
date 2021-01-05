@@ -28,7 +28,10 @@ func DownloadJablkoMod(repoPath string) error {
 }
 
 func downloadGithub(sourcePath string) error {
-	downloadURL := GithubSourceToURL(sourcePath)
+	downloadURL, err := GithubSourceToURL(sourcePath)
+	if err != nil {
+		return err
+	}
 
 	resp, err := http.Get(downloadURL)
 	if err != nil {

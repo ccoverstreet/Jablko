@@ -162,6 +162,9 @@ func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
 	instance.Lock()
 	defer instance.Unlock()
 
+	splitPath := strings.Split(modPath, "/")
+	splitRepo := strings.Split(splitPath[len(splitPath) - 1], "-")
+
 	// Check if source is already present
 	if _, err := os.Stat(modPath); os.IsNotExist(err) {
 		// Download source and build
@@ -173,7 +176,7 @@ func (instance *JablkoModuleHolder) InstallMod(modPath string) error {
 		}
 	}
 
-	modId := CreateUUID()
+	modId := splitRepo[0] + CreateUUID()
 
 	// Get pointer to plugin and calll initialize function
 	initFunc, err := GetPluginInitFunc(modPath + "/jablkomod.so")
@@ -221,7 +224,7 @@ func (instance *JablkoModuleHolder) DeleteMod(modId string) error {
 	}
 
 	// Delete from modOrder if index > 0
-	if modIndex > 0 {
+	if modIndex >= 0 {
 		instance.Order = append(instance.Order[:modIndex], instance.Order[modIndex + 1:]...)
 	} else {
 		return fmt.Errorf("Unable to delete mod \"%s\" from module order.", modId)

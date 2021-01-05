@@ -28,25 +28,33 @@ func BuildJablkoMod(buildDir string) error {
 	return err
 }
 
-func GithubSourceToURL(sourceStr string) string {
+func GithubSourceToURL(sourceStr string) (string, error){
 	splitSource := strings.Split(sourceStr, "/")
 	splitRepo := strings.Split(splitSource[2], "-")
-	if splitRepo[1] == "master" {
-		return "https://" + splitSource[0] + "/" + splitSource[1] + "/" + splitRepo[0] + "/archive/" + splitRepo[1] + ".zip"
+
+	// Check if split repo is correct
+	if len(splitRepo) < 2 {
+		return "", fmt.Errorf("Repo name does not include version.")	
 	}
 
-	return "https://" + splitSource[0] + "/" + splitSource[1] + "/" + splitRepo[0] + "/archive/v" + splitRepo[1] + ".zip"
+	if splitRepo[1] == "master" {
+		return "https://" + splitSource[0] + "/" + splitSource[1] + "/" + splitRepo[0] + "/archive/" + splitRepo[1] + ".zip", nil
+	}
+
+	return "https://" + splitSource[0] + "/" + splitSource[1] + "/" + splitRepo[0] + "/archive/v" + splitRepo[1] + ".zip", nil
 }
 
 func CreateUUID() string {
-	curTime := time.Now().UnixNano()	
+	curTime := time.Now().Unix()	
 
 	idStr := strconv.Itoa(int(curTime))
 	idBytes := []byte(idStr)
 
+	/*
 	for i := 0; i < len(idBytes); i++ {
 		idBytes[i] = idBytes[i] + 17
 	}
+	*/
 
 	return string(idBytes)
 }

@@ -229,17 +229,27 @@ func addMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
 		jlog.Errorf("%v\n", err)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to read request body."}`)
+		return
 	}
 
 	err = json.Unmarshal(body, &parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to parse JSON body."}`)
+		return
+	}
+
+
+	err = app.ModHolder.InstallMod(parsedBody.SourcePath)
+	if err != nil {
+		jlog.Errorf("%v\n", err)
+		fmt.Fprintf(w, `{"status":"fail","message":"` + err.Error() + `"}`)
+		return
 	}
 
 	fmt.Fprintf(w, `{"status": "good"}`)
-
-	app.ModHolder.InstallMod(parsedBody.SourcePath)
 }
 
 func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
@@ -255,17 +265,23 @@ func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
 		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail"}`)
+		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
 	}
 
 	err = json.Unmarshal(body, &parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail"}`)
+		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
 	}
 
-	fmt.Fprintf(w, `{"status": "good"}`)
 
-	app.ModHolder.DeleteMod(parsedBody.ModId)
+	err = app.ModHolder.DeleteMod(parsedBody.ModId)
+
+	if err != nil {
+		fmt.Fprintf(w, `{"status": "fail", "message":"` + err.Error() + `"}`)
+		return
+	}
+
+	fmt.Fprintf(w, `{"status": "good","message":"Module deleted."}`)
 }
