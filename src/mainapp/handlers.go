@@ -212,7 +212,9 @@ func (app *MainApp) AdminHandler(w http.ResponseWriter, r *http.Request) {
 		// Cannot add user that is an admin.	
 	} else if pathParams["func"] == "deleteUser" {
 	} else if pathParams["func"] == "updateMod" {
+		updateMod(app, w, r)
 	} else if pathParams["func"] == "getModConfig" {
+		getModConfig(app, w, r)
 	}
 }
 
@@ -221,7 +223,7 @@ func addMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 		SourcePath string `json:"sourcePath"`
 	}
 
-	w.Header().Set("content-type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	var parsedBody addModBody
 
@@ -259,13 +261,14 @@ func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody deleteModBody
 
-	w.Header().Set("content-type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
 		jlog.Errorf("%v\n", err)
 		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
+		return 
 	}
 
 	err = json.Unmarshal(body, &parsedBody)
@@ -273,6 +276,7 @@ func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
 		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		return
 	}
 
 
@@ -284,4 +288,87 @@ func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, `{"status": "good","message":"Module deleted."}`)
+}
+
+func getModConfig(app *MainApp, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")	
+
+	type getModConfigBody struct {
+		ModId string `json:"modId"`
+	}
+
+	var parsedBody getModConfigBody
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
+		jlog.Errorf("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
+		return 
+	}
+
+	err = json.Unmarshal(body, &parsedBody)
+	if err != nil {
+		jlog.Warnf("Unable to unmarshal JSON data.\n")
+		jlog.Println("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		return
+	}
+
+	if mod, ok := app.ModHolder.Mods[parsedBody.ModId]; ok {
+		modConfigStr, err := mod.ConfigStr()
+		if err != nil {
+			jlog.Errorf("%v\n", err)
+			fmt.Fprintf(w, `{"status": "fail", "message":"Unable get config string."}`)
+			return 
+		}
+
+		fmt.Fprintf(w, `{"status":"good","modConfig":` + string(modConfigStr) + `}`)
+	} else {
+		jlog.Errorf("Unable to retrieve module \"%s\".", parsedBody.ModId)
+		fmt.Fprintf(w, `{"status": "fail", "message":"Unable retrieve module"}`)
+	}
+}
+
+func updateMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
+	type updateModBody struct {
+		ModId string `json:"modId"`
+		ConfigStr string `json:'configStr'`
+	}	
+
+	var parsedBody updateModBody
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
+		jlog.Errorf("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
+		return 
+	}
+
+	err = json.Unmarshal(body, &parsedBody)
+	if err != nil {
+		jlog.Warnf("Unable to unmarshal JSON data.\n")
+		jlog.Println("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		return
+	}
+
+	err = app.ModHolder.UpdateMod(parsedBody.ModId, parsedBody.ConfigStr)
+	if err != nil {
+		jlog.Errorf("Unable to update \"%s\" config.\n", parsedBody.ModId)
+		jlog.Errorf("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail", "message":"` + err.Error() + `"}`)
+		return
+	}
+
+	err = app.SyncConfig(parsedBody.ModId)
+	if err != nil {
+		jlog.Errorf("Unable to sync config to jablkoconfig.json.\n")	
+		jlog.Errorf("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail", "message":"` + err.Error() + `"}`)
+		return 
+	}
+
+	fmt.Fprintf(w, `{"status":"good","message":"Updated config."}`)
 }
