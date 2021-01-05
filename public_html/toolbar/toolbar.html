@@ -124,6 +124,8 @@
 <script>
 	function adminInstallMod() {
 		var inputElem = document.getElementById("admin_install_input");
+		var buttonElem = document.getElementById("admin_install_button");
+		buttonElem.disabled = true;
 
 		fetch("/admin/addMod", {
 			method: "POST",
@@ -144,6 +146,8 @@
 				console.log(err);
 				messageElem = document.getElementById("admin_install_message");
 				messageElem.textContent = err.toString();
+
+				buttonElem.disabled = false;
 			})
 	}
 
@@ -187,20 +191,92 @@
 		return modIds;
 	}
 
-	function fillAdminDeleteSelect() {
+	function fillModSelect() {
 		modIds = getModIdList();
 		deleteSelect = document.getElementById("admin_delete_mod_select");
+		configSelect = document.getElementById("admin_config_select")
 
 		for (item of modIds) {
 			newOption = document.createElement("option");
 			newOption.value = item;
 			newOption.text = item;
 			deleteSelect.add(newOption);
+
+			newOption = document.createElement("option");
+			newOption.value = item;
+			newOption.text = item;
+			configSelect.add(newOption);
 		}
 	}
 
+	function adminGetModConfig() {
+		selectedMod = document.getElementById("admin_config_select").value;
+			
+		fetch("/admin/getModConfig", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({modId: selectedMod})
+		})
+			.then(async (data) => {
+				res = await data.json();
+
+				configTextarea = document.getElementById("admin_config_textarea");
+				configTextarea.textContent = JSON.stringify(res.modConfig, null, 2);
+				console.log(res);
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	}
+
+	function adminUpdateModConfig() {
+		selectedMod = document.getElementById("admin_config_select").value;
+		configTextarea = document.getElementById("admin_config_textarea");
+
+		// Reset message
+		document.getElementById("admin_config_message").textContent = ""; 
+
+		userInput = configTextarea.value;
+
+		// For syntax validation
+		var parsedObject;
+
+		try {
+			parsedObject = JSON.parse(userInput);
+		} catch(err) {
+			configMessage = document.getElementById("admin_config_message");
+			configMessage.textContent = err.toString();
+			console.log(err);
+			return 
+		}
+
+		// parsedObject has been validated. Now return to string and send to Jablko
+		fetch("/admin/updateMod", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({modId: selectedMod, configStr: JSON.stringify(parsedObject)})
+		})
+			.then(async (data) => {
+				res = await data.json();
+				if (res.status == "fail") {
+					throw new Error(res.message);
+					return ;
+				}
+				
+				document.location.reload();
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	}
+
 	document.addEventListener("DOMContentLoaded", function(){
-		fillAdminDeleteSelect();
+		fillModSelect();
+		adminGetModConfig();
 	});
 </script>
 
@@ -225,7 +301,7 @@
 	<div id="admin_install_mod" style="padding: 5px;">
 		<input id="admin_install_input" autocorrect="off" style="font-size: 16px; width: 250px;"> </input>
 		<br>
-		<button onclick="adminInstallMod()" style="color: var(--color-background)">Install</button>
+		<button id="admin_install_button" onclick="adminInstallMod()" style="color: var(--color-background)">Install</button>
 		<div id="admin_install_message" style="color: var(--color-bad); padding: 5px;"></div>
 	</div>
 
@@ -234,5 +310,14 @@
 	<div id="admin_delete_mod" style="padding: 5px;">
 		<select id="admin_delete_mod_select" style="font-size: 16px;"></select>
 		<button onclick="adminDeleteMod()" style="background-color: var(--color-bad)">Delete</button>
+	</div>
+
+	<hr>
+
+	<div id="admin_config_mod" style="padding: 5px;">
+		<select id="admin_config_select" onchange="adminGetModConfig()" style="font-size:16px;"></select>
+		<button onclick="adminUpdateModConfig()">Update Mod</button>
+		<textarea id="admin_config_textarea" style="width: 90%; height: 30vh; font-size: 16px;"></textarea>
+		<div id="admin_config_message" style="color: var(--color-bad); padding: 5px;"></div>
 	</div>
 </div>

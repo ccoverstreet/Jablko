@@ -45,16 +45,10 @@ func GithubSourceToURL(sourceStr string) (string, error){
 }
 
 func CreateUUID() string {
-	curTime := time.Now().Unix()	
+	curTime := int(time.Now().UnixNano() / 1000)
 
-	idStr := strconv.Itoa(int(curTime))
+	idStr := strconv.Itoa(curTime)
 	idBytes := []byte(idStr)
-
-	/*
-	for i := 0; i < len(idBytes); i++ {
-		idBytes[i] = idBytes[i] + 17
-	}
-	*/
 
 	return string(idBytes)
 }
