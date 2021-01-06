@@ -221,7 +221,7 @@ func (app *MainApp) AdminHandler(w http.ResponseWriter, r *http.Request) {
 	} else if pathParams["func"] == "deleteMod" {
 		deleteMod(app, w, r)	
 	} else if pathParams["func"] == "addUser" {
-		// Cannot add user that is an admin.	
+		addUser(app, w, r)
 	} else if pathParams["func"] == "deleteUser" {
 	} else if pathParams["func"] == "updateMod" {
 		updateMod(app, w, r)
@@ -343,6 +343,8 @@ func getModConfig(app *MainApp, w http.ResponseWriter, r *http.Request) {
 }
 
 func updateMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")	
+
 	type updateModBody struct {
 		ModId string `json:"modId"`
 		ConfigStr string `json:'configStr'`
@@ -383,4 +385,35 @@ func updateMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, `{"status":"good","message":"Updated config."}`)
+}
+
+func addUser(app *MainApp, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")	
+
+	type addUserBody struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+		ConfPassword string `json:"confPassword"`
+		FirstName string `json:"firstName"`
+	}
+
+	var parsedBody addUserBody
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
+		jlog.Errorf("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
+		return 
+	}
+
+	err = json.Unmarshal(body, &parsedBody)
+	if err != nil {
+		jlog.Warnf("Unable to unmarshal JSON data.\n")
+		jlog.Println("%v\n", err)
+		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		return
+	}
+
+	jlog.Println(parsedBody)
 }

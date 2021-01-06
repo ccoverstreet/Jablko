@@ -1,5 +1,3 @@
-
-
 <script>
 	document.addEventListener("click", function(event) {
 		const dropdown = document.getElementById("menu_dropdown");
@@ -310,5 +308,34 @@
 
 		<textarea id="admin_config_textarea" style="width: calc(100% - 10px); height: 30vh; padding: 5px;font-size: 16px; color: var(--color-font-high); background-color: var(--color-surface-1)"></textarea>
 		<div id="admin_config_message" style="color: var(--color-bad); padding: 5px;"></div>
+	</div>
+
+	<hr>
+
+	<div id="admin_user_control" style="padding: 0px 10px 0px 10px;">
+		<form action="/admin/addUser" method="POST" style="width:300px;">
+			<div class="label_value_pair">
+				<div class="label" style="color:var(--color-font-high)">Username:</div>
+				<input id="admin_user_add_username" name="username" style="font-size: 16px"></input>
+			</div>
+
+			<div class="label_value_pair">
+				<div class="label" style="color:var(--color-font-high)">Password:</div>
+				<input id="admin_user_add_password" name="password" type="password" style="font-size: 16px"></input>
+			</div>
+
+			<div class="label_value_pair">
+				<div class="label" style="color:var(--color-font-high)">Password:</div>
+				<input id="admin_user_add_conf_password" name="confPassword" type="password" style="font-size: 16px"></input>
+			</div>
+
+			<div class="label_value_pair">
+				<div class="label" style="color:var(--color-font-high)">First Name:</div>
+				<input id="admin_user_add_first_name" name="firstName" style="font-size: 16px"></input>
+			</div>
+			<div style="display:flex; justify-content:flex-end; padding: 5px 0px 0px 0px;">
+				<button>Add User</button>
+			</div>
+		</form>
 	</div>
 </div>

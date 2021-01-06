@@ -75,6 +75,7 @@ select {
 
 input {
 	border-radius: 5px;
+	font-size: 16px;
 }
 
 .label_value_pair {
