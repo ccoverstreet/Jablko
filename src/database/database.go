@@ -66,12 +66,25 @@ func createDatabase() {
 	jlog.Println("You must create an administrative account.")
 	var username string
 	var password string
+	var confPassword string
 	var firstName string
 
 	jlog.Printf("Enter a username:")
 	fmt.Scanln(&username)
-	jlog.Printf("Enter a password:")
-	fmt.Scanln(&password)
+
+	for {
+		jlog.Printf("Enter a password:")
+		fmt.Scanln(&password)
+		jlog.Printf("Confirm password:")
+		fmt.Scanln(&confPassword)
+
+		if password == confPassword {
+			break
+		} else {
+			jlog.Errorf("Passwords do not match.\n")
+		}
+	}
+
 	jlog.Printf("Enter First Name:")
 	fmt.Scanln(&firstName)
 
