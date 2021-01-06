@@ -67,6 +67,16 @@ button {
 	border-width: 0px;
 }
 
+select {
+	font-size:16px; 
+	padding: 1.5px; 
+	border-radius: 5px;
+}
+
+input {
+	border-radius: 5px;
+}
+
 .label_value_pair {
 	display: grid;
 	grid-template-columns: 50% 50%;

@@ -45,7 +45,13 @@ func (app *MainApp) AuthenticationMiddleware(next http.Handler) http.Handler {
 		}
 
 		if cookieValue == "" {
-			http.ServeFile(w, r, "./public_html/login/login.html")
+			if r.URL.Path == "/" {
+				http.ServeFile(w, r, "./public_html/login/login.html")
+			} else {
+				w.Header().Set("Content-Type","application/json")	
+				fmt.Fprintf(w, `{"status":"fail", "fart"}`)
+			}
+
 			return
 		}
 
@@ -56,7 +62,13 @@ func (app *MainApp) AuthenticationMiddleware(next http.Handler) http.Handler {
 		}
 
 		if !authenticated {
-			http.ServeFile(w, r, "./public_html/login/login.html")
+			if r.URL.Path == "/" {
+				http.ServeFile(w, r, "./public_html/login/login.html")
+			} else {
+				w.Header().Set("Content-Type", "application/json")	
+				fmt.Fprintf(w, `{"status":"fail", "fart"}`)
+			}
+
 			return
 		}
 
