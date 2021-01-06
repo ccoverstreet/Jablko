@@ -152,7 +152,7 @@
 	}
 
 	function adminDeleteMod() {
-		var selectElem = document.getElementById("admin_delete_mod_select");
+		var selectElem = document.getElementById("admin_config_select");
 
 		r = confirm(`Are you sure you want to delete \"${selectElem.value}\"`);
 		if (!r) {
@@ -193,15 +193,9 @@
 
 	function fillModSelect() {
 		modIds = getModIdList();
-		deleteSelect = document.getElementById("admin_delete_mod_select");
 		configSelect = document.getElementById("admin_config_select")
 
 		for (item of modIds) {
-			newOption = document.createElement("option");
-			newOption.value = item;
-			newOption.text = item;
-			deleteSelect.add(newOption);
-
 			newOption = document.createElement("option");
 			newOption.value = item;
 			newOption.text = item;
@@ -298,26 +292,23 @@
 	<div class="module_title">Admin</div>
 	<hr>
 
-	<div id="admin_install_mod" style="padding: 5px;">
+	<div id="admin_install_mod" style="padding: 0px 10px 0px 10px;">
 		<input id="admin_install_input" autocorrect="off" style="font-size: 16px; width: 250px;"> </input>
 		<br>
-		<button id="admin_install_button" onclick="adminInstallMod()" style="color: var(--color-background)">Install</button>
+		<button id="admin_install_button" onclick="adminInstallMod()" style="color: var(--color-background); margin: 5px 0px 0px 0px;">Install</button>
 		<div id="admin_install_message" style="color: var(--color-bad); padding: 5px;"></div>
 	</div>
 
 	<hr>
 
-	<div id="admin_delete_mod" style="padding: 5px;">
-		<select id="admin_delete_mod_select" style="font-size: 16px;"></select>
-		<button onclick="adminDeleteMod()" style="background-color: var(--color-bad)">Delete</button>
-	</div>
+	<div id="admin_config_mod" style="padding: 0px 10px 0px 10px;">
+		<select id="admin_config_select" onchange="adminGetModConfig()"></select>
+		<div style="padding: 5px 0px 5px 0px;">
+			<button onclick="adminUpdateModConfig()">Update Mod</button>
+			<button onclick="adminDeleteMod()" style="background-color: var(--color-bad)">Delete</button>
+		</div>
 
-	<hr>
-
-	<div id="admin_config_mod" style="padding: 5px;">
-		<select id="admin_config_select" onchange="adminGetModConfig()" style="font-size:16px;"></select>
-		<button onclick="adminUpdateModConfig()">Update Mod</button>
-		<textarea id="admin_config_textarea" style="width: 90%; height: 30vh; font-size: 16px;"></textarea>
+		<textarea id="admin_config_textarea" style="width: calc(100% - 10px); height: 30vh; padding: 5px;font-size: 16px; color: var(--color-font-high); background-color: var(--color-surface-1)"></textarea>
 		<div id="admin_config_message" style="color: var(--color-bad); padding: 5px;"></div>
 	</div>
 </div>
