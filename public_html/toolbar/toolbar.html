@@ -306,7 +306,7 @@
 			<button onclick="adminDeleteMod()" style="background-color: var(--color-bad)">Delete</button>
 		</div>
 
-		<textarea id="admin_config_textarea" style="width: calc(100% - 10px); height: 30vh; padding: 5px;font-size: 16px; color: var(--color-font-high); background-color: var(--color-surface-1)"></textarea>
+		<textarea id="admin_config_textarea" oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"' style="width: calc(100% - 10px); height: 30vh; padding: 5px;font-size: 16px; color: var(--color-font-high); background-color: var(--color-surface-1)"></textarea>
 		<div id="admin_config_message" style="color: var(--color-bad); padding: 5px;"></div>
 	</div>
 
