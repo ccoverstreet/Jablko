@@ -420,6 +420,8 @@ func addUser(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	err = app.Db.AddUser(parsedBody.Username, parsedBody.Password, parsedBody.FirstName, 0)
 	if err != nil {
+		jlog.Warnf("Unable to add to SQLite database\n")
+		jlog.Println("%v\n", err)
 		fmt.Fprintf(w, `{"status":"fail","message":"` + err.Error() + `"}`)	
 		return
 	}
