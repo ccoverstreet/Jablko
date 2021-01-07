@@ -213,6 +213,8 @@ func (app *MainApp) AdminHandler(w http.ResponseWriter, r *http.Request) {
 
 	if permissions < 2 {
 		jlog.Warnf("User not authorized for this action. Ignoring request.\n")
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"status":"fail", "message":"Not authorized"}`)
 		return 
 	}
 
@@ -393,7 +395,6 @@ func addUser(app *MainApp, w http.ResponseWriter, r *http.Request) {
 	type addUserBody struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
-		ConfPassword string `json:"confPassword"`
 		FirstName string `json:"firstName"`
 	}
 
@@ -416,4 +417,12 @@ func addUser(app *MainApp, w http.ResponseWriter, r *http.Request) {
 	}
 
 	jlog.Println(parsedBody)
+
+	err = app.Db.AddUser(parsedBody.Username, parsedBody.Password, parsedBody.FirstName, 0)
+	if err != nil {
+		fmt.Fprintf(w, `{"status":"fail","message":"` + err.Error() + `"}`)	
+		return
+	}
+
+	fmt.Fprintf(w, `{"status":"good","message":"Added user."}`)	
 }

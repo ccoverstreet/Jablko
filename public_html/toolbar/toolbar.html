@@ -24,12 +24,12 @@
 
 	function toggle_admin() {
 		const adminElem = document.getElementById("admin_panel");
-		console.log("Toggle")
 
 		if (adminElem.style.display == "block") {
 			adminElem.style.display = "none";
 		} else {
 			adminElem.style.display = "block";
+			adminGetModConfig()
 		}
 	}
 
@@ -173,8 +173,10 @@
 
 				document.location.reload();
 			})
-			.catch((err) => {
+			.catch(err => {
 				console.log(err);
+				configMessage = document.getElementById("admin_config_message");
+				configMessage.textContent = err.toString();
 			})
 	}
 
@@ -215,10 +217,14 @@
 				res = await data.json();
 
 				configTextarea = document.getElementById("admin_config_textarea");
-				configTextarea.textContent = JSON.stringify(res.modConfig, null, 2);
-				console.log(res);
+				configTextarea.value = JSON.stringify(res.modConfig, null, 2);
+				configTextarea.style.height = "0px";
+				console.log(configTextarea.scrollHeight);
+				configTextarea.style.height = configTextarea.scrollHeight + "px";
 			})
 			.catch(err => {
+				configMessage = document.getElementById("admin_config_message");
+				configMessage.textContent = err.toString();
 				console.log(err);
 			});
 	}
@@ -256,20 +262,57 @@
 				res = await data.json();
 				if (res.status == "fail") {
 					throw new Error(res.message);
-					return ;
 				}
 				
 				document.location.reload();
 			})
-			.catch(err => {
+			.catch((err) => {
+				configMessage = document.getElementById("admin_config_message");
+				configMessage.textContent = err.toString();
 				console.log(err);
 			});
 	}
 
+	function adminAddUser() {
+		username = document.getElementById("admin_user_add_username").value;
+		passwordElem = document.getElementById("admin_user_add_password");
+		confPasswordElem = document.getElementById("admin_user_add_conf_password");
+		firstName = document.getElementById("admin_user_add_first_name").value;
+
+		document.getElementById("admin_config_message").textContent = ""; 
+
+		if (passwordElem.value != confPasswordElem.value) {
+			passwordElem.value = "";
+			confPasswordElem.value = "";
+			alert("Passwords do not match");
+			return;
+		}
+
+		fetch("/admin/addUser", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({username: username, password: passwordElem.value, firstName: firstName})
+		})
+			.then(async data => {
+				res = await data.json();
+
+				if (res.status == "fail") {
+					return new Error(res.message);
+				}
+			})
+			.catch(err => {
+				configMessage = document.getElementById("admin_config_message");
+				configMessage.textContent = err.toString();
+				console.log("ASDASDA", err);
+			})
+	}
+
 	document.addEventListener("DOMContentLoaded", function(){
 		fillModSelect();
-		adminGetModConfig();
 	});
+
 </script>
 
 <style>
@@ -313,29 +356,29 @@
 	<hr>
 
 	<div id="admin_user_control" style="padding: 0px 10px 0px 10px;">
-		<form action="/admin/addUser" method="POST" style="width:300px;">
+		<div action="/admin/addUser" method="POST" style="width:max(250px, 40%);">
 			<div class="label_value_pair">
 				<div class="label" style="color:var(--color-font-high)">Username:</div>
-				<input id="admin_user_add_username" name="username" style="font-size: 16px"></input>
+				<input id="admin_user_add_username" style="font-size: 16px"></input>
 			</div>
 
 			<div class="label_value_pair">
 				<div class="label" style="color:var(--color-font-high)">Password:</div>
-				<input id="admin_user_add_password" name="password" type="password" style="font-size: 16px"></input>
+				<input id="admin_user_add_password" type="password" style="font-size: 16px"></input>
 			</div>
 
 			<div class="label_value_pair">
 				<div class="label" style="color:var(--color-font-high)">Password:</div>
-				<input id="admin_user_add_conf_password" name="confPassword" type="password" style="font-size: 16px"></input>
+				<input id="admin_user_add_conf_password" type="password" style="font-size: 16px"></input>
 			</div>
 
 			<div class="label_value_pair">
 				<div class="label" style="color:var(--color-font-high)">First Name:</div>
-				<input id="admin_user_add_first_name" name="firstName" style="font-size: 16px"></input>
+				<input id="admin_user_add_first_name" style="font-size: 16px"></input>
 			</div>
 			<div style="display:flex; justify-content:flex-end; padding: 5px 0px 0px 0px;">
-				<button>Add User</button>
+				<button onclick="adminAddUser()">Add User</button>
 			</div>
-		</form>
+		</div>
 	</div>
 </div>
