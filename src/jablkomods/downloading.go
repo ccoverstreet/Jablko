@@ -39,7 +39,7 @@ func downloadGithub(sourcePath string) error {
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("Bad HTTP status code received\n")
+		return fmt.Errorf("Bad HTTP status code received: %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
@@ -85,6 +85,8 @@ func downloadGithub(sourcePath string) error {
 	modScanner.Split(bufio.ScanLines)
 	var modLines []string
 
+	// Go through go.mod file's lines and replace module name
+	// for uniqueness
 	for modScanner.Scan() {
 		tempLine := modScanner.Text()
 		if strings.HasPrefix(tempLine, "module") {

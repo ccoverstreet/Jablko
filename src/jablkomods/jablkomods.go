@@ -41,7 +41,7 @@ func Initialize(jablkoModConfig []byte, moduleOrder []byte, jablko types.JablkoI
 	// Get the module order
 	err := json.Unmarshal(moduleOrder, &x.Order)
 	if err != nil {
-		jlog.Errorf("ERROR: Unable to unmarshal module order.")
+		jlog.Errorf("Unable to unmarshal module order: %v\n", err)
 		panic(err)
 	}
 
