@@ -229,6 +229,8 @@ func (app *MainApp) AdminHandler(w http.ResponseWriter, r *http.Request) {
 		updateMod(app, w, r)
 	} else if pathParams["func"] == "getModConfig" {
 		getModConfig(app, w, r)
+	} else if pathParams["func"] == "registerMod" {
+		jlog.Warnf("Registering mods has not been implemented\n")
 	}
 }
 
