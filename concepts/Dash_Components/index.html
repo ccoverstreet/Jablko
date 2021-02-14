@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script>
+			initData = [
+				{mod: "peoplemaker-1.0.0", config: {age: 24}},
+				{mod: "peoplemaker-1.0.0", config: {age: 23}},
+				{mod: "peoplemaker-1.0.0", config: {age: 22}},
+				{mod: "peoplemaker-1.0.0", config: {age: 23}},
+				{mod: "peoplemaker-1.0.0", config: {age: 100}},
+				{mod: "peoplemaker-1.0.0", config: {age: 200}},
+				{mod: "peoplemaker-1.0.0", config: {age: 101}},
+				{mod: "peoplemaker-1.0.0", config: {age: 1}},
+				{mod: "peoplemaker-1.0.0", config: {age: 400}}
+			];
+
+			curId = 0;
+			mods = [];
+
+			const sourceMap = {
+				["peoplemaker-1.0.0"]: {
+					create: function(mod, config) {
+						myId = "id" + curId.toString();
+						curId += 1;
+						return {
+							id: myId,
+							age: config.age,
+							born: new Date().getTime(),
+							speak: function() {
+								console.log(`I am ${this.age}`);
+								document.getElementById(`${this.id}_speechbox`).textContent = this.age.toString() + " years old";
+							},
+							card: `
+						<div style="display:inline-block; width: 100%;">
+							<h1>Module ${myId}</h1>
+							<p id="${myId}_speechbox"></p>
+						</div>
+						`
+						};
+					}
+				}
+			}
+
+			window.addEventListener("DOMContentLoaded", function() {
+				modHolder = document.getElementById("module_holder");
+
+				for (var i = 0; i < initData.length; i++) {
+					mods.push(sourceMap[initData[i].mod].create(initData[i].mod, initData[i].config));
+					modHolder.insertAdjacentHTML("beforeend", mods[i].card);
+					mods[i].speak();
+				}
+
+				for (mod of mods) {
+					console.log(mod);
+				}
+			})
+
+		</script>
+	</head>
+	<body>
+		<h1>Test of object-like frontend</h1>
+		<div id="module_holder" style="columns: 3 300px;"></div>
+	</body>
+</html>
