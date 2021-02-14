@@ -135,7 +135,7 @@ func (app *MainApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &loginData)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
-		jlog.Println("%v\n", err)
+		jlog.Warnf("%v\n", err)
 	}
 
 	isCorrect, userData := app.Db.AuthenticateUser(loginData.Username, loginData.Password)

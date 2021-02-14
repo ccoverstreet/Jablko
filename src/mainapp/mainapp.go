@@ -19,6 +19,7 @@ import (
 	"github.com/ccoverstreet/Jablko/src/jablkomods"
 	"github.com/ccoverstreet/Jablko/src/database"
 	"github.com/ccoverstreet/Jablko/src/jlog"
+	"github.com/ccoverstreet/Jablko/src/modcommunication"
 )
 
 type generalConfig struct {
@@ -35,10 +36,12 @@ type MainApp struct {
 	Config generalConfig
 	ModHolder *jablkomods.JablkoModuleHolder
 	Db *database.JablkoDB
+	ModRegistry modcommunication.ModRegistry
 	flags map[string]bool
 }
 
 func CreateMainApp(configFilePath string) (*MainApp, error) {
+	// Load config file
 	if _, err := os.Stat("./jablkoconfig.json"); os.IsNotExist(err) {
 		err = copyDefaultConfig()
 
@@ -123,6 +126,19 @@ func CreateMainApp(configFilePath string) (*MainApp, error) {
 	instance.ModHolder = newModHolder
 
 	instance.Db = database.Initialize()
+
+	// Initialize module registry
+	err = instance.ModRegistry.InitializeRegistry()
+	if err != nil {
+		jlog.Errorf("Unable to initialize module registry.\n")
+		jlog.Errorf("%v\n", err)
+	}
+
+	err = instance.ModRegistry.AddDevice("RPi" ,"10.0.0.90", "12312hkaksdfaksdjfgasdf")
+	if err != nil {
+		jlog.Errorf("%v\n", err)
+	}
+
 
 	return instance, nil
 }
