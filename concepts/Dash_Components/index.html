@@ -2,59 +2,55 @@
 <html>
 	<head>
 		<script>
-			initData = [
-				{mod: "peoplemaker-1.0.0", config: {age: 24}},
-				{mod: "peoplemaker-1.0.0", config: {age: 23}},
-				{mod: "peoplemaker-1.0.0", config: {age: 22}},
-				{mod: "peoplemaker-1.0.0", config: {age: 23}},
-				{mod: "peoplemaker-1.0.0", config: {age: 100}},
-				{mod: "peoplemaker-1.0.0", config: {age: 200}},
-				{mod: "peoplemaker-1.0.0", config: {age: 101}},
-				{mod: "peoplemaker-1.0.0", config: {age: 1}},
-				{mod: "peoplemaker-1.0.0", config: {age: 400}}
+			"use strict";
+
+			const initData = [
+				{mod: "peoplemaker-1.0.0", config: {id: "id1", age: 24}},
+				{mod: "peoplemaker-1.0.0", config: {id: "id2", age: 20}},
+				{mod: "peoplemaker-1.0.0", config: {id: "id3", age: 21}},
+				{mod: "peoplemaker-1.0.0", config: {id: "id4", age: 23}},
+				{mod: "peoplemaker-1.0.0", config: {id: "id5", age: 22}}
 			];
 
-			curId = 0;
-			mods = [];
+			var mods = {};
 
 			const sourceMap = {
-				["peoplemaker-1.0.0"]: {
-					create: function(mod, config) {
-						myId = "id" + curId.toString();
-						curId += 1;
-						return {
-							id: myId,
-							age: config.age,
-							born: new Date().getTime(),
-							speak: function() {
-								console.log(`I am ${this.age}`);
-								document.getElementById(`${this.id}_speechbox`).textContent = this.age.toString() + " years old";
-							},
-							card: `
+				["peoplemaker-1.0.0"]: function(mod, config) {
+					this.id = config.id;
+					this.age = config.age;
+					this.born = new Date().getTime();
+
+
+					this.speak = function() {
+						console.log(this);
+						console.log(`I am ${this.age}`);
+						document.getElementById(`${this.id}_speechbox`).textContent = this.age.toString() + " years old";
+					}.bind(this)
+
+					this.card = function() {
+						return `
 						<div style="display:inline-block; width: 100%;">
-							<h1>Module ${myId}</h1>
-							<p id="${myId}_speechbox"></p>
+							<h1>Module ${this.id}</h1>
+							<p id="${this.id}_speechbox"></p>
+							<button onclick="mods['${this.id}'].speak();">TEST</button>
 						</div>
 						`
-						};
-					}
+					}.bind(this)
+
+					setInterval(this.speak, this.age * 100);
 				}
 			}
 
 			window.addEventListener("DOMContentLoaded", function() {
-				modHolder = document.getElementById("module_holder");
+				var modHolder = document.getElementById("module_holder");
 
 				for (var i = 0; i < initData.length; i++) {
-					mods.push(sourceMap[initData[i].mod].create(initData[i].mod, initData[i].config));
-					modHolder.insertAdjacentHTML("beforeend", mods[i].card);
-					mods[i].speak();
+					mods[initData[i].config.id] = new sourceMap[initData[i].mod](initData[i].mod, initData[i].config);
+					modHolder.insertAdjacentHTML("beforeend", mods[initData[i].config.id].card());
 				}
 
-				for (mod of mods) {
-					console.log(mod);
-				}
+				console.log(mods);
 			})
-
 		</script>
 	</head>
 	<body>
