@@ -13,8 +13,10 @@ type JablkoInterface interface {
 type JablkoMod interface{
 	ConfigStr() ([]byte, error)
 	Card(*http.Request) string
+	ModuleCardConfig() string
 	WebHandler(http.ResponseWriter, *http.Request)
 	UpdateConfig([]byte) error
+	SourcePath() string
 }
 
 func StructToMod(inputStruct JablkoMod) JablkoMod {

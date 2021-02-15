@@ -71,6 +71,7 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 	return types.StructToMod(instance), nil
 }
 
+
 func (instance *intStatus) ConfigStr() ([]byte, error) {
 	res, err := json.Marshal(instance)	
 	if err != nil {
@@ -80,6 +81,10 @@ func (instance *intStatus) ConfigStr() ([]byte, error) {
 	return res, nil
 }
 
+func (instance *intStatus) SourcePath() string {
+	return instance.Source
+}
+
 func (instance *intStatus) UpdateConfig(newConfig []byte) error {
 	err := json.Unmarshal(newConfig, instance)
 	if err != nil {
@@ -87,6 +92,10 @@ func (instance *intStatus) UpdateConfig(newConfig []byte) error {
 	}
 
 	return nil
+}
+
+func (instance *intStatus) ModuleCardConfig() string {
+	return `{"id": "` + instance.id + `"}`
 }
 
 

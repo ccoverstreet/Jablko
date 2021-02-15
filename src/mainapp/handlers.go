@@ -101,19 +101,62 @@ func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	toolbar := string(toolbarBytes)
 
-	var sb strings.Builder
+	// String builder for source code
+	var sourceMap strings.Builder
+	sourceMap.WriteString("\nconst jablko_sourceMap = {\n")
+
+	var moduleCardConfig strings.Builder
+	moduleCardConfig.WriteString("\nconst jablko_configArr = [\n")
+
+	sourceFileCache := make(map[string]bool)
+	isFirstMod := true
 	
+	// Loop through mods and gather source files
 	for _, modId := range app.ModHolder.Order {
-		jlog.Println(modId)
+		modSourcePath := app.ModHolder.Mods[modId].SourcePath()
+
+		if _, ok := sourceFileCache[modSourcePath]; !ok {
+			if (!isFirstMod) {
+				sourceMap.WriteString(",\n")
+			}
+			jlog.Printf("NOT HERE\n");
+			sourceBytes, err := ioutil.ReadFile("./" + modSourcePath + "/jablkomod.js")
+			if err != nil {
+				jlog.Warnf("Unable to read source \"%s\".\n", modSourcePath)
+				jlog.Warnf("%v\n", err)
+			}
+
+			sourceMap.WriteString(`"` + modSourcePath + `":` + string(sourceBytes))
+			
+			sourceFileCache[modSourcePath] = true
+		}
+
 		if curMod, ok := app.ModHolder.Mods[modId]; ok {
-			sb.WriteString(curMod.Card(r))	
+			if (!isFirstMod) {
+				moduleCardConfig.WriteString(",\n")
+			}
+
+			moduleCardConfig.WriteString(`{"mod": "` + modSourcePath + `" ,"config": ` + curMod.ModuleCardConfig() + `}`)	
 		} else {
 			jlog.Warnf("Dashboard card not available for \"%s\". Module not found.\n", modId)
 		}
+
+		isFirstMod = false
 	}
+	
+	sourceMap.WriteString(`
+};
+`)
+
+
+	moduleCardConfig.WriteString(`
+];
+`)
+
 
 	replacer := strings.NewReplacer("$TOOLBAR", toolbar,
-		"$JABLKO_MODULES", sb.String())
+		"$JABLKO_SOURCE_MAP", sourceMap.String(), 
+		"$JABLKO_INIT_ARR", moduleCardConfig.String())
 
 	w.Write([]byte(replacer.Replace(template)))
 }
