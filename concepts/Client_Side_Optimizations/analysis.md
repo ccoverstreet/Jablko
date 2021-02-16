@@ -16,8 +16,13 @@ ___
 inxi output
 
 CPU: Quad Core Intel Core i7-8565U (-MT MCP-) 
+
 speed/min/max: 1168/400/4600 MHz
+
 Kernel: 5.4.95-1-MANJARO x86_64
-Mem: 2195.3/15834.8 MiB (13.9%)
-Storage: 1.94 TiB (16.1% used)
+
+Mem: 2195.3/15834.8 MiB (13.9
+
+Storage: 1.94 TiB (16.1% used
+
 Procs: 255 
