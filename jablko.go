@@ -50,7 +50,11 @@ func main() {
 
 	router := initializeRoutes(jablkoApp)
 
-	jlog.Println(jablkoApp.ModHolder.Mods["interfacestatus1612055317856458"].SourcePath())
+	/*
+	for i := 0; i < 100; i++ {
+		jablkoApp.ModHolder.InstallMod("builtin/interfacestatus")
+	}
+	*/
 	
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit

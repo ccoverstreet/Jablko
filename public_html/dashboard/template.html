@@ -40,7 +40,6 @@
 			document.addEventListener("DOMContentLoaded", function() {
 				var modHolder = document.getElementById("module_holder");
 				for (mod in jablko_loadedMods) {
-					console.log(mod);
 					modHolder.insertAdjacentHTML("beforeend", jablko_loadedMods[mod].card());
 				}
 			});
