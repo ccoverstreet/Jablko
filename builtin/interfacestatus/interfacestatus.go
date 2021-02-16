@@ -95,29 +95,22 @@ func (instance *intStatus) UpdateConfig(newConfig []byte) error {
 }
 
 func (instance *intStatus) ModuleCardConfig() string {
-	return `{"id": "` + instance.id + `"}`
-}
-
-
-func (instance *intStatus) Card(*http.Request) string {
-	r := strings.NewReplacer("$UPDATE_INTERVAL", strconv.Itoa(instance.UpdateInterval),
-	"$MODULE_ID", instance.id,
-	"$MODULE_TITLE", instance.Title)
-
-	if templateCaching {
-		// If template is cached, use it for string replacement
-		return r.Replace(cachedTemplate)
+	type configPayload struct {
+		Id string `json:"id"`
+		Title string `json:"title"`
+		UpdateInterval int `json:"updateInterval"`
 	}
 
-	// Since template is not cached, read in file
-	loadedTemplateBytes, err := ioutil.ReadFile(instance.Source + "/interfacestatus.html")
+	structData := configPayload{instance.id, instance.Title, instance.UpdateInterval}
+
+	data, err := json.Marshal(structData)
 	if err != nil {
-		jlog.Errorf("ERROR: Unable to read interfacestatus.html template file\n")
+		jlog.Warnf("builtin/interfacestatus: Unable to marshal module card config to string\n")
 	}
 
-	htmlTemplate := string(loadedTemplateBytes)
+	jlog.Println(string(data))
 
-	return r.Replace(htmlTemplate)
+	return string(data) 
 }
 
 func (instance *intStatus) WebHandler(w http.ResponseWriter, r *http.Request) {
