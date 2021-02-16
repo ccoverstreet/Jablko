@@ -4,6 +4,7 @@ ___
 ### Test for 100 card insertions with basic string templating
 
 insertAdjacentHTML:    61 ms
+
 Fragment appendChild: 111 ms
 
 insertAdjacentHTML shows a roughly 2x speed-up. Both tests used a function prototype that returns either a HTML string or HTML element respectively. In insertAdjacentHTML, this string was immediately fed to insertAdjacentHTML. In the fragment demo, a document fragement had the returned HTML elements appended to it, and then the fragment was appended to the holder. The values above do not include the time spent appending the fragment to the holder. 
