@@ -278,15 +278,7 @@ func addMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody addModBody
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status":"fail","message":"Unable to read request body."}`)
-		return
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
@@ -314,22 +306,13 @@ func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
-		return 
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to parse JSON body."}`)
 		return
 	}
-
 
 	err = app.ModHolder.DeleteMod(parsedBody.ModId)
 
@@ -350,19 +333,11 @@ func getModConfig(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody getModConfigBody
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
-		return 
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to parse JSON body."}`)
 		return
 	}
 
@@ -391,19 +366,11 @@ func updateMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody updateModBody
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
-		return 
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to parse JSON body."}`)
 		return
 	}
 
@@ -437,19 +404,11 @@ func addUser(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody addUserBody
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
-		return 
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to parse JSON body."}`)
 		return
 	}
 
