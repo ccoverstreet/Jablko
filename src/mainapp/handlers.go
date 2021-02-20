@@ -81,6 +81,8 @@ func (app *MainApp) AuthenticationMiddleware(next http.Handler) http.Handler {
 }
 
 func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
+	// Generates dashboard HTML page from javascript fragments
+	// provided by Jablko Mods. 
 	jlog.Printf("User \"%s\" has requested dashboard (permission: %d)\n", r.Context().Value("username"), r.Context().Value("permissions"))
 
 	// Read in dashboard template
@@ -101,19 +103,58 @@ func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	toolbar := string(toolbarBytes)
 
-	var sb strings.Builder
+	// String builders for source code
+	var sourceMap strings.Builder
+	sourceMap.WriteString("\nconst jablko_sourceMap = {\n")
+
+	var moduleCardConfig strings.Builder
+	moduleCardConfig.WriteString("\nconst jablko_configArr = [\n")
+
+	sourceFileCache := make(map[string]bool) // Used to check if source has already been added
+	isFirstMod := true // Used just for formatting
 	
+	// Loop through mods and gather source files
 	for _, modId := range app.ModHolder.Order {
-		jlog.Println(modId)
+		modSourcePath := app.ModHolder.Mods[modId].SourcePath()
+
+		if _, ok := sourceFileCache[modSourcePath]; !ok {
+			if (!isFirstMod) {
+				sourceMap.WriteString(",\n")
+			}
+
+			sourceBytes, err := ioutil.ReadFile("./" + modSourcePath + "/jablkomod.js")
+			if err != nil {
+				jlog.Warnf("Unable to read source \"%s\".\n", modSourcePath)
+				jlog.Warnf("%v\n", err)
+				continue
+			}
+
+			sourceMap.WriteString(`"` + modSourcePath + `":` + string(sourceBytes))
+			
+			sourceFileCache[modSourcePath] = true
+		}
+
 		if curMod, ok := app.ModHolder.Mods[modId]; ok {
-			sb.WriteString(curMod.Card(r))	
+			if (!isFirstMod) {
+				moduleCardConfig.WriteString(",\n")
+			}
+
+			moduleCardConfig.WriteString(`{"mod": "` + modSourcePath + `" ,"config": ` + curMod.ModuleCardConfig() + `}`)	
 		} else {
 			jlog.Warnf("Dashboard card not available for \"%s\". Module not found.\n", modId)
 		}
-	}
 
+		isFirstMod = false
+	}
+	
+	sourceMap.WriteString("\n};\n")
+
+	moduleCardConfig.WriteString("\n];\n")
+
+	// Replacer generates the final HTML
 	replacer := strings.NewReplacer("$TOOLBAR", toolbar,
-		"$JABLKO_MODULES", sb.String())
+		"$JABLKO_SOURCE_MAP", sourceMap.String(), 
+		"$JABLKO_INIT_ARR", moduleCardConfig.String()) 
 
 	w.Write([]byte(replacer.Replace(template)))
 }
@@ -126,13 +167,7 @@ func (app *MainApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var loginData loginHolder
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Warnf("Unable to read login body\n")
-		jlog.Warnf("%v\n")
-	}
-
-	err = json.Unmarshal(body, &loginData)
+	err := json.NewDecoder(r.Body).Decode(&loginData)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Warnf("%v\n", err)
@@ -243,15 +278,7 @@ func addMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody addModBody
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status":"fail","message":"Unable to read request body."}`)
-		return
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
@@ -279,22 +306,13 @@ func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
-		return 
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to parse JSON body."}`)
 		return
 	}
-
 
 	err = app.ModHolder.DeleteMod(parsedBody.ModId)
 
@@ -315,19 +333,11 @@ func getModConfig(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody getModConfigBody
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
-		return 
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to parse JSON body."}`)
 		return
 	}
 
@@ -356,19 +366,11 @@ func updateMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody updateModBody
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
-		return 
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to parse JSON body."}`)
 		return
 	}
 
@@ -402,19 +404,11 @@ func addUser(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody addUserBody
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Errorf("Unable to read \"/admin/addMod\" body.\n")
-		jlog.Errorf("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message": "Unable to read body."}`)
-		return 
-	}
-
-	err = json.Unmarshal(body, &parsedBody)
+	err := json.NewDecoder(r.body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
-		fmt.Fprintf(w, `{"status": "fail", "message":"Unable to parse body."}`)
+		fmt.Fprintf(w, `{"status":"fail","message":"Unable to parse JSON body."}`)
 		return
 	}
 

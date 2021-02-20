@@ -25,12 +25,31 @@
 						console.error(err);
 					})
 			}
+
+			$JABLKO_SOURCE_MAP
+
+			$JABLKO_INIT_ARR
+
+			jablko_loadedMods = {}
+			for (var i = 0; i < jablko_configArr.length; i++) {
+				jablko_loadedMods[jablko_configArr[i].config.id] = new jablko_sourceMap[jablko_configArr[i].mod](jablko_configArr[i].config)
+			}
+
+			console.log(jablko_loadedMods);
+
+			document.addEventListener("DOMContentLoaded", function() {
+				var modHolder = document.getElementById("module_holder");
+				for (mod in jablko_loadedMods) {
+					modHolder.insertAdjacentHTML("beforeend", jablko_loadedMods[mod].card());
+				}
+			});
+
+			console.log(jablko_loadedMods);
 		</script>
 	</head>
 	<body class="dark_theme fonts">
 		$TOOLBAR
 		<div id="module_holder">
-			$JABLKO_MODULES
 		</div>
 	</body>
 </html>
