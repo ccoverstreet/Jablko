@@ -11,14 +11,12 @@ import (
 	"strings"
 	"strconv"
 	"encoding/json"
-	"io/ioutil"
 
 	"github.com/gorilla/mux"
 )
 
 // ---------- Module Globals ----------
 var jablko types.JablkoInterface
-var templateCaching bool
 var cachedTemplate string
 
 var serverStartTime int
@@ -56,17 +54,6 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 	}
 
 	jablko = jablkoRef
-	
-	templateCaching = !jablko.GetFlagValue("--debug-mode")
-
-	if templateCaching {
-		loadedTemplateBytes, err := ioutil.ReadFile(instance.Source + "/interfacestatus.html")
-		if err != nil {
-			jlog.Errorf("ERROR: Unable to read interfacestatus.html template file\n")
-		}
-
-		cachedTemplate = string(loadedTemplateBytes)
-	}
 	
 	return types.StructToMod(instance), nil
 }
@@ -144,6 +131,7 @@ func getStatus(w http.ResponseWriter, r *http.Request) error {
 		"$UPTIME", strconv.Itoa(int(time.Now().Unix()) - serverStartTime),
 		"$CUR_ALLOC", strconv.Itoa(int(m.Alloc)),
 		"$SYS_ALLOC", strconv.Itoa(int(m.Sys)))
+
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintln(w, replacer.Replace(resTemplate))
 
