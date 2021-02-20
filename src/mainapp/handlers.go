@@ -81,6 +81,8 @@ func (app *MainApp) AuthenticationMiddleware(next http.Handler) http.Handler {
 }
 
 func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
+	// Generates dashboard HTML page from javascript fragments
+	// provided by Jablko Mods. 
 	jlog.Printf("User \"%s\" has requested dashboard (permission: %d)\n", r.Context().Value("username"), r.Context().Value("permissions"))
 
 	// Read in dashboard template
@@ -101,15 +103,15 @@ func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	toolbar := string(toolbarBytes)
 
-	// String builder for source code
+	// String builders for source code
 	var sourceMap strings.Builder
 	sourceMap.WriteString("\nconst jablko_sourceMap = {\n")
 
 	var moduleCardConfig strings.Builder
 	moduleCardConfig.WriteString("\nconst jablko_configArr = [\n")
 
-	sourceFileCache := make(map[string]bool)
-	isFirstMod := true
+	sourceFileCache := make(map[string]bool) // Used to check if source has already been added
+	isFirstMod := true // Used just for formatting
 	
 	// Loop through mods and gather source files
 	for _, modId := range app.ModHolder.Order {
@@ -119,11 +121,12 @@ func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 			if (!isFirstMod) {
 				sourceMap.WriteString(",\n")
 			}
-			jlog.Printf("NOT HERE\n");
+
 			sourceBytes, err := ioutil.ReadFile("./" + modSourcePath + "/jablkomod.js")
 			if err != nil {
 				jlog.Warnf("Unable to read source \"%s\".\n", modSourcePath)
 				jlog.Warnf("%v\n", err)
+				continue
 			}
 
 			sourceMap.WriteString(`"` + modSourcePath + `":` + string(sourceBytes))
@@ -144,19 +147,14 @@ func (app *MainApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 		isFirstMod = false
 	}
 	
-	sourceMap.WriteString(`
-};
-`)
+	sourceMap.WriteString("\n};\n")
 
+	moduleCardConfig.WriteString("\n];\n")
 
-	moduleCardConfig.WriteString(`
-];
-`)
-
-
+	// Replacer generates the final HTML
 	replacer := strings.NewReplacer("$TOOLBAR", toolbar,
 		"$JABLKO_SOURCE_MAP", sourceMap.String(), 
-		"$JABLKO_INIT_ARR", moduleCardConfig.String())
+		"$JABLKO_INIT_ARR", moduleCardConfig.String()) 
 
 	w.Write([]byte(replacer.Replace(template)))
 }
