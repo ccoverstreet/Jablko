@@ -176,7 +176,7 @@ func (app *MainApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	isCorrect, userData := app.Db.AuthenticateUser(loginData.Username, loginData.Password)
 
 	if isCorrect {
-		jlog.Println("User \"" + loginData.Username + "\" has logged in.\n")
+		jlog.Println("User \"" + loginData.Username + "\" has logged in.")
 
 		cookie, err := app.Db.CreateSession(loginData.Username, userData)
 		if err != nil {
