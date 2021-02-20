@@ -278,7 +278,7 @@ func addMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody addModBody
 
-	err := json.NewDecoder(r.body).Decode(&parsedBody)
+	err := json.NewDecoder(r.Body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
@@ -306,7 +306,7 @@ func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	err := json.NewDecoder(r.body).Decode(&parsedBody)
+	err := json.NewDecoder(r.Body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
@@ -333,7 +333,7 @@ func getModConfig(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody getModConfigBody
 
-	err := json.NewDecoder(r.body).Decode(&parsedBody)
+	err := json.NewDecoder(r.Body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
@@ -366,7 +366,7 @@ func updateMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody updateModBody
 
-	err := json.NewDecoder(r.body).Decode(&parsedBody)
+	err := json.NewDecoder(r.Body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
@@ -404,7 +404,7 @@ func addUser(app *MainApp, w http.ResponseWriter, r *http.Request) {
 
 	var parsedBody addUserBody
 
-	err := json.NewDecoder(r.body).Decode(&parsedBody)
+	err := json.NewDecoder(r.Body).Decode(&parsedBody)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Println("%v\n", err)
