@@ -58,7 +58,6 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 	return types.StructToMod(instance), nil
 }
 
-
 func (instance *intStatus) ConfigStr() ([]byte, error) {
 	res, err := json.Marshal(instance)	
 	if err != nil {
