@@ -167,13 +167,7 @@ func (app *MainApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var loginData loginHolder
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		jlog.Warnf("Unable to read login body\n")
-		jlog.Warnf("%v\n")
-	}
-
-	err = json.Unmarshal(body, &loginData)
+	err := json.NewDecoder(r.Body).Decode(&loginData)
 	if err != nil {
 		jlog.Warnf("Unable to unmarshal JSON data.\n")
 		jlog.Warnf("%v\n", err)
