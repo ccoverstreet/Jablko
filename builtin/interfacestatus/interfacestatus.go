@@ -108,8 +108,6 @@ func (instance *intStatus) ModuleCardConfig() string {
 		jlog.Warnf("builtin/interfacestatus: Unable to marshal module card config to string\n")
 	}
 
-	jlog.Println(string(data))
-
 	return string(data) 
 }
 
