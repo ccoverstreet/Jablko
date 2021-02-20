@@ -36,7 +36,24 @@ function interfaceStatus(config) {
 				messageElem.style.color = "var(--color-good)";
 			})
 			.catch(err => {
+				uptimeElem = document.getElementById(`${this.id}_uptime`);
+				uptimeElem.textContent = "N/A"
+				uptimeElem.style.color = "var(--color-bad)";
 
+				curAllocElem = document.getElementById(`${this.id}_curAlloc`);
+				curAllocElem.textContent = "N/A"
+				curAllocElem.style.color = "var(--color-bad)";
+
+				sysAllocElem = document.getElementById(`${this.id}_sysAlloc`);
+				sysAllocElem.textContent = "N/A"
+				sysAllocElem.style.color = "var(--color-bad)";
+
+				messageElem = document.getElementById(`${this.id}_message`);
+				messageElem.textContent = "Unable to communicate with interface.";
+				messageElem.style.color = "var(--color-bad)";
+
+				console.log("ERROR: Unable to use interfacestatus/getStatus.");
+				console.log(err);
 			});
 	}.bind(this);
 
