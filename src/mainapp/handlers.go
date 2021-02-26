@@ -286,7 +286,6 @@ func addMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	err = app.ModHolder.InstallMod(parsedBody.SourcePath)
 	if err != nil {
 		jlog.Errorf("%v\n", err)
@@ -302,9 +301,9 @@ func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 		ModId string `json:"modId"`
 	}
 
-	var parsedBody deleteModBody
-
 	w.Header().Set("Content-Type", "application/json")
+
+	var parsedBody deleteModBody
 
 	err := json.NewDecoder(r.Body).Decode(&parsedBody)
 	if err != nil {

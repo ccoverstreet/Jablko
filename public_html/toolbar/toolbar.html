@@ -131,6 +131,9 @@
 			case "admin_button_user_control":
 				selectedId = "admin_user_control";
 				break;
+			case "admin_button_devices":
+				selectedId = "admin_devices";
+				break;
 			default:
 				return;
 		}
@@ -383,10 +386,11 @@
 <div id="admin_panel" style="display: none;">
 	<div class="module_title">Admin</div>
 	<hr>
-	<div style="display: grid; grid-template-columns: auto auto auto; grid-column-gap: 1px; margin-bottom: 10px;">
+	<div style="display: grid; grid-template-columns: auto auto auto auto; grid-column-gap: 1px; grid-row-gap: 1px; margin-bottom: 10px;">
 		<button id="admin_button_install_mod" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">Install</button>
 		<button id="admin_button_config_mod" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">Settings</button>
 		<button id="admin_button_user_control" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">User</button>
+		<button id="admin_button_devices" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">Devices</button>
 	</div>
 
 	<div id="admin_install_mod" class="control_panel_page" style="padding: 0px 10px 0px 10px;">
@@ -435,5 +439,10 @@
 				<button onclick="adminAddUser()">Add User</button>
 			</div>
 		</div>
+	</div>
+
+
+	<div id="admin_devices" class="control_panel_page" style="padding: 0px 10px 0px 10px; display: none;">
+		<h1>DEVICE CONTROL</h1>
 	</div>
 </div>
