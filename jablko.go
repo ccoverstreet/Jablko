@@ -50,12 +50,6 @@ func main() {
 
 	router := initializeRoutes(jablkoApp)
 
-	/*
-	for i := 0; i < 100; i++ {
-		jablkoApp.ModHolder.InstallMod("builtin/interfacestatus")
-	}
-	*/
-	
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
