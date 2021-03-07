@@ -22,10 +22,19 @@ function notepad(config) {
 			})
 	}.bind(this);
 
-	// Setting repeating tasks
-	document.addEventListener("DOMContentLoaded", function() {
-	}.bind(this));
+	// Function that is fired by Jablko
+	this.onLoad = function() {
+		var textElem = document.getElementById(`${this.id}_textarea`);
+		textElem.addEventListener("keydown", function(e) {
+			if (e.code == "Tab") {
+				e.preventDefault();
+				this.value += "\t";
+				console.log("BIG");
+			}
+		});
+	}
 
+	// Setting repeating tasks
 	this.card = function() {
 		return `
 <div id="${this.id}" class="module_card">
@@ -36,10 +45,11 @@ function notepad(config) {
 		</svg>
 
 	</div>
+
 	<hr>
 
 	<div style="display: flex; justify-content: center;">
-		<textarea id="${this.id}_textarea" style="font-family: Arial; font-size: 14px; width: 90%; padding: 5px; height: 100px;"></textarea>
+		<textarea id="${this.id}_textarea" style="font-family: Arial; font-size: 14px; width: 90%; padding: 5px; height: 100px; background-color: var(--color-surface-2); color: var(--color-font-high)"></textarea>
 	</div>
 </div>
 `}.bind(this);
