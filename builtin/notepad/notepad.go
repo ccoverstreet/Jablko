@@ -6,6 +6,7 @@ import (
 
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"net/http"
 	"github.com/gorilla/mux"
@@ -16,6 +17,7 @@ var jablko types.JablkoInterface
 const defaultSourcePath = "./builtin/interfacestatus"
 
 type notepad struct {
+	sync.Mutex
 	id string
 	Title string
 	Source string
@@ -26,6 +28,7 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 	instance.id = instanceId
 
 	if configData == nil {
+		// Default
 		instance.Title = "Notepad"
 		instance.Source = defaultSourcePath
 
@@ -44,6 +47,9 @@ func Initialize(instanceId string, configData []byte, jablkoRef types.JablkoInte
 }
 
 func (instance *notepad) ConfigStr() ([]byte, error) {
+	instance.Lock()
+	defer instance.Unlock()
+
 	res, err := json.Marshal(instance)
 	if err != nil {
 		return nil, err
@@ -57,6 +63,9 @@ func (instance *notepad) SourcePath() string {
 }
 
 func (instance *notepad) UpdateConfig(newConfig []byte) error {
+	instance.Lock()
+	defer instance.Unlock()
+
 	err := json.Unmarshal(newConfig, instance)
 	if err != nil {
 		return err
@@ -66,6 +75,9 @@ func (instance *notepad) UpdateConfig(newConfig []byte) error {
 }
 
 func (instance *notepad) ModuleCardConfig() string {
+	instance.Lock()
+	defer instance.Unlock()
+
 	type configPayload struct {
 		Id string `json:"id"`
 		Title string `json:"title"`
@@ -87,14 +99,18 @@ func (instance *notepad) WebHandler(w http.ResponseWriter, r *http.Request) {
 
 	var err error = nil
 
-	switch {
-	case pathParams["func"] == "speak":
+	switch pathParams["func"] {
+	case "speak":
 		jlog.Warnf("ASDASDASD SPEAK\n")
+	case "saveNote":
+		err = instance.SaveNote(w, r)
+		jlog.Warnf("SAVE NOTE\n")
 	default: 
 		err = fmt.Errorf("No corresponding function found.")
 	}
 
 	if err != nil {
+		jlog.Errorf("%v\n", err)
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintln(w, `{"status": "fail", "message": "` + err.Error() + `"}`)
 	}
