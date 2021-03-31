@@ -9,7 +9,7 @@ import (
 	"github.com/ccoverstreet/Jablko/src/jlog"
 )
 
-const sessionLength = 3600 // Session duration in seconds
+const sessionLength = 216000 // Session duration in seconds
 
 func (instance *JablkoDB) CreateSession(username string, userData types.UserData) (http.Cookie, error) {
 	cookieValue, err := jablkorandom.GenRandomStr(128)
@@ -107,5 +107,4 @@ func (instance *JablkoDB) ValidateSession(cookieValue string) (bool, types.Sessi
 	}
 
 	return isValid, hold, nil
-
 }

@@ -50,12 +50,6 @@ func main() {
 
 	router := initializeRoutes(jablkoApp)
 
-	/*
-	for i := 0; i < 100; i++ {
-		jablkoApp.ModHolder.InstallMod("builtin/interfacestatus")
-	}
-	*/
-	
 	// Start HTTP and HTTPS depending on Config
 	// Wait for all to exit
 	var wg sync.WaitGroup
@@ -111,7 +105,7 @@ func startJablko(app *mainapp.MainApp, router *mux.Router, wg *sync.WaitGroup) c
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			jlog.Printf("Starting HTTP Server on Port %d\n", app.Config.HttpPort)	
+			jlog.Printf("Starting HTTP Server on Port %d\n", app.Config.HttpPort)
 
 			jlog.Errorf("%v\n", http.ListenAndServe(":" + strconv.Itoa(app.Config.HttpPort), router))
 		}()
@@ -122,7 +116,7 @@ func startJablko(app *mainapp.MainApp, router *mux.Router, wg *sync.WaitGroup) c
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			jlog.Printf("Starting HTTPS Server on Port %d\n", app.Config.HttpsPort)	
+			jlog.Printf("Starting HTTPS Server on Port %d\n", app.Config.HttpsPort)
 			jlog.Errorf("%v\n", http.ListenAndServeTLS(":" + strconv.Itoa(app.Config.HttpsPort), "/home/pi/Certs/cert.pem", "/home/pi/Certs/privkey.pem", router))
 		}()
 	}

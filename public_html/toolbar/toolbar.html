@@ -89,7 +89,6 @@
 
 	<button onclick="toggle_admin()" style="height: 100%; border-width: 0px; background-color: inherit;"> 
 		<svg class="module_icon" viewBox="0 0 150 150" style="margin-right: 0px;">
-			
 
 			<path d="M 10 35 L 140 115" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
 			<path d="M 10 35 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
@@ -120,6 +119,39 @@
 </div>
 
 <script>
+	function adminSelectPanel() {
+		var selectedId = "";
+		switch(this.id) {
+			case "admin_button_install_mod":
+				selectedId = "admin_install_mod";
+				break;
+			case "admin_button_config_mod":
+				selectedId = "admin_config_mod";
+				break;
+			case "admin_button_user_control":
+				selectedId = "admin_user_control";
+				break;
+			case "admin_button_devices":
+				selectedId = "admin_devices";
+				break;
+			default:
+				return;
+		}
+
+		var pages = document.getElementsByClassName("control_panel_page");
+		for (page of pages) {
+			if (page.id != selectedId) {
+				page.style.display = "none";
+			} else {
+				page.style.display = "block";
+			}
+		}
+
+		if (selectedId == "admin_config_mod") {
+			adminGetModConfig();
+		}
+	}
+
 	function adminInstallMod() {
 		var inputElem = document.getElementById("admin_install_input");
 		var buttonElem = document.getElementById("admin_install_button");
@@ -205,7 +237,7 @@
 
 	function adminGetModConfig() {
 		selectedMod = document.getElementById("admin_config_select").value;
-			
+
 		fetch("/admin/getModConfig", {
 			method: "POST",
 			headers: {
@@ -270,7 +302,7 @@
 				if (res.status == "fail") {
 					throw new Error(res.message);
 				}
-				
+
 				document.location.reload();
 			})
 			.catch((err) => {
@@ -345,22 +377,31 @@
 	z-index:99;
 	box-shadow: 3px 3px 5px;
 }
+
+.admin_panel_select_button {
+	border-radius: 0px;
+}
 </style>
 
 <div id="admin_panel" style="display: none;">
 	<div class="module_title">Admin</div>
 	<hr>
+	<div style="display: grid; grid-template-columns: auto auto auto auto; grid-column-gap: 1px; grid-row-gap: 1px; margin-bottom: 10px;">
+		<button id="admin_button_install_mod" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">Install</button>
+		<button id="admin_button_config_mod" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">Settings</button>
+		<button id="admin_button_user_control" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">User</button>
+		<button id="admin_button_devices" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">Devices</button>
+	</div>
 
-	<div id="admin_install_mod" style="padding: 0px 10px 0px 10px;">
+	<div id="admin_install_mod" class="control_panel_page" style="padding: 0px 10px 0px 10px;">
 		<input id="admin_install_input" autocorrect="off" style="font-size: 16px; width: 250px;"> </input>
 		<br>
 		<button id="admin_install_button" onclick="adminInstallMod()" style="color: var(--color-background); margin: 5px 0px 0px 0px;">Install</button>
 		<div id="admin_install_message" style="color: var(--color-bad); padding: 5px;"></div>
 	</div>
 
-	<hr>
 
-	<div id="admin_config_mod" style="padding: 0px 10px 0px 10px;">
+	<div id="admin_config_mod" class="control_panel_page" style="padding: 0px 10px 0px 10px; display: none;">
 		<select id="admin_config_select" onchange="adminGetModConfig()"></select>
 		<div style="padding: 5px 0px 5px 0px;">
 			<button onclick="adminUpdateModConfig()">Update Mod</button>
@@ -371,9 +412,8 @@
 		<div id="admin_config_message" style="color: var(--color-bad); padding: 5px;"></div>
 	</div>
 
-	<hr>
 
-	<div id="admin_user_control" style="padding: 0px 10px 0px 10px;">
+	<div id="admin_user_control" class="control_panel_page" style="padding: 0px 10px 0px 10px; display: none;">
 		<div action="/admin/addUser" method="POST" style="width:max(250px, 40%);">
 			<div class="label_value_pair">
 				<div class="label" style="color:var(--color-font-high)">Username:</div>
@@ -399,5 +439,10 @@
 				<button onclick="adminAddUser()">Add User</button>
 			</div>
 		</div>
+	</div>
+
+
+	<div id="admin_devices" class="control_panel_page" style="padding: 0px 10px 0px 10px; display: none;">
+		<h1>DEVICE CONTROL</h1>
 	</div>
 </div>

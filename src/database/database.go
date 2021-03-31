@@ -12,6 +12,7 @@ package database
 import (
 	"os"
 	"fmt"
+	"strings"
 
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
@@ -135,7 +136,10 @@ func removeDatabase() {
 }
 
 func (instance *JablkoDB) AddUser(username string, password string, firstName string, permissions int) error {
-	userSQL := `INSERT INTO users (username, password, firstName, permissions) VALUES(?, ?, ?, ?)`
+	// First check if password is secure
+	if len(password) < 10  || !strings.ContainsAny(password, "!@#$%&"){
+		return fmt.Errorf("Password is insecure.")
+	}
 
 	passHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -143,7 +147,26 @@ func (instance *JablkoDB) AddUser(username string, password string, firstName st
 		return err
 	}
 
-	statement, err := instance.Db.Prepare(userSQL)
+	// Check if username already exists
+	statement, err := instance.Db.Prepare("SELECT * FROM users WHERE username=(?)")
+	if err != nil {
+		return fmt.Errorf("ERROR: Authenticate user SQL is invalid.")
+	}
+
+	res, err := statement.Query(username)
+	if err != nil {
+		return fmt.Errorf("ERROR: Unable to retrieve user data.")
+	}
+	defer res.Close()
+
+	userExists := res.Next()
+	if userExists {
+		return fmt.Errorf("User already exists with that username.")
+	}
+
+
+	userSQL := `INSERT INTO users (username, password, firstName, permissions) VALUES(?, ?, ?, ?)`
+	statement, err = instance.Db.Prepare(userSQL)
 	if err != nil {
 		jlog.Errorf("Error in preparing user create SQL statement\n")
 		return err

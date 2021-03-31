@@ -23,7 +23,9 @@ func BuildJablkoMod(buildDir string) error {
 	buildCMD := exec.Command("go", "build", "-buildmode=plugin", "-o", "jablkomod.so", ".")		
 	buildCMD.Dir = buildDir
 	jlog.Println(buildCMD)
-	_, err := buildCMD.Output()
+	outBytes, err := buildCMD.CombinedOutput()
+
+	jlog.Printf("Build Output of \"%s\":\n%s", buildDir, string(outBytes))
 
 	return err
 }

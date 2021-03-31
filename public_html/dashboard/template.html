@@ -41,6 +41,7 @@
 				var modHolder = document.getElementById("module_holder");
 				for (mod in jablko_loadedMods) {
 					modHolder.insertAdjacentHTML("beforeend", jablko_loadedMods[mod].card());
+					jablko_loadedMods[mod].onLoad();
 				}
 			});
 

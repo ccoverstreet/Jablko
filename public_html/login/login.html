@@ -2,9 +2,8 @@
 <html>
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script>
-			async function login() {
+			async function jablko_login() {
 				const submitted_username = document.getElementById("username").value;
 				const submitted_password = document.getElementById("password").value;
 
@@ -31,10 +30,13 @@
 					})
 			}
 
-			$(document).on("keypress", function(e) {
-				if (e.key == "Enter") {
-					login();
-				}
+			document.addEventListener("DOMContentLoaded", function() {
+				formElem = document.getElementById("login_box");
+			
+				formElem.addEventListener("submit", event => {
+					event.preventDefault();
+					jablko_login();
+				});
 			});
 		</script>
 
@@ -99,29 +101,24 @@ input:focus {
 	align-items: center;
 	padding-right: 10px;
 }
-
-#submission_box {
-	display: grid;
-	grid-template-columns: auto 100px;
-}
 		</style>
 	</head>
 	<body>
-		<div id="login_box">
+		<form id="login_box" onsubmit="jablko_login">
 			<div class="field">
 				<div class="field_label">Username:</div>
-				<input id="username"></input>
+				<input id="username" autocomplete="username"></input>
 			</div>
 			<div class="field">
 				<div class="field_label">Password:</div>
-				<input id="password" type="password"></input>
+				<input id="password" type="password" autocomplete="current-password"></input>
 			</div>
 				
-			<div id="submission_box">
+			<div id="submission_box" style="display: grid; grid-template-columns: auto 100px;">
 				<div id="status"></div>
-				<button id="login_button" onclick="login()" style="background-color: #03dac6; color: #000000; font-size: 14px;">Login</button>
+				<button id="login_button" onclick="jablko_login()" style="background-color: #03dac6; color: #000000; font-size: 14px;">Login</button>
 			</div>
-		</div>
+		</form>
 	</body>
 </html>
 

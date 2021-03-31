@@ -80,14 +80,15 @@ function interfaceStatus(config) {
 	}.bind(this);
 
 	// Setting repeating tasks
-	document.addEventListener("DOMContentLoaded", function() {
+	this.onLoad = function() {
 		this.getStatus();
 		this.speedTest();
-	}.bind(this));
 
-	setInterval(this.getStatus, this.updateInterval * 1000);
-	setInterval(this.speedTest, this.updateInterval * 1000);
+		setInterval(this.getStatus, this.updateInterval * 1000);
+		setInterval(this.speedTest, this.updateInterval * 1000);
+	}.bind(this);
 
+	
 	this.card = function() {
 		return `
 <div id="${this.id}" class="module_card">

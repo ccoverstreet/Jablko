@@ -176,7 +176,7 @@ func (app *MainApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	isCorrect, userData := app.Db.AuthenticateUser(loginData.Username, loginData.Password)
 
 	if isCorrect {
-		jlog.Println("User \"" + loginData.Username + "\" has logged in.\n")
+		jlog.Println("User \"" + loginData.Username + "\" has logged in.")
 
 		cookie, err := app.Db.CreateSession(loginData.Username, userData)
 		if err != nil {
@@ -286,7 +286,6 @@ func addMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	err = app.ModHolder.InstallMod(parsedBody.SourcePath)
 	if err != nil {
 		jlog.Errorf("%v\n", err)
@@ -302,9 +301,9 @@ func deleteMod(app *MainApp, w http.ResponseWriter, r *http.Request) {
 		ModId string `json:"modId"`
 	}
 
-	var parsedBody deleteModBody
-
 	w.Header().Set("Content-Type", "application/json")
+
+	var parsedBody deleteModBody
 
 	err := json.NewDecoder(r.Body).Decode(&parsedBody)
 	if err != nil {
@@ -412,12 +411,10 @@ func addUser(app *MainApp, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jlog.Println(parsedBody)
-
 	err = app.Db.AddUser(parsedBody.Username, parsedBody.Password, parsedBody.FirstName, 0)
 	if err != nil {
 		jlog.Warnf("Unable to add to SQLite database\n")
-		jlog.Println("%v\n", err)
+		jlog.Printf("%v\n", err)
 		fmt.Fprintf(w, `{"status":"fail","message":"` + err.Error() + `"}`)	
 		return
 	}
