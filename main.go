@@ -9,12 +9,38 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
+	"log"
+	"net/http"
+
+
+	"github.com/ccoverstreet/Jablko/core/logging"
+	"github.com/ccoverstreet/Jablko/core/app"
 )
 
 func main() {
-		
+	setupLogging()
+
+	log.Println(startingStatement)
+
+	jablkoApp := app.JablkoCoreApp{}
+	err := jablkoApp.Init()
+	if err != nil {
+		panic(err)
+	}
+
+	log.Fatal(http.ListenAndServe(":8080", jablkoApp.Router))	
+}
+
+func setupLogging() {
+	log.SetFlags(0)
+	log.SetOutput(new(logging.JablkoLogger))
 }
 
 
-const startingStatement
+const startingStatement = `
+Jablko Smart Home
+Cale Overstreet
+Version 0.3.0
+License: GPLv3
+
+`
