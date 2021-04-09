@@ -61,7 +61,8 @@ func (app *JablkoCoreApp) Init() error {
 
 func (app *JablkoCoreApp) initRouter() error {
 	router := mux.NewRouter()
-	router.HandleFunc("/", app.DashboardHandler)
+	router.HandleFunc("/", app.DashboardHandler).Methods("GET")
+	router.HandleFunc("/{client}/{state}/{modId}/{modFunc}", app.ModManager.HandleRequest).Methods("POST")
 	
 	app.Router = router
 
