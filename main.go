@@ -28,7 +28,11 @@ func main() {
 		panic(err)
 	}
 
-	log.Fatal(http.ListenAndServe(":8080", jablkoApp.Router))	
+	err  = jablkoApp.ModManager.StartJablkoMod("./builtin/test")
+	log.Println(err)
+
+
+	log.Fatal(http.ListenAndServe(":8080", jablkoApp.Router))
 }
 
 func setupLogging() {

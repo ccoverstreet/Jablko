@@ -9,21 +9,53 @@
 package subprocess
 
 import (
+	"os"
 	"os/exec"
+	"strconv"
+	"log"
 )
 
-type Subprocess {
-	Cmd exec.Cmd	
+type Subprocess struct {
+	Cmd *exec.Cmd
 	Port int
 }
 
-func CreateSubprocess(source string, port int) error {	
-	
+func CreateSubprocess(source string, jablkoPort int, processPort int, dataDir string) (*Subprocess, error) {
+	// Creates a subprocess from the given parameters
+	// Does not start the process
 
-	return nil
+	sub := new(Subprocess)
+	sub.Cmd = exec.Command("./jablkostart.sh")
+	sub.Cmd.Dir = source
+	sub.Cmd.Env = []string{
+		"JABLKO_CORE_PORT=" + strconv.Itoa(jablkoPort),
+		"JABLKO_MOD_PORT=" + strconv.Itoa(processPort),
+		"JABLKO_MOD_DATA_DIR=" + dataDir,
+	}
+
+	sub.Cmd.Stdout = os.Stdout
+
+	return sub, nil
 }
 
-func (proc *Subprocess) Update() {
+func (sub *Subprocess) Start() error {
+	err := sub.Cmd.Start()
+
+	return err
+}
+
+func (sub *Subprocess) Build() error {
+	buildProc := exec.Command("./jablkobuild.sh")
+	buildProc.Dir = sub.Cmd.Dir
+
+	//err := buildProc.Run()
+	out, err := buildProc.CombinedOutput()
+	log.Println(string(out))
+
+	return err
+}
+
+func (sub *Subprocess) Update() {
 	// Handles updating the source
 	// Will first look for precompiled options
 	// and then resort to a build from source

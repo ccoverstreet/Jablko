@@ -12,13 +12,20 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"io/ioutil"
 	"sync"
+	"bytes"
 
 	"github.com/gorilla/mux"
+
+	"github.com/ccoverstreet/Jablko/core/subprocess"
 )
 
 type ModManager struct {
 	StateMap map[string]ModData
+	SubprocessMap map[string]*subprocess.Subprocess
 }
 
 type ModData struct {
@@ -29,7 +36,8 @@ type ModData struct {
 }
 
 func NewModManager(config string) (*ModManager, error) {
-	x := new(ModManager)
+	mm := new(ModManager)
+	mm.SubprocessMap = make(map[string]*subprocess.Subprocess)
 	f := make(map[string]ModData)
 
 	err := json.Unmarshal([]byte(config), &f)
@@ -37,8 +45,8 @@ func NewModManager(config string) (*ModManager, error) {
 		return nil, err
 	}
 
-	x.StateMap = f
-	log.Println(x)
+	mm.StateMap = f
+	log.Println(mm)
 
 	b, err := json.Marshal(f["test1"])
 	if err != nil {
@@ -47,7 +55,37 @@ func NewModManager(config string) (*ModManager, error) {
 
 	log.Println(string(b))
 
-	return x, nil
+	return mm, nil
+}
+
+func (mm *ModManager) StartJablkoMod(source string) error {
+	newProc, err := subprocess.CreateSubprocess(
+		source,
+		8080,
+		8081,
+		"./data",
+	)
+
+	if err != nil {
+		panic(err)
+		return err
+	}
+
+	log.Printf(`Building "%s"`, source)
+	err = newProc.Build()
+	if err != nil {
+		panic(err)
+		return err
+	}
+
+	err = newProc.Start()
+	if err != nil {
+		return err
+	}
+
+	mm.SubprocessMap[source] = newProc
+
+	return nil
 }
 
 func (mm *ModManager) HandleRequest(w http.ResponseWriter, r *http.Request) {
@@ -55,8 +93,8 @@ func (mm *ModManager) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	log.Println(vars)
 
 	if vars["state"] != "stateless" || vars["state"] == "stateful" {
-		log.Printf(`Request "%s" invalid state option "%s"`, r.URL, vars["state"])	
-		return 
+		log.Printf(`Request "%s" invalid state option "%s"`, r.URL, vars["state"])
+		return
 	}
 
 	stateless := true
@@ -74,6 +112,22 @@ func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, statel
 	// initial stateful request since the change of state
 	// only occurs after the response comes back.
 
-	log.Println("PASS REQUEST (NOT IMPLEMENTED)", r.URL)	
+	url, _ := url.Parse("http://localhost:8081")
+	proxy := httputil.NewSingleHostReverseProxy(url)
 
+	sentBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+
+    r.Host = url.Host
+	r.URL.Host = url.Host
+	r.URL.Scheme = url.Scheme
+	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
+    r.Header.Set("MY-SPECIAL-HEADER", "JABLKO SECRET")
+    r.Header.Set("Content-Type", "application/json")
+
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(sentBody))
+
+	proxy.ServeHTTP(w, r)
 }

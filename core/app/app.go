@@ -20,7 +20,7 @@ import (
 )
 
 type JablkoCoreApp struct {
-	Router *mux.Router		
+	Router *mux.Router
 	ModManager *jablkomods.ModManager
 }
 
@@ -28,9 +28,9 @@ type JablkoCoreApp struct {
 func (app *JablkoCoreApp) Init() error {
 	// Runs through procedures to instantiate
 	// config data.
-		
+
 	if err := app.initRouter(); err != nil {
-		return err		
+		return err
 	}
 
 	newManager, err := jablkomods.NewModManager(`{
@@ -60,10 +60,13 @@ func (app *JablkoCoreApp) Init() error {
 }
 
 func (app *JablkoCoreApp) initRouter() error {
+	// Creates the gorilla/mux router passed to 
+	// http.ListenAndServe
+
 	router := mux.NewRouter()
 	router.HandleFunc("/", app.DashboardHandler).Methods("GET")
 	router.HandleFunc("/{client}/{state}/{modId}/{modFunc}", app.ModManager.HandleRequest).Methods("POST")
-	
+
 	app.Router = router
 
 	return nil
