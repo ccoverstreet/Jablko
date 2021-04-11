@@ -25,7 +25,7 @@ import (
 )
 
 type ModManager struct {
-	StateMap map[string]ModData
+	StateMap map[string]*ModData
 	SubprocessMap map[string]*subprocess.Subprocess
 }
 
@@ -39,7 +39,7 @@ type ModData struct {
 func NewModManager(config string) (*ModManager, error) {
 	mm := new(ModManager)
 	mm.SubprocessMap = make(map[string]*subprocess.Subprocess)
-	f := make(map[string]ModData)
+	f := make(map[string]*ModData)
 
 	err := json.Unmarshal([]byte(config), &f)
 	if err != nil {
