@@ -35,6 +35,8 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, dataDir st
 
 	sub.Cmd.Stdout = os.Stdout
 
+	sub.Port = processPort
+
 	return sub, nil
 }
 
@@ -45,7 +47,6 @@ func (sub *Subprocess) Start() error {
 }
 
 func (sub *Subprocess) Build() error {
-	log.Println("SUBPROCESS", sub)
 	buildProc := exec.Command("./jablkobuild.sh")
 	buildProc.Dir = sub.Cmd.Dir
 

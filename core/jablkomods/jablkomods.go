@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	"sync"
 	"bytes"
+	"strconv"
 
 	"github.com/gorilla/mux"
 
@@ -29,7 +30,7 @@ type ModManager struct {
 }
 
 type ModData struct {
-	RWMutex sync.RWMutex
+	sync.RWMutex
 	Name string `json:"name"`
 	Source string `json:"source"`
 	Config interface{} `json:"config"`
@@ -71,7 +72,7 @@ func (mm *ModManager) StartJablkoMod(source string) error {
 		return err
 	}
 
-	log.Printf(`Building "%s"`, source)
+	log.Printf(`Building "%s"...`, source)
 	err = newProc.Build()
 	if err != nil {
 		panic(err)
@@ -89,20 +90,27 @@ func (mm *ModManager) StartJablkoMod(source string) error {
 }
 
 func (mm *ModManager) HandleRequest(w http.ResponseWriter, r *http.Request) {
+	// Checks given parameters to see if valid
+	// values are provided
+
+	log.Println("MOD MANAGER HANDLE REQUEST")
 	vars := mux.Vars(r)
-	log.Println(vars)
+
+	modSource := ""
 
 	// Check if modId is in StateMap
 	// Send 404 error if not
-	log.Println("ASDASDASDD", mm)
-	/*
-	if val, ok := mm.StateMap[vars["modId"]]; ok {
-		log.Println(val)
-	} else {
+	if val, ok := mm.StateMap[vars["modId"]]; !ok {
 		http.Error(w, "Mod not found.", http.StatusNotFound)
 		return
+	} else {
+		modSource = val.Source
 	}
-	*/
+
+	if _, ok := mm.SubprocessMap[modSource]; !ok{
+		http.Error(w, "Subprocess not found.", http.StatusNotFound)
+		return
+	}
 
 	if vars["state"] != "stateless" || vars["state"] == "stateful" {
 		log.Printf(`Request "%s" invalid state option "%s"`, r.URL, vars["state"])
@@ -115,16 +123,28 @@ func (mm *ModManager) HandleRequest(w http.ResponseWriter, r *http.Request) {
 		stateless = false
 	}
 
-	mm.passRequest(w, r, stateless)
+	mm.passRequest(w, r, vars["modId"], modSource, stateless)
 }
 
-func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, stateless bool) {
+func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId string, modSource string, stateless bool) {
 	// WLock is called in the modify response portion of
 	// the reverse proxy handler. RLock is used on the 
 	// initial stateful request since the change of state
 	// only occurs after the response comes back.
 
-	url, _ := url.Parse("http://localhost:8081")
+	// Get the mod state to read instance data
+	// Time holding this lock isn't too
+	// relevant since multiple readers are
+	// allowed.
+	modState := mm.StateMap[modId]
+	modState.RLock()
+	defer modState.RUnlock()
+
+
+	modPort := mm.SubprocessMap[modSource].Port
+	//modPort := 8081
+
+	url, _ := url.Parse("http://localhost:" + strconv.Itoa(modPort))
 	proxy := httputil.NewSingleHostReverseProxy(url)
 
 	sentBody, err := ioutil.ReadAll(r.Body)
@@ -142,4 +162,9 @@ func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, statel
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(sentBody))
 
 	proxy.ServeHTTP(w, r)
+}
+
+func (mm *ModManager) proxyErrHandler(w http.ResponseWriter, r *http.Request, err error) {
+	// This should handle errors from contacting the proxy
+	log.Println(err)
 }

@@ -36,7 +36,7 @@ func (app *JablkoCoreApp) Init() error {
 	newManager, err := jablkomods.NewModManager(`{
 	"test1": {
 		"name": "TEST 1",
-		"source": "github.com/ccoverstreet/TEST1",
+		"source": "builtin/test",
 		"config": {}
 	},
 	"test2": {
@@ -72,6 +72,10 @@ func (app *JablkoCoreApp) initRouter() error {
 }
 
 func (app *JablkoCoreApp) PassToModManager(w http.ResponseWriter, r *http.Request) {
+	// This wrapper function is needed for a non-nil
+	// pointer to be passed to the ModManager 
+	// methods.
+
 	app.ModManager.HandleRequest(w, r)
 }
 

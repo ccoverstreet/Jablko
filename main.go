@@ -32,11 +32,12 @@ func main() {
 		panic(err)
 	}
 
-	err  = jablkoApp.ModManager.StartJablkoMod("./builtin/test")
+	err  = jablkoApp.ModManager.StartJablkoMod("builtin/test")
 	log.Println(err)
 
 	log.Println(jablkoApp.ModManager.SubprocessMap)
 
+	log.Println(jablkoApp.ModManager.SubprocessMap)
 
 	log.Fatal(http.ListenAndServe(":8080", jablkoApp.Router))
 }

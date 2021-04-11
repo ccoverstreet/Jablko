@@ -14,5 +14,5 @@ import (
 type JablkoLogger struct{}
 
 func (writer JablkoLogger) Write(bytes []byte) (int, error) {
-	return fmt.Print("[" + time.Now().Format(time.RFC1123) + "]: " + string(bytes))
+	return fmt.Printf("[" + time.Now().Format(time.RFC1123) + "]: " + string(bytes))
 }
