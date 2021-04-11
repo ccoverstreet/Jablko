@@ -18,6 +18,7 @@ import (
 	"sync"
 	"bytes"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 
@@ -183,5 +184,16 @@ func (mm *ModManager) proxyResHandler(res *http.Response) error {
 
 func (mm *ModManager) proxyErrHandler(w http.ResponseWriter, r *http.Request, err error) {
 	// This should handle errors from contacting the proxy
-	log.Println(err)
+	// If error is "connection refused", the status of the
+	// subprocess should be check and restarted.
+
+	if strings.Contains(err.Error(), "connection refused") {
+		// Connection refused error
+
+		log.Println("PROCESS MIGHT NEED TO BE RESTARTED")
+		log.Println(err.Error())
+	} else {
+
+		log.Println(err.Error())
+	}
 }
