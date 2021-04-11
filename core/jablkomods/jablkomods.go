@@ -152,6 +152,9 @@ func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId 
 		panic(err)
 	}
 
+	log.Println(string(sentBody))
+
+	// Prep Request for proxy
     r.Host = url.Host
 	r.URL.Host = url.Host
 	r.URL.Scheme = url.Scheme
