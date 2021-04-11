@@ -18,8 +18,8 @@ import (
 )
 
 
-
 var jablkoApp *app.JablkoCoreApp
+
 
 func main() {
 	setupLogging()

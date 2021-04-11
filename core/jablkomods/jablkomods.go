@@ -112,7 +112,7 @@ func (mm *ModManager) HandleRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if vars["state"] != "stateless" || vars["state"] == "stateful" {
+	if vars["state"] != "stateless" && vars["state"] != "stateful" {
 		log.Printf(`Request "%s" invalid state option "%s"`, r.URL, vars["state"])
 		return
 	}
@@ -161,7 +161,21 @@ func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId 
 
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(sentBody))
 
+	// Add err handler for proxy
+	proxy.ErrorHandler = mm.proxyErrHandler
+
+	// Add res handler for merging state changes
+	if !stateless {
+		proxy.ModifyResponse = mm.proxyResHandler
+	}
+
 	proxy.ServeHTTP(w, r)
+}
+
+func (mm *ModManager) proxyResHandler(res *http.Response) error {
+	log.Println("PROXY RES HANDLER", res)
+
+	return nil
 }
 
 func (mm *ModManager) proxyErrHandler(w http.ResponseWriter, r *http.Request, err error) {
