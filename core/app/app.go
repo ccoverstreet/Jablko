@@ -49,12 +49,11 @@ func (app *JablkoCoreApp) Init() error {
 	}
 }
 `)
+
 	if err != nil {
 		return err
 	}
 	app.ModManager = newManager
-
-	log.Println(app.ModManager.StateMap["test1"].Name)
 
 	return nil
 }
@@ -65,15 +64,20 @@ func (app *JablkoCoreApp) initRouter() error {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", app.DashboardHandler).Methods("GET")
-	router.HandleFunc("/{client}/{state}/{modId}/{modFunc}", app.ModManager.HandleRequest).Methods("POST")
+	router.HandleFunc("/{client}/{state}/{modId}/{modFunc}", app.PassToModManager).Methods("POST")
 
 	app.Router = router
 
 	return nil
 }
 
+func (app *JablkoCoreApp) PassToModManager(w http.ResponseWriter, r *http.Request) {
+	app.ModManager.HandleRequest(w, r)
+}
+
 
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(app.ModManager.StateMap)
 	b, err := json.MarshalIndent(app.ModManager.StateMap, "", "  ")
 	if err != nil {
 		return

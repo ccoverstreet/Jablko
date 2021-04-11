@@ -45,6 +45,7 @@ func (sub *Subprocess) Start() error {
 }
 
 func (sub *Subprocess) Build() error {
+	log.Println("SUBPROCESS", sub)
 	buildProc := exec.Command("./jablkobuild.sh")
 	buildProc.Dir = sub.Cmd.Dir
 

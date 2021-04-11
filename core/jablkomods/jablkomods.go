@@ -92,6 +92,18 @@ func (mm *ModManager) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	log.Println(vars)
 
+	// Check if modId is in StateMap
+	// Send 404 error if not
+	log.Println("ASDASDASDD", mm)
+	/*
+	if val, ok := mm.StateMap[vars["modId"]]; ok {
+		log.Println(val)
+	} else {
+		http.Error(w, "Mod not found.", http.StatusNotFound)
+		return
+	}
+	*/
+
 	if vars["state"] != "stateless" || vars["state"] == "stateful" {
 		log.Printf(`Request "%s" invalid state option "%s"`, r.URL, vars["state"])
 		return
