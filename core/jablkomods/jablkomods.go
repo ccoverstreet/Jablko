@@ -124,10 +124,14 @@ func (mm *ModManager) HandleRequest(w http.ResponseWriter, r *http.Request) {
 		stateless = false
 	}
 
-	mm.passRequest(w, r, vars["modId"], modSource, stateless)
+	if r.Method == "GET" {
+		mm.passRequest(w, r, vars["modId"], modSource, stateless, true)
+	} else {
+		mm.passRequest(w, r, vars["modId"], modSource, stateless, false)
+	}
 }
 
-func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId string, modSource string, stateless bool) {
+func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId string, modSource string, stateless bool, isGET bool) {
 	// WLock is called in the modify response portion of
 	// the reverse proxy handler. RLock is used on the 
 	// initial stateful request since the change of state
@@ -141,9 +145,7 @@ func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId 
 	modState.RLock()
 	defer modState.RUnlock()
 
-
 	modPort := mm.SubprocessMap[modSource].Port
-	//modPort := 8081
 
 	url, _ := url.Parse("http://localhost:" + strconv.Itoa(modPort))
 	proxy := httputil.NewSingleHostReverseProxy(url)
@@ -155,15 +157,21 @@ func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId 
 
 	log.Println(string(sentBody))
 
-	// Prep Request for proxy
-    r.Host = url.Host
-	r.URL.Host = url.Host
-	r.URL.Scheme = url.Scheme
-	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
-    r.Header.Set("MY-SPECIAL-HEADER", "JABLKO SECRET")
-    r.Header.Set("Content-Type", "application/json")
+	if isGET {
+		r.Host = url.Host
+		r.URL.Host = url.Host
+		r.URL.Scheme = url.Scheme
+	} else {
+		// Prep Request for proxy
+		r.Host = url.Host
+		r.URL.Host = url.Host
+		r.URL.Scheme = url.Scheme
+		r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
+		r.Header.Set("Content-Type", "application/json")
+		//r.Header.Set("MY-SPECIAL-HEADER", "JABLKO SECRET")
 
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(sentBody))
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(sentBody))
+	}
 
 	// Add err handler for proxy
 	proxy.ErrorHandler = mm.proxyErrHandler
@@ -179,6 +187,13 @@ func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId 
 func (mm *ModManager) proxyResHandler(res *http.Response) error {
 	log.Println("PROXY RES HANDLER", res)
 
+	resData, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Println(err)
+	}
+
+	res.Body = ioutil.NopCloser(bytes.NewBuffer(resData))
+
 	return nil
 }
 
@@ -193,7 +208,6 @@ func (mm *ModManager) proxyErrHandler(w http.ResponseWriter, r *http.Request, er
 		log.Println("PROCESS MIGHT NEED TO BE RESTARTED")
 		log.Println(err.Error())
 	} else {
-
 		log.Println(err.Error())
 	}
 }

@@ -12,21 +12,27 @@ import (
 	"log"
 	"net/http"
 
+	"go.uber.org/zap"
 
 	"github.com/ccoverstreet/Jablko/core/logging"
 	"github.com/ccoverstreet/Jablko/core/app"
 )
 
 
-var jablkoApp *app.JablkoCoreApp
-
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	zap.ReplaceGlobals(logger)
+
+	zap.S().Infow("ASDASD",
+		"AAD", "ASd")
+
 	setupLogging()
 
 	log.Println(startingStatement)
 
-	jablkoApp = new(app.JablkoCoreApp)
+	jablkoApp := new(app.JablkoCoreApp)
 	err := jablkoApp.Init()
 	if err != nil {
 		panic(err)
