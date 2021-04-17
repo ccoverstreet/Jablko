@@ -9,50 +9,35 @@
 package main
 
 import (
-	"log"
 	"net/http"
+	"fmt"
 
-	"go.uber.org/zap"
+	"github.com/rs/zerolog/log"
 
-	"github.com/ccoverstreet/Jablko/core/logging"
 	"github.com/ccoverstreet/Jablko/core/app"
 )
 
-
-
 func main() {
-	logger, _ := zap.NewProduction()
-	defer logger.Sync()
-	zap.ReplaceGlobals(logger)
+	fmt.Printf("%s\b", startingStatement)
+	log.Printf("ASDASD")
+	log.Error().
+		Str("ASD", "BIG").
+		Msg("Failed to start")
 
-	zap.S().Infow("ASDASD",
-		"AAD", "ASd")
-
-	setupLogging()
-
-	log.Println(startingStatement)
 
 	jablkoApp := new(app.JablkoCoreApp)
 	err := jablkoApp.Init()
 	if err != nil {
-		panic(err)
+		log.Panic().
+			Err(err).
+			Caller().
+			Msg("ASd")
 	}
 
-	err  = jablkoApp.ModManager.StartJablkoMod("builtin/test")
-	log.Println(err)
+	err = jablkoApp.ModManager.StartJablkoMod("builtin/test")
 
-	log.Println(jablkoApp.ModManager.SubprocessMap)
-
-	log.Println(jablkoApp.ModManager.SubprocessMap)
-
-	log.Fatal(http.ListenAndServe(":8080", jablkoApp.Router))
+	log.Fatal().Err(http.ListenAndServe(":8080", jablkoApp.Router))
 }
-
-func setupLogging() {
-	log.SetFlags(0)
-	log.SetOutput(new(logging.JablkoLogger))
-}
-
 
 const startingStatement = `
 Jablko Smart Home

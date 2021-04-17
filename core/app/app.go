@@ -10,11 +10,11 @@ package app
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"encoding/json"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 
 	"github.com/ccoverstreet/Jablko/core/jablkomods"
 )
@@ -79,9 +79,9 @@ func (app *JablkoCoreApp) PassToModManager(w http.ResponseWriter, r *http.Reques
 	app.ModManager.HandleRequest(w, r)
 }
 
-
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(app.ModManager.StateMap)
+	log.Trace().Msg("Dashboard Handler requested")
+
 	b, err := json.MarshalIndent(app.ModManager.StateMap, "", "  ")
 	if err != nil {
 		return
