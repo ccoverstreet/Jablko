@@ -19,11 +19,6 @@ import (
 
 func main() {
 	fmt.Printf("%s\b", startingStatement)
-	log.Printf("ASDASD")
-	log.Error().
-		Str("ASD", "BIG").
-		Msg("Failed to start")
-
 
 	jablkoApp := new(app.JablkoCoreApp)
 	err := jablkoApp.Init()

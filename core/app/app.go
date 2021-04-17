@@ -80,7 +80,9 @@ func (app *JablkoCoreApp) PassToModManager(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	log.Trace().Msg("Dashboard Handler requested")
+	log.Trace().
+		Str("reqIPAddress", r.RemoteAddr).
+		Msg("Dashboard Handler requested")
 
 	b, err := json.MarshalIndent(app.ModManager.StateMap, "", "  ")
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 	"os/exec"
 	"strconv"
 
-	//"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/log"
 )
 
 type Subprocess struct {
@@ -52,7 +52,11 @@ func (sub *Subprocess) Build() error {
 	buildProc.Dir = sub.Cmd.Dir
 
 	//err := buildProc.Run()
-	_, err := buildProc.CombinedOutput()
+	out, err := buildProc.CombinedOutput()
+	log.Debug().
+		Err(err).
+		Str("buildOutput", string(out)).
+		Msg("Build finished")
 
 	return err
 }

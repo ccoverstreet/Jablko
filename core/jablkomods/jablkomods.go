@@ -53,7 +53,7 @@ func NewModManager(config string) (*ModManager, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Trace().Msg(string(b))
+	log.Printf(string(b))
 
 	return mm, nil
 }
@@ -71,7 +71,7 @@ func (mm *ModManager) StartJablkoMod(source string) error {
 		return err
 	}
 
-	log.Info().Str("buildSource", source).Msg(`Building module.`)
+	log.Info().Str("buildSource", source).Msg(`Building module`)
 	err = newProc.Build()
 	if err != nil {
 		panic(err)
