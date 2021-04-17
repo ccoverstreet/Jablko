@@ -10,7 +10,6 @@ package jablkomods
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -21,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 
 	"github.com/ccoverstreet/Jablko/core/subprocess"
 )
@@ -48,14 +48,12 @@ func NewModManager(config string) (*ModManager, error) {
 	}
 
 	mm.StateMap = f
-	log.Println(mm)
 
 	b, err := json.Marshal(f["test1"])
 	if err != nil {
 		return nil, err
 	}
-
-	log.Println(string(b))
+	log.Trace().Msg(string(b))
 
 	return mm, nil
 }
@@ -73,7 +71,7 @@ func (mm *ModManager) StartJablkoMod(source string) error {
 		return err
 	}
 
-	log.Printf(`Building "%s"...`, source)
+	log.Info().Str("buildSource", source).Msg(`Building module.`)
 	err = newProc.Build()
 	if err != nil {
 		panic(err)
@@ -94,7 +92,7 @@ func (mm *ModManager) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	// Checks given parameters to see if valid
 	// values are provided
 
-	log.Println("MOD MANAGER HANDLE REQUEST")
+	log.Printf("MOD MANAGER HANDLE REQUEST")
 	vars := mux.Vars(r)
 
 	modSource := ""
@@ -155,7 +153,7 @@ func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId 
 		panic(err)
 	}
 
-	log.Println(string(sentBody))
+	log.Printf("%s", string(sentBody))
 
 	if isGET {
 		r.Host = url.Host
@@ -185,11 +183,13 @@ func (mm *ModManager) passRequest(w http.ResponseWriter, r *http.Request, modId 
 }
 
 func (mm *ModManager) proxyResHandler(res *http.Response) error {
-	log.Println("PROXY RES HANDLER", res)
+	log.Printf("PROXY RES HANDLER: %v", res)
 
 	resData, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Println(err)
+		log.Error().
+			Err(err).
+			Msg("Unable to read response body")
 	}
 
 	res.Body = ioutil.NopCloser(bytes.NewBuffer(resData))
@@ -205,9 +205,11 @@ func (mm *ModManager) proxyErrHandler(w http.ResponseWriter, r *http.Request, er
 	if strings.Contains(err.Error(), "connection refused") {
 		// Connection refused error
 
+		/*
 		log.Println("PROCESS MIGHT NEED TO BE RESTARTED")
 		log.Println(err.Error())
+		*/
 	} else {
-		log.Println(err.Error())
+		//log.Println(err.Error())
 	}
 }
