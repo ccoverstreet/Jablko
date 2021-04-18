@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net/http"
 	"encoding/json"
+	"io/ioutil"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -28,27 +29,18 @@ type JablkoCoreApp struct {
 func (app *JablkoCoreApp) Init() error {
 	// Runs through procedures to instantiate
 	// config data.
-
 	if err := app.initRouter(); err != nil {
 		return err
 	}
 
-	newManager, err := jablkomods.NewModManager(`{
-	"test1": {
-		"name": "TEST 1",
-		"source": "builtin/test",
-		"config": {}
-	},
-	"test2": {
-		"name": "TEST 2",
-		"source": "github.com/ccoverstreet/TEST2",
-		"config": {
-			"special": 30,
-			"updateInterval": 60
-		}
+	// Read jablkoconfig.json
+	confByte, err := ioutil.ReadFile("./jablkoconfig.json")
+	if err != nil {
+		log.Error().Msg("Unable to read jablkoconfig.json")
+		return err
 	}
-}
-`)
+
+	newManager, err := jablkomods.NewModManager(string(confByte))
 
 	if err != nil {
 		return err
