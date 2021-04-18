@@ -11,7 +11,7 @@ package app
 import (
 	"fmt"
 	"net/http"
-	"encoding/json"
+	//"encoding/json"
 	"io/ioutil"
 
 	"github.com/gorilla/mux"
@@ -24,7 +24,6 @@ type JablkoCoreApp struct {
 	Router *mux.Router
 	ModManager *jablkomods.ModManager
 }
-
 
 func (app *JablkoCoreApp) Init() error {
 	// Runs through procedures to instantiate
@@ -76,10 +75,17 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 		Str("reqIPAddress", r.RemoteAddr).
 		Msg("Dashboard Handler requested")
 
+	b, err := ioutil.ReadFile("./html/index.html")
+	if err != nil {
+		return
+	}
+
+	/*
 	b, err := json.MarshalIndent(app.ModManager.StateMap, "", "  ")
 	if err != nil {
 		return
 	}
+	*/
 	fmt.Fprintf(w, "%s", b)
 
 	return

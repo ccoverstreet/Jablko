@@ -14,6 +14,7 @@ import (
 
 func main() {
 	router := mux.NewRouter()
+	router.HandleFunc("/jmod/stateless/{modId}/data", GETDataHandler).Methods("GET")
 	router.HandleFunc("/jmod/stateless/{modId}/socket", SocketHandler)
 	router.HandleFunc("/jmod/{state}/{modId}/{modRoute}", JModHandler)
 
@@ -40,6 +41,9 @@ func JModHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `{"hello": "From Tester"}`)
 }
 
+func GETDataHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, `{"reqType": "GET", "res": "Test Module GET Response"}`)
+}
 
 // ---------- WEB SOCKETS ----------
 // Example for implementation of Web Sockets

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script> 
+			function testGET() {
+				fetch("/jmod/stateless/test1/data")
+					.then(async data => {
+						document.getElementById("get_test_out").textContent = await data.text()
+					});
+			}
+		</script>
+	</head>
+	<body>
+		<h1>Jablko</h1>
+		<div>
+			<h2>GET Test</h2>
+			<p id="get_test_out"></p>
+		</div>
+	</body>
+</html>
