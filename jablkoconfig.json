@@ -1,0 +1,16 @@
+{
+	"test1": {
+		"name": "TEST 1",
+		"source": "builtin/test",
+		"config": {}
+	},
+	"test2": {
+		"name": "TEST 2",
+		"source": "github.com/ccoverstreet/TEST2",
+		"config": {
+			"special": 30,
+			"updateInterval": 60
+		}
+	}
+}
+
