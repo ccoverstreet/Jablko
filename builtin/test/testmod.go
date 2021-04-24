@@ -3,10 +3,12 @@
 package main
 
 import (
+	"net"
 	"net/http"
 	"fmt"
 	"os"
 	"io/ioutil"
+	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -14,6 +16,7 @@ import (
 
 func main() {
 	router := mux.NewRouter()
+	router.HandleFunc("/", homeHandler)
 	router.HandleFunc("/jmod/stateless/{modId}/data", GETDataHandler).Methods("GET")
 	router.HandleFunc("/jmod/stateless/{modId}/socket", SocketHandler)
 	router.HandleFunc("/jmod/{state}/{modId}/{modRoute}", JModHandler)
@@ -22,10 +25,18 @@ func main() {
 
 	port := os.Getenv("JABLKO_MOD_PORT")
 
+	// Start UDP server with in separate go routine
+	// This server just prints the output and echoes
+	go UDPServer()
+
+	fmt.Println("Starting HTTP")
 	http.ListenAndServe(":" + port, router)
 }
 
-// 
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "ASDASDASDASDASD FROM TESTMOD")
+}
+
 func JModHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fmt.Println(vars)
@@ -75,3 +86,39 @@ func SocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ---------- UDP Server ----------
+// UDP communication is often better suited for
+// IoT applications. Each Jablko Mod can start
+// a UDP server/client to communicate with pmods.
+type restartFlag struct {
+	sync.Mutex
+	Restart bool
+}
+
+func UDPServer() {
+	serverAddr, err := net.ResolveUDPAddr("udp", ":49152")
+	if err != nil {
+		panic(err)
+	}
+
+	serverConn, err := net.ListenUDP("udp", serverAddr)
+	if err != nil {
+		panic(err)
+	}
+	defer serverConn.Close()
+
+	buf := make([]byte, 1024)
+
+	fmt.Println("ASD")
+	for {
+		n, addr, err := serverConn.ReadFromUDP(buf)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// Echo data
+		serverConn.WriteToUDP(buf[0:n], addr)
+
+		fmt.Println("From Client:", string(buf[0:n]))
+	}
+}

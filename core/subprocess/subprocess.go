@@ -35,6 +35,7 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, dataDir st
 	}
 
 	sub.Cmd.Stdout = os.Stdout
+	sub.Cmd.Stderr = os.Stderr
 
 	sub.Port = processPort
 
