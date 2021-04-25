@@ -4,7 +4,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<script> 
 			function testGET() {
-				fetch("/jmod/stateless/test1/data")
+				fetch("/jmod/data?JMOD_Source=builtin/test")
 					.then(async data => {
 						document.getElementById("get_test_out").textContent = await data.text()
 					});

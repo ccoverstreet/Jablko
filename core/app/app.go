@@ -16,13 +16,16 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
+	"github.com/buger/jsonparser"
 
 	"github.com/ccoverstreet/Jablko/core/jablkomods"
+	"github.com/ccoverstreet/Jablko/core/modmanager"
 )
 
 type JablkoCoreApp struct {
 	Router *mux.Router
 	ModManager *jablkomods.ModManager
+	ModM *modmanager.ModManager
 }
 
 func (app *JablkoCoreApp) Init() error {
@@ -35,16 +38,39 @@ func (app *JablkoCoreApp) Init() error {
 	// Read jablkoconfig.json
 	confByte, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
-		log.Error().Msg("Unable to read jablkoconfig.json")
+		log.Error().
+			Err(err).
+			Msg("Unable to read jablkoconfig.json")
+
 		return err
 	}
 
+
+	sourceConf, _, _, err := jsonparser.Get(confByte, "sources")
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("%s", sourceConf)
+
+	newModM, err := modmanager.NewModManager(sourceConf)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("%v", newModM)
+	app.ModM = newModM
+
+	// jablkomods WILL BE REMOVED
+	/*
 	newManager, err := jablkomods.NewModManager(string(confByte))
 
 	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to create ModManager")
 		return err
 	}
 	app.ModManager = newManager
+	*/
 
 	return nil
 }
@@ -55,13 +81,42 @@ func (app *JablkoCoreApp) initRouter() error {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", app.DashboardHandler).Methods("GET")
-	router.HandleFunc("/{client}/{state}/{modId}/{modFunc}", app.PassToModManager).Methods("POST", "GET")
+	router.HandleFunc("/{client}/{func}", app.PassToJMOD).Methods("GET", "POST")
+	//router.HandleFunc("/{client}/{state}/{modId}/{modFunc}", app.PassToModManager).Methods("POST", "GET")
 
 	app.Router = router
 
 	return nil
 }
 
+func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
+	// Checks for JMOD_Source URL parameter
+	// Returns 404
+	source := r.FormValue("JMOD_Source")
+	log.Printf("Source: '%s' %d", source, len(source))
+
+
+	// Check if no JMOD-Source header value found
+	if len(source) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Empty JMOD_Source parameter")
+		log.Warn().
+			Str("JMOD-Source", source).
+			Msg("Empty JMOD_Source parameter")
+		return
+	}
+
+	// Check if JMOD-Source is a valid option
+	if _, ok := app.ModM.ProcMap[source]; ok {
+		app.ModM.PassRequest(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusNotImplemented)
+	fmt.Fprintf(w, "Haven't implemented this yet")
+}
+
+/* THIS WILL BE REMOVED IN THE FUTURE
 func (app *JablkoCoreApp) PassToModManager(w http.ResponseWriter, r *http.Request) {
 	// This wrapper function is needed for a non-nil
 	// pointer to be passed to the ModManager 
@@ -69,6 +124,7 @@ func (app *JablkoCoreApp) PassToModManager(w http.ResponseWriter, r *http.Reques
 
 	app.ModManager.HandleRequest(w, r)
 }
+*/
 
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	log.Trace().
@@ -80,12 +136,6 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	/*
-	b, err := json.MarshalIndent(app.ModManager.StateMap, "", "  ")
-	if err != nil {
-		return
-	}
-	*/
 	fmt.Fprintf(w, "%s", b)
 
 	return

@@ -17,9 +17,10 @@ import (
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", homeHandler)
-	router.HandleFunc("/jmod/stateless/{modId}/data", GETDataHandler).Methods("GET")
-	router.HandleFunc("/jmod/stateless/{modId}/socket", SocketHandler)
-	router.HandleFunc("/jmod/{state}/{modId}/{modRoute}", JModHandler)
+	router.HandleFunc("/fart", homeHandler)
+	router.HandleFunc("/jmod/socket", SocketHandler)
+	router.HandleFunc("/jmod/{func}", GETDataHandler).Methods("GET")
+	//router.HandleFunc("/jmod/{state}/{modId}/{modRoute}", JModHandler)
 
 	fmt.Printf("\nTESTER: %s\n\n", os.Environ())
 
@@ -76,12 +77,14 @@ func SocketHandler(w http.ResponseWriter, r *http.Request) {
 		messageType, message, err := conn.ReadMessage()
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 
 		fmt.Printf("Received: %s\n", message)
 		err = conn.WriteMessage(messageType, []byte("Received by server"))
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 	}
 }
@@ -115,9 +118,10 @@ func UDPServer() {
 		if err != nil {
 			fmt.Println(err)
 		}
+		x := string(buf[0:n])
 
 		// Echo data
-		serverConn.WriteToUDP(buf[0:n], addr)
+		serverConn.WriteToUDP([]byte("ECHO: " + x), addr)
 
 		fmt.Println("From Client:", string(buf[0:n]))
 	}
