@@ -54,6 +54,11 @@ func JModHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GETDataHandler(w http.ResponseWriter, r *http.Request) {
+	buf, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(buf))
 	fmt.Fprintf(w, `{"reqType": "GET", "res": "Test Module GET Response"}`)
 }
 
@@ -66,6 +71,7 @@ func GETDataHandler(w http.ResponseWriter, r *http.Request) {
 var upgrader = websocket.Upgrader{CheckOrigin: func(*http.Request) bool {return true}}
 
 func SocketHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.Method)
 	fmt.Println("SOCKET HANDLER")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
