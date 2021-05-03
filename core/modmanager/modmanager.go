@@ -26,6 +26,8 @@ type ModManager struct {
 	ProcMap map[string]*subprocess.Subprocess
 }
 
+var curPort = 8081
+
 func NewModManager(conf []byte) (*ModManager, error) {
 	newMM := new(ModManager)
 	newMM.ConfigMap = make(map[string][]byte)
@@ -40,12 +42,14 @@ func NewModManager(conf []byte) (*ModManager, error) {
 
 	// Try to start all subprocesses
 	for key, conf := range newMM.ConfigMap {
-		newSub, err := subprocess.CreateSubprocess(key, 8080, 10230, "./data", conf)
+		newSub, err := subprocess.CreateSubprocess(key, 8080, curPort, "./data", conf)
 		if err != nil {
 			log.Error().
 				Err(err).
 				Msg("Unable to create subprocess")
+			continue
 		}
+		curPort += 1
 
 		err = newSub.Build()
 
@@ -55,6 +59,8 @@ func NewModManager(conf []byte) (*ModManager, error) {
 				Err(err).
 				Str("subprocess", key).
 				Msg("Unable to start subprocess")
+
+			continue
 		}
 
 		newMM.ProcMap[key] = newSub

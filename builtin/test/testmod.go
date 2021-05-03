@@ -10,6 +10,7 @@ import (
 	"os"
 	"io/ioutil"
 	"sync"
+	"strconv"
 	"strings"
 	"encoding/json"
 
@@ -48,6 +49,7 @@ func main() {
 	router.HandleFunc("/jmod/{func}", JMODHandler).Methods("GET")
 
 	port := os.Getenv("JABLKO_MOD_PORT")
+	log.Println(port)
 
 	err := json.Unmarshal([]byte(os.Getenv("JABLKO_MOD_CONFIG")), &curConfig)
 	if err != nil {
@@ -57,7 +59,7 @@ func main() {
 
 	// Start UDP server with in separate go routine
 	// This server just prints the output and echoes
-	go UDPServer()
+	go UDPServer(curConfig.PortUDP)
 
 	log.Println("Starting HTTP server...")
 	http.ListenAndServe(":" + port, router)
@@ -85,7 +87,6 @@ func instanceDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "%s", data)
 }
-
 func JMODHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	log.Println(vars)
@@ -148,9 +149,9 @@ type restartFlag struct {
 	Restart bool
 }
 
-func UDPServer() {
+func UDPServer(port int) {
 	log.Println("Starting UDP Server...")
-	serverAddr, err := net.ResolveUDPAddr("udp", ":49152")
+	serverAddr, err := net.ResolveUDPAddr("udp", ":" + strconv.Itoa(port))
 	if err != nil {
 		panic(err)
 	}

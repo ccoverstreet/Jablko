@@ -20,6 +20,15 @@
 					"value": 32
 				}
 			]
+		},
+		"builtin/test2": {
+			"portUDP": 41001,
+			"instances": [
+				{
+					"id": "test2",
+					"value": 32
+				}
+			]
 		}
 	}
 }
