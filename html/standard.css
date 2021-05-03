@@ -45,7 +45,7 @@ input {
 }
 
 hr {
-	margin: 0.2em 1em;
+	margin: 0.2em 0.5em;
 	border-color: var(--clr-accent);
 }
 
@@ -56,7 +56,11 @@ h1 {
 }
 
 h2 {
-	margin: 0.2em 0.2em;
+	margin: 0.2em 0em;
+}
+
+h3 {
+	margin: 0.2em 0em;
 }
 
 .jmod-wrapper {

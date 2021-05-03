@@ -10,6 +10,7 @@ import (
 	"os"
 	"io/ioutil"
 	"sync"
+	"strings"
 	"encoding/json"
 
 	"github.com/gorilla/mux"
@@ -28,13 +29,22 @@ type testConfig struct {
 	Instances []testInstance `json:"instances"`
 }
 
+// 
+type stateUDP struct {
+	sync.Mutex
+	Data string
+}
+
+// Global instances
 var curConfig testConfig
+var curStateUDP = stateUDP{sync.Mutex{}, "Startup Message"}
 
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/webComponent", webComponentHandler)
 	router.HandleFunc("/instanceData", instanceDataHandler)
 	router.HandleFunc("/jmod/socket", SocketHandler)
+	router.HandleFunc("/jmod/getUDPState", UDPStateHandler)
 	router.HandleFunc("/jmod/{func}", JMODHandler).Methods("GET")
 
 	port := os.Getenv("JABLKO_MOD_PORT")
@@ -78,26 +88,23 @@ func instanceDataHandler(w http.ResponseWriter, r *http.Request) {
 
 func JMODHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	fmt.Println(vars)
+	log.Println(vars)
 
 	sentBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Println(string(sentBody))
+	log.Println(string(sentBody))
 
 	w.Header().Add("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"hello": "From Tester"}`)
 }
 
-func GETDataHandler(w http.ResponseWriter, r *http.Request) {
-	buf, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(string(buf))
-	fmt.Fprintf(w, `{"reqType": "GET", "res": "Test Module GET Response"}`)
+func UDPStateHandler(w http.ResponseWriter, r *http.Request) {
+	curStateUDP.Lock()
+	defer curStateUDP.Unlock()
+	fmt.Fprintf(w, `{"state": "%s"}`, curStateUDP.Data)
 }
 
 // ---------- WEB SOCKETS ----------
@@ -111,22 +118,22 @@ var upgrader = websocket.Upgrader{CheckOrigin: func(*http.Request) bool {return 
 func SocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	defer conn.Close()
 
 	for {
 		messageType, message, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			return
 		}
 
-		fmt.Printf("Received: %s\n", message)
+		log.Printf("Received: %s\n", message)
 		response := append(message, []byte(" received by server")...)
 		err = conn.WriteMessage(messageType, response)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			return
 		}
 	}
@@ -159,13 +166,16 @@ func UDPServer() {
 	for {
 		n, addr, err := serverConn.ReadFromUDP(buf)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		x := string(buf[0:n])
+		curStateUDP.Lock()
+		curStateUDP.Data = strings.Replace(string(buf[0:n]), "\n", "", -1)
+		curStateUDP.Unlock()
 
 		// Echo data
 		serverConn.WriteToUDP([]byte("ECHO: " + x), addr)
 
-		fmt.Println("From Client:", string(buf[0:n]))
+		log.Println("From Client:", string(buf[0:n]))
 	}
 }

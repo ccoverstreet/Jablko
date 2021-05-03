@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+
 type Subprocess struct {
 	Cmd *exec.Cmd
 	Port int
@@ -39,8 +40,8 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, dataDir st
 			"JABLKO_MOD_CONFIG=" + string(config),
 		}
 
-		sub.Cmd.Stdout = os.Stdout
-		sub.Cmd.Stderr = os.Stderr
+		sub.Cmd.Stdout = ColoredWriter{os.Stdout}
+		sub.Cmd.Stderr = ColoredWriter{os.Stderr}
 
 		sub.Port = processPort
 

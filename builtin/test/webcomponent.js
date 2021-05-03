@@ -4,6 +4,7 @@ class extends HTMLElement {
 
 		this.attachShadow({mode: "open"});
 		this.webSocketResHandler = this.webSocketResHandler.bind(this);
+		this.getUDPState = this.getUDPState.bind(this);
 
 		this.shadowRoot.innerHTML = `
 <link rel="stylesheet" href="/assets/standard.css"></link>
@@ -37,10 +38,14 @@ class extends HTMLElement {
 			<input onkeypress="this.getRootNode().host.inputEventHandler(this, event)" style="flex-grow: 1;"></input>		
 			<div id="websocket-output"></div>
 		</div>
+
+		<div>
+			<button onclick="this.getRootNode().host.getUDPState()">Get UDP State</button>
+			<h3>UDP State:</h3>
+			<div id="udpstate-output"></div>
+		</div>
+
 		<button onclick="this.getRootNode().host.talk()" style="border-color: var(--clr-red);">Talk</button>
-		<button onclick="this.getRootNode().host.talk()" style="border-color: var(--clr-green);">Talk</button>
-		<button onclick="this.getRootNode().host.talk()" style="border-color: var(--clr-yellow);">Talk</button>
-		<button onclick="this.getRootNode().host.talk()" style="border-color: var(--clr-accent);">Talk</button>
 	</div>
 </div>
 		`
@@ -55,6 +60,8 @@ class extends HTMLElement {
 			console.error(err);
 			return;
 		}
+
+		this.source = source;
 	}
 
 	webSocketResHandler(event) {
@@ -68,6 +75,21 @@ class extends HTMLElement {
 			this.webSocket.send(elem.value);
 			elem.value = "";
 		}
+	}
+
+	getUDPState() {
+		fetch(`/jmod/getUDPState?JMOD-Source=${this.source}`)
+			.then((async data => {
+				var res = await data.json();	
+				var elem = this.shadowRoot.getElementById("udpstate-output");
+				elem.textContent = res.state;
+			}).bind(this))
+			.catch((err => {
+				console.log(this.shadowRoot);
+				console.log(this.shadowRoot.getElementById("udpstate-output"));
+				var elem = this.shadowRoot.getElementById("udpstate-output");
+				elem.textContent = err;		
+			}).bind(this));
 	}
 
 	talk() {
