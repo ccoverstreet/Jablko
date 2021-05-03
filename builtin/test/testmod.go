@@ -6,39 +6,77 @@ import (
 	"net"
 	"net/http"
 	"fmt"
+	"log"
 	"os"
 	"io/ioutil"
 	"sync"
+	"encoding/json"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
+type testInstance struct {
+	Id string `json:"id"`
+	Source string `json:"source"`
+	Value int `json:"value"`
+}
+
+type testConfig struct {
+	sync.Mutex
+	PortUDP int `json:"portUDP"`
+	Instances []testInstance `json:"instances"`
+}
+
+var curConfig testConfig
+
 func main() {
 	router := mux.NewRouter()
-	router.HandleFunc("/", homeHandler)
-	router.HandleFunc("/fart", homeHandler)
+	router.HandleFunc("/webComponent", webComponentHandler)
+	router.HandleFunc("/instanceData", instanceDataHandler)
 	router.HandleFunc("/jmod/socket", SocketHandler)
-	router.HandleFunc("/jmod/{func}", GETDataHandler).Methods("GET")
-	//router.HandleFunc("/jmod/{state}/{modId}/{modRoute}", JModHandler)
-
-	fmt.Printf("\nTESTER: %s\n\n", os.Environ())
+	router.HandleFunc("/jmod/{func}", JMODHandler).Methods("GET")
 
 	port := os.Getenv("JABLKO_MOD_PORT")
+
+	err := json.Unmarshal([]byte(os.Getenv("JABLKO_MOD_CONFIG")), &curConfig)
+	if err != nil {
+		panic(err)
+	}
+	log.Println(curConfig)
 
 	// Start UDP server with in separate go routine
 	// This server just prints the output and echoes
 	go UDPServer()
 
-	fmt.Println("Starting HTTP")
+	log.Println("Starting HTTP server...")
 	http.ListenAndServe(":" + port, router)
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "ASDASDASDASDASD FROM TESTMOD")
+func webComponentHandler(w http.ResponseWriter, r *http.Request) {
+	b, err := ioutil.ReadFile("./webcomponent.js")
+	if err != nil {
+		fmt.Fprintf(w, "Unable to read WebComponent file")
+	}
+
+	fmt.Fprintf(w, "%s", b)
 }
 
-func JModHandler(w http.ResponseWriter, r *http.Request) {
+func instanceDataHandler(w http.ResponseWriter, r *http.Request) {
+	curConfig.Lock()
+	defer curConfig.Unlock()
+
+	data, err := json.Marshal(curConfig.Instances)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to marshal config data")
+		return
+	}
+
+	fmt.Fprintf(w, "%s", data)
+}
+
+func JMODHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fmt.Println(vars)
 
@@ -71,8 +109,6 @@ func GETDataHandler(w http.ResponseWriter, r *http.Request) {
 var upgrader = websocket.Upgrader{CheckOrigin: func(*http.Request) bool {return true}}
 
 func SocketHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Method)
-	fmt.Println("SOCKET HANDLER")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -87,7 +123,8 @@ func SocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Printf("Received: %s\n", message)
-		err = conn.WriteMessage(messageType, []byte("Received by server"))
+		response := append(message, []byte(" received by server")...)
+		err = conn.WriteMessage(messageType, response)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -105,6 +142,7 @@ type restartFlag struct {
 }
 
 func UDPServer() {
+	log.Println("Starting UDP Server...")
 	serverAddr, err := net.ResolveUDPAddr("udp", ":49152")
 	if err != nil {
 		panic(err)
@@ -118,7 +156,6 @@ func UDPServer() {
 
 	buf := make([]byte, 1024)
 
-	fmt.Println("ASD")
 	for {
 		n, addr, err := serverConn.ReadFromUDP(buf)
 		if err != nil {

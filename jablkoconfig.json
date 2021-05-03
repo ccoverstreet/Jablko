@@ -1,7 +1,25 @@
 {
 	"sources": {
 		"builtin/test": {
-			"PortUDP": 41000	
+			"portUDP": 41000,
+			"instances": [
+				{
+					"id": "test1",
+					"value": 32
+				},
+				{
+					"id": "test2",
+					"value": 32
+				},
+				{
+					"id": "test2",
+					"value": 32
+				},
+				{
+					"id": "test2",
+					"value": 32
+				}
+			]
 		}
 	}
 }

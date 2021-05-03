@@ -38,12 +38,9 @@ func NewModManager(conf []byte) (*ModManager, error) {
 
 	jsonparser.ObjectEach(conf, parseConfObj)
 
-	log.Printf("%v", newMM)
-
 	// Try to start all subprocesses
 	for key, conf := range newMM.ConfigMap {
-		log.Printf("%s, %s", key, conf)
-		newSub, err := subprocess.CreateSubprocess(key, 8080, 10230, "./data")
+		newSub, err := subprocess.CreateSubprocess(key, 8080, 10230, "./data", conf)
 		if err != nil {
 			log.Error().
 				Err(err).
@@ -56,6 +53,7 @@ func NewModManager(conf []byte) (*ModManager, error) {
 		if err != nil {
 			log.Error().
 				Err(err).
+				Str("subprocess", key).
 				Msg("Unable to start subprocess")
 		}
 
@@ -66,7 +64,7 @@ func NewModManager(conf []byte) (*ModManager, error) {
 }
 
 func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
-	source := r.FormValue("JMOD_Source")
+	source := r.FormValue("JMOD-Source")
 
 	modPort := mm.ProcMap[source].Port
 	url, _ := url.Parse("http://localhost:" + strconv.Itoa(modPort))
@@ -85,6 +83,5 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
 
-	log.Printf("ASD")
 	proxy.ServeHTTP(w, r)
 }

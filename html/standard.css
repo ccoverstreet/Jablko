@@ -1,0 +1,71 @@
+:root {
+	font-family: Arial;
+	--clr-background: #1a1a1a;
+    --clr-surface-1: #262626;
+    --clr-surface-2: #333333;
+    --clr-font-high: #d9d9d9;
+    --clr-font-med: #999999;
+    --clr-font-low: #666666;
+    --clr-primary: #4db6ac;
+    --clr-accent: #82e9de;
+    --clr-green: #44bd32;
+    --clr-red: #ff6666;
+    --clr-yellow: #efef61;
+	color: var(--clr-font-high);
+}
+
+button {
+	font-size: 1em;
+	border-radius: 5px;
+	border-color: var(--clr-green);
+	border-style: solid;
+	color: var(--clr-font-high);
+	margin: 0.5em;
+	padding: 0.3em 0.6em;
+	background-color: var(--clr-surface-2);
+}
+
+button:hover {
+	background-color: var(--clr-surface-1);
+	color: var(--clr-font-low);
+}
+
+input {
+	line-height: 1em;
+	padding: 0.2em;
+	margin: auto auto;
+}
+
+.jmod-header {
+	height: 3em;
+}
+.jmod-header > svg {
+	height: 3em;
+	width: 3em;
+}
+
+hr {
+	margin: 0.2em 1em;
+	border-color: var(--clr-accent);
+}
+
+h1 {
+	font-size: 2em;
+	color: var(--clr-font-med);
+	margin: 0.25em 0.25em;
+}
+
+h2 {
+	margin: 0.2em 0.2em;
+}
+
+.jmod-wrapper {
+	background-color: var(--clr-surface-1);
+	overflow: auto;
+	margin: 0px;
+	height: 100%;
+	border-radius: 5px;
+}
+.jmod-body {
+	padding: 0.5em;
+}

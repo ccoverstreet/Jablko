@@ -29,8 +29,6 @@ func main() {
 			Msg("ASd")
 	}
 
-	//err = jablkoApp.ModManager.StartJablkoMod("builtin/test")
-
 	log.Fatal().Err(http.ListenAndServe(":8080", jablkoApp.Router))
 }
 

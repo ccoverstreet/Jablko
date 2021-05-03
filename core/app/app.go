@@ -13,18 +13,18 @@ import (
 	"net/http"
 	//"encoding/json"
 	"io/ioutil"
+	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 	"github.com/buger/jsonparser"
 
-	"github.com/ccoverstreet/Jablko/core/jablkomods"
 	"github.com/ccoverstreet/Jablko/core/modmanager"
 )
 
 type JablkoCoreApp struct {
 	Router *mux.Router
-	ModManager *jablkomods.ModManager
 	ModM *modmanager.ModManager
 }
 
@@ -50,27 +50,14 @@ func (app *JablkoCoreApp) Init() error {
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("%s", sourceConf)
 
+	log.Info().Msg("Creating module manager...")
 	newModM, err := modmanager.NewModManager(sourceConf)
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("%v", newModM)
 	app.ModM = newModM
-
-	// jablkomods WILL BE REMOVED
-	/*
-	newManager, err := jablkomods.NewModManager(string(confByte))
-
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to create ModManager")
-		return err
-	}
-	app.ModManager = newManager
-	*/
+	log.Info().Msg("Created module manager")
 
 	return nil
 }
@@ -81,8 +68,8 @@ func (app *JablkoCoreApp) initRouter() error {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", app.DashboardHandler).Methods("GET")
-	router.HandleFunc("/{client}/{func}", app.PassToJMOD).Methods("GET", "POST")
-	//router.HandleFunc("/{client}/{state}/{modId}/{modFunc}", app.PassToModManager).Methods("POST", "GET")
+	router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
+	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
 	app.Router = router
 
@@ -92,39 +79,34 @@ func (app *JablkoCoreApp) initRouter() error {
 func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
 	// Checks for JMOD_Source URL parameter
 	// Returns 404
-	source := r.FormValue("JMOD_Source")
-	log.Printf("Source: '%s' %d", source, len(source))
+	source := r.FormValue("JMOD-Source")
+	log.Info().
+		Str("JMOD", source).
+		Str("URI", r.URL.RequestURI()).
+		Msg("Passing request to JMOD")
 
 
 	// Check if no JMOD-Source header value found
 	if len(source) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Empty JMOD_Source parameter")
+		fmt.Fprintf(w, "Empty JMOD-Source parameter")
 		log.Warn().
 			Str("JMOD-Source", source).
-			Msg("Empty JMOD_Source parameter")
+			Msg("Empty JMOD-Source parameter")
 		return
 	}
 
 	// Check if JMOD-Source is a valid option
-	if _, ok := app.ModM.ProcMap[source]; ok {
-		app.ModM.PassRequest(w, r)
+	if _, ok := app.ModM.ProcMap[source]; !ok {
+		w.WriteHeader(http.StatusNotImplemented)
+		fmt.Fprintf(w, "JMOD not found")
 		return
 	}
 
-	w.WriteHeader(http.StatusNotImplemented)
-	fmt.Fprintf(w, "Haven't implemented this yet")
-}
+	app.ModM.PassRequest(w, r)
+	return
 
-/* THIS WILL BE REMOVED IN THE FUTURE
-func (app *JablkoCoreApp) PassToModManager(w http.ResponseWriter, r *http.Request) {
-	// This wrapper function is needed for a non-nil
-	// pointer to be passed to the ModManager 
-	// methods.
-
-	app.ModManager.HandleRequest(w, r)
 }
-*/
 
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	log.Trace().
@@ -136,7 +118,102 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	fmt.Fprintf(w, "%s", b)
+	template := string(b)
+
+	builderWC := strings.Builder{}
+	builderInstance := strings.Builder{}
+
+	for modSource, subProc := range app.ModM.ProcMap {
+		fmt.Printf("%s: %v\n", modSource, subProc)
+		b1, err := app.getWebComponent(subProc.Port)
+		if err != nil {
+			log.Warn().
+				Err(err).
+				Msg("Unable to get WebComponent")
+			continue
+		}
+		builderWC.WriteString("\njablkoWebCompMap[\"" + modSource + "\"] = ")
+		builderWC.Write(b1)
+
+		b2, err := app.getInstanceData(subProc.Port)
+		if err != nil {
+			log.Warn().
+				Err(err).
+				Msg("Unable to get JMOD instance data")
+			continue
+		}
+		builderInstance.WriteString("\njablkoInstanceConfMap[\"" + modSource + "\"] = ")
+		builderInstance.Write(b2)
+	}
+
+
+	dashboardReplacer := strings.NewReplacer(
+		"$JABLKO_WEB_COMPONENT_MAP_DEF", builderWC.String(),
+		"$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF", builderInstance.String(),
+	)
+
+	fmt.Fprintf(w, "%s", dashboardReplacer.Replace(template))
 
 	return
+}
+
+func(app *JablkoCoreApp) getWebComponent(modPort int) ([]byte, error){
+	resp, err := http.Get("http://localhost:" + strconv.Itoa(modPort) + "/webComponent")
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >=400 {
+		return nil, fmt.Errorf("Bad status code: %d", resp.StatusCode)
+	}
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func (app *JablkoCoreApp) getInstanceData(modPort int) ([]byte, error) {
+	resp, err := http.Get("http://localhost:" + strconv.Itoa(modPort) + "/instanceData")
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >=400 {
+		return nil, fmt.Errorf("Bad status code: %d", resp.StatusCode)
+	}
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func (app *JablkoCoreApp) AssetsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	flagFail := false
+
+	switch (vars["file"]) {
+	case "standard.css":
+		b, err := ioutil.ReadFile("./html/standard.css")
+		if err != nil {
+			flagFail = true
+			break
+		}
+
+		w.Header().Set("Content-Type", "text/css")
+		fmt.Fprintf(w, "%s", b)
+	default:
+		flagFail = true
+	}
+
+	if flagFail {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "Asset not found")
+	}
 }

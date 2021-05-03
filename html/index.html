@@ -2,20 +2,52 @@
 <html>
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/assets/standard.css"></link>
+<style>
+body {
+	padding: 0px;
+	margin: 5px;
+	background-color: var(--clr-background);
+}
+
+#mod-holder {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+}
+#mod-holder > * {
+	flex: 1 1 20em;
+	padding: 3px;;
+}
+</style>
 		<script> 
-			function testGET() {
-				fetch("/jmod/data?JMOD_Source=builtin/test")
-					.then(async data => {
-						document.getElementById("get_test_out").textContent = await data.text()
-					});
-			}
+			var jablkoWebCompMap = {}
+			var jablkoInstanceConfMap = {}
+			var jablkoInstanceMap = {}
+
+			$JABLKO_WEB_COMPONENT_MAP_DEF
+			$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF
+
+			document.addEventListener("DOMContentLoaded", function() {
+				var mod_holder = document.getElementById("mod-holder");
+				for (source in jablkoWebCompMap) {
+					console.log(source);
+					var name = source.replace("/", "-");
+					customElements.define(name, jablkoWebCompMap[source]);
+					
+					for (instData of jablkoInstanceConfMap[source]) {
+						var elem = document.createElement(name);
+						elem.init(source, instData);
+						mod_holder.appendChild(elem);
+						jablkoInstanceMap[String(window.performance.now())] = elem;
+					}
+				}
+			})
 		</script>
 	</head>
 	<body>
-		<h1>Jablko</h1>
-		<div>
-			<h2>GET Test</h2>
-			<p id="get_test_out"></p>
+		<div id="mod-holder">
+	
 		</div>
 	</body>
 </html>
