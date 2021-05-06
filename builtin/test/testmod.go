@@ -46,7 +46,7 @@ func main() {
 	router.HandleFunc("/instanceData", instanceDataHandler)
 	router.HandleFunc("/jmod/socket", SocketHandler)
 	router.HandleFunc("/jmod/getUDPState", UDPStateHandler)
-	router.HandleFunc("/jmod/{func}", JMODHandler).Methods("GET")
+	//router.HandleFunc("/jmod/{func}", JMODHandler).Methods("GET")
 
 	port := os.Getenv("JABLKO_MOD_PORT")
 	log.Println(port)
@@ -86,20 +86,6 @@ func instanceDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "%s", data)
-}
-func JMODHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	log.Println(vars)
-
-	sentBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	log.Println(string(sentBody))
-
-	w.Header().Add("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"hello": "From Tester"}`)
 }
 
 func UDPStateHandler(w http.ResponseWriter, r *http.Request) {
