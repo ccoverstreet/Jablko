@@ -21,11 +21,13 @@ import (
 	"github.com/buger/jsonparser"
 
 	"github.com/ccoverstreet/Jablko/core/modmanager"
+	"github.com/ccoverstreet/Jablko/core/database"
 )
 
 type JablkoCoreApp struct {
 	Router *mux.Router
 	ModM *modmanager.ModManager
+	DBHandler *database.DatabaseHandler
 }
 
 func (app *JablkoCoreApp) Init() error {
@@ -58,6 +60,8 @@ func (app *JablkoCoreApp) Init() error {
 	}
 	app.ModM = newModM
 	log.Info().Msg("Created module manager")
+
+	app.DBHandler = database.CreateDatabaseHandler()
 
 	return nil
 }

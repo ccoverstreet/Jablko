@@ -11,11 +11,38 @@ for user logins, registered pmods.
 package database
 
 import (
+	/*
 	"database/sql"
 
 	"github.com/rs/zerolog/log"
+	*/
 )
 
+type user struct {
+	Username string `json:"username"`
+	PasswordHash string `json:"passwordHash"`
+}
+
+type pmod struct {
+	Key string
+}
+
+type session struct {
+	cookieValue string
+	creationTime int
+}
+
 type DatabaseHandler struct {
-	i
+	Users map[string]user
+	Pmods map[string]pmod
+	UserSessions map[string]session
+}
+
+func CreateDatabaseHandler() *DatabaseHandler {
+	dh := new(DatabaseHandler)
+	dh.Users = make(map[string]user)
+	dh.Pmods = make(map[string]pmod)
+	dh.UserSessions = make(map[string]session)
+
+	return dh
 }
