@@ -33,9 +33,7 @@ type JablkoCoreApp struct {
 func (app *JablkoCoreApp) Init() error {
 	// Runs through procedures to instantiate
 	// config data.
-	if err := app.initRouter(); err != nil {
-		return err
-	}
+	app.initRouter()
 
 	// Read jablkoconfig.json
 	confByte, err := ioutil.ReadFile("./jablkoconfig.json")
@@ -46,7 +44,6 @@ func (app *JablkoCoreApp) Init() error {
 
 		return err
 	}
-
 
 	sourceConf, _, _, err := jsonparser.Get(confByte, "sources")
 	if err != nil {
@@ -61,12 +58,20 @@ func (app *JablkoCoreApp) Init() error {
 	app.ModM = newModM
 	log.Info().Msg("Created module manager")
 
+	log.Info().Msg("Creating database handler...")
 	app.DBHandler = database.CreateDatabaseHandler()
+	err = app.DBHandler.LoadDatabase("./data/database.json")
+	if err != nil {
+		log.Warn().
+			Err(err).
+			Msg("Unable to load existing database")
+	}
+	log.Info().Msg("Created database handler")
 
 	return nil
 }
 
-func (app *JablkoCoreApp) initRouter() error {
+func (app *JablkoCoreApp) initRouter() {
 	// Creates the gorilla/mux router passed to 
 	// http.ListenAndServe
 
@@ -79,8 +84,6 @@ func (app *JablkoCoreApp) initRouter() error {
 	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
 	app.Router = router
-
-	return nil
 }
 
 func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
