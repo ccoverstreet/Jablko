@@ -11,10 +11,10 @@ package app
 import (
 	"fmt"
 	"net/http"
-	//"encoding/json"
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"encoding/json"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -67,7 +67,10 @@ func (app *JablkoCoreApp) initRouter() error {
 	// http.ListenAndServe
 
 	router := mux.NewRouter()
+	router.Use(app.LoggingMiddleware)
+	router.Use(app.AuthMiddleware)
 	router.HandleFunc("/", app.DashboardHandler).Methods("GET")
+	router.HandleFunc("/login", app.LoginHandler).Methods("POST")
 	router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
 	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
@@ -76,36 +79,91 @@ func (app *JablkoCoreApp) initRouter() error {
 	return nil
 }
 
-func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
-	// Checks for JMOD_Source URL parameter
-	// Returns 404
-	source := r.FormValue("JMOD-Source")
-	log.Info().
-		Str("JMOD", source).
-		Str("URI", r.URL.RequestURI()).
-		Msg("Passing request to JMOD")
+func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Info().
+			Str("URI", r.URL.String()).
+			Msg("Logging Middleware")
+		next.ServeHTTP(w, r)
+	})
+}
 
+// Checks for jablko-session cookie
+func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		jablkoSession, err := r.Cookie("jablko-session")
 
-	// Check if no JMOD-Source header value found
-	if len(source) == 0 {
+		// Allow assets to be obtained without authentication
+		if strings.HasPrefix(r.URL.String(), "/assets") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Allow login requests to go through
+		if strings.HasPrefix(r.URL.String(), "/login") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Unable to get cookie
+		if err != nil {
+			log.Warn().
+				Err(err).
+				Msg("Session cookie not found")
+
+			if r.Method != "GET" {
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintf(w, "Not logged in")
+				return
+			}
+
+			app.LoginPageHandler(w, r)
+
+			return
+		}
+
+		log.Info().Msg("Authentication Middleware")
+		log.Printf("%v", jablkoSession)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *JablkoCoreApp) LoginPageHandler(w http.ResponseWriter, r *http.Request) {
+	b, err := ioutil.ReadFile("./html/login.html")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Cannot read login.html")
+		log.Error().
+			Err(err).
+			Msg("Unable to read login.html")
+	}
+
+	fmt.Fprintf(w, "%s", b)
+}
+
+func (app *JablkoCoreApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	// Used for JSON Unmarshal
+	type userData struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Empty JMOD-Source parameter")
-		log.Warn().
-			Str("JMOD-Source", source).
-			Msg("Empty JMOD-Source parameter")
+		fmt.Fprintf(w, "Invalid user data")
 		return
 	}
 
-	// Check if JMOD-Source is a valid option
-	if _, ok := app.ModM.ProcMap[source]; !ok {
-		w.WriteHeader(http.StatusNotImplemented)
-		fmt.Fprintf(w, "JMOD not found")
+	var data userData
+	err = json.Unmarshal(b, &data)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid user data")
 		return
 	}
 
-	app.ModM.PassRequest(w, r)
-	return
-
+	log.Printf("%v", data)
 }
 
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -155,6 +213,39 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 	fmt.Fprintf(w, "%s", dashboardReplacer.Replace(template))
 
 	return
+}
+
+
+func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
+	// Checks for JMOD_Source URL parameter
+	// Returns 404
+	source := r.FormValue("JMOD-Source")
+	log.Info().
+		Str("JMOD", source).
+		Str("URI", r.URL.RequestURI()).
+		Msg("Passing request to JMOD")
+
+
+	// Check if no JMOD-Source header value found
+	if len(source) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Empty JMOD-Source parameter")
+		log.Warn().
+			Str("JMOD-Source", source).
+			Msg("Empty JMOD-Source parameter")
+		return
+	}
+
+	// Check if JMOD-Source is a valid option
+	if _, ok := app.ModM.ProcMap[source]; !ok {
+		w.WriteHeader(http.StatusNotImplemented)
+		fmt.Fprintf(w, "JMOD not found")
+		return
+	}
+
+	app.ModM.PassRequest(w, r)
+	return
+
 }
 
 func(app *JablkoCoreApp) getWebComponent(modPort int) ([]byte, error){
