@@ -57,7 +57,7 @@ form {
 							throw new Error(res)	
 						}
 
-						window.location.reload();
+						document.location.replace("/");
 					})
 					.catch(err => {
 						const messageElem = document.getElementById("login-message");

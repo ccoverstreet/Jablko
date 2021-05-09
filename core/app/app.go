@@ -3,29 +3,29 @@
 // Mar. 30, 2021
 
 // Describes how the functionality of Jablko integrate
-// into a single struct that is created in the main 
+// into a single struct that is created in the main
 // function.
 
 package app
 
 import (
 	"fmt"
-	"net/http"
 	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/buger/jsonparser"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
-	"github.com/buger/jsonparser"
 
-	"github.com/ccoverstreet/Jablko/core/modmanager"
 	"github.com/ccoverstreet/Jablko/core/database"
+	"github.com/ccoverstreet/Jablko/core/modmanager"
 )
 
 type JablkoCoreApp struct {
-	Router *mux.Router
-	ModM *modmanager.ModManager
+	Router    *mux.Router
+	ModM      *modmanager.ModManager
 	DBHandler *database.DatabaseHandler
 }
 
@@ -71,7 +71,7 @@ func (app *JablkoCoreApp) Init() error {
 }
 
 func (app *JablkoCoreApp) initRouter() {
-	// Creates the gorilla/mux router passed to 
+	// Creates the gorilla/mux router passed to
 	// http.ListenAndServe
 
 	router := mux.NewRouter()
@@ -79,6 +79,7 @@ func (app *JablkoCoreApp) initRouter() {
 	router.Use(app.AuthMiddleware)
 	router.HandleFunc("/", app.DashboardHandler).Methods("GET")
 	router.HandleFunc("/login", app.LoginHandler).Methods("POST")
+	router.HandleFunc("/logout", app.LogoutHandler).Methods("GET", "POST")
 	router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
 	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
@@ -99,6 +100,7 @@ func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
 // Checks for jablko-session cookie
 func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Info().Msg("Authentication Middleware")
 		jablkoSession, err := r.Cookie("jablko-session")
 
 		// Allow assets to be obtained without authentication
@@ -146,8 +148,6 @@ func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		log.Info().Msg("Authentication Middleware")
-		log.Printf("%v", jablkoSession)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -167,6 +167,16 @@ func (app *JablkoCoreApp) LoginPageHandler(w http.ResponseWriter, r *http.Reques
 
 func (app *JablkoCoreApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	app.DBHandler.LoginUserHandler(w, r)
+}
+
+func (app *JablkoCoreApp) LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("jablko-session")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid cookie value")
+	}
+
+	app.DBHandler.DeleteSession(cookie.Value)
 }
 
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
@@ -203,7 +213,6 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 		builderInstance.Write(b2)
 	}
 
-
 	dashboardReplacer := strings.NewReplacer(
 		"$JABLKO_WEB_COMPONENT_MAP_DEF", builderWC.String(),
 		"$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF", builderInstance.String(),
@@ -214,7 +223,6 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 	return
 }
 
-
 func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
 	// Checks for JMOD_Source URL parameter
 	// Returns 404
@@ -223,7 +231,6 @@ func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
 		Str("JMOD", source).
 		Str("URI", r.URL.RequestURI()).
 		Msg("Passing request to JMOD")
-
 
 	// Check if no JMOD-Source header value found
 	if len(source) == 0 {
@@ -247,13 +254,13 @@ func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func(app *JablkoCoreApp) getWebComponent(modPort int) ([]byte, error){
+func (app *JablkoCoreApp) getWebComponent(modPort int) ([]byte, error) {
 	resp, err := http.Get("http://localhost:" + strconv.Itoa(modPort) + "/webComponent")
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode < 200 || resp.StatusCode >=400 {
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("Bad status code: %d", resp.StatusCode)
 	}
 
@@ -271,7 +278,7 @@ func (app *JablkoCoreApp) getInstanceData(modPort int) ([]byte, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode < 200 || resp.StatusCode >=400 {
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("Bad status code: %d", resp.StatusCode)
 	}
 
@@ -288,7 +295,7 @@ func (app *JablkoCoreApp) AssetsHandler(w http.ResponseWriter, r *http.Request) 
 
 	flagFail := false
 
-	switch (vars["file"]) {
+	switch vars["file"] {
 	case "standard.css":
 		b, err := ioutil.ReadFile("./html/standard.css")
 		if err != nil {

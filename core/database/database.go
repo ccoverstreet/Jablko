@@ -22,8 +22,8 @@ import (
 	"time"
 	"math/big"
 	"crypto/rand"
+
 	"golang.org/x/crypto/bcrypt"
-	
 	"github.com/rs/zerolog/log"
 )
 
@@ -198,6 +198,8 @@ func (db *DatabaseHandler) ValidateSession(cookieValue string) bool {
 	db.RLock()
 	defer db.RUnlock()
 
+	log.Printf("%v", db.userSessions)
+
 	if val, ok := db.userSessions[cookieValue]; ok {
 		// Check if session is expired
 		if (time.Now().Unix() - val.creationTime) > db.sessionLifetime {
@@ -209,9 +211,17 @@ func (db *DatabaseHandler) ValidateSession(cookieValue string) bool {
 		return true
 	}
 
-	log.Printf("%v", db.userSessions)
 
 	return false
+}
+
+func (db *DatabaseHandler) DeleteSession(cookieValue string)  {
+	db.Lock()
+	defer db.Unlock()
+
+	if _, ok := db.userSessions[cookieValue]; ok {
+		delete(db.userSessions, cookieValue)
+	}
 }
 
 // Removes expired sessions from the database

@@ -9,8 +9,8 @@
 package main
 
 import (
-	"net/http"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/rs/zerolog"
