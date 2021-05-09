@@ -52,9 +52,16 @@ form {
 					body: JSON.stringify({username, password})
 				})
 					.then(async data => {
-						console.log(await data.text());
+						const res = await data.text();
+						if (res != "success") {
+							throw new Error(res)	
+						}
+
+						window.location.reload();
 					})
 					.catch(err => {
+						const messageElem = document.getElementById("login-message");
+						messageElem.textContent = err;
 						console.error(err);
 					});
 			}
@@ -71,6 +78,7 @@ form {
 				<input id="password" type="password" autocomplete="current-password" onkeypress="keyHandler(event)"></input>
 			</div>
 			<div style="display: flex; justify-content: flex-end;">
+				<p id="login-message" style="color: var(--clr-red)"></p>
 				<button onclick="jablkoLogin(event)">Login</button>
 			</div>
 		</form>

@@ -14,7 +14,6 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
-	"encoding/json"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -89,8 +88,10 @@ func (app *JablkoCoreApp) initRouter() {
 func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Info().
+			Str("reqIPAddress", r.RemoteAddr).
 			Str("URI", r.URL.String()).
 			Msg("Logging Middleware")
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -129,6 +130,22 @@ func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		isValid := app.DBHandler.ValidateSession(jablkoSession.Value)
+
+		if !isValid {
+			log.Warn().
+				Msg("Session cookie not valid")
+
+			if r.Method != "GET" {
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintf(w, "Session invalid")
+				return
+			}
+
+			app.LoginPageHandler(w, r)
+			return
+		}
+
 		log.Info().Msg("Authentication Middleware")
 		log.Printf("%v", jablkoSession)
 		next.ServeHTTP(w, r)
@@ -149,35 +166,10 @@ func (app *JablkoCoreApp) LoginPageHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *JablkoCoreApp) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	// Used for JSON Unmarshal
-	type userData struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid user data")
-		return
-	}
-
-	var data userData
-	err = json.Unmarshal(b, &data)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid user data")
-		return
-	}
-
-	log.Printf("%v", data)
+	app.DBHandler.LoginUserHandler(w, r)
 }
 
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	log.Trace().
-		Str("reqIPAddress", r.RemoteAddr).
-		Msg("Dashboard Handler requested")
-
 	b, err := ioutil.ReadFile("./html/index.html")
 	if err != nil {
 		return
