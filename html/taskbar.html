@@ -1,0 +1,23 @@
+<style>
+.taskbar {
+	display: flex;
+	width: 100vw;
+	position: fixed;	
+	top: 0px;
+	height: 3em;
+	z-index: 100;
+	background-color: var(--clr-surface-2);
+}
+.taskbar > button {
+	margin: 0px;
+	font-weight: bold;	
+	border-radius: 0px;
+	border-color: var(--clr-background);
+}
+</style>
+<div class="taskbar">
+	<button onclick="window.location.pathname='/'" >Dash</button>
+	<button onclick="window.location.pathname='/admin'">Admin</button>
+	<div style="display: flex; justify-content: center; align-items: center; flex: 1; font-weight: bold; font-size: 2em;">JABLKO</div>
+	
+</div>

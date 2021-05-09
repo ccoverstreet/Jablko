@@ -179,13 +179,25 @@ func (app *JablkoCoreApp) LogoutHandler(w http.ResponseWriter, r *http.Request) 
 	app.DBHandler.DeleteSession(cookie.Value)
 }
 
+func errHandlerDashboard(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusInternalServerError)
+	fmt.Fprintf(w, "Error generating dashboard. Check logs.")
+}
+
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	b, err := ioutil.ReadFile("./html/index.html")
+	bIndex, err := ioutil.ReadFile("./html/index.html")
 	if err != nil {
+		errHandlerDashboard(w, r)
 		return
 	}
 
-	template := string(b)
+	template := string(bIndex)
+
+	bTaskbar, err := ioutil.ReadFile("./html/taskbar.html")
+	if err != nil {
+		errHandlerDashboard(w, r)
+		return
+	}
 
 	builderWC := strings.Builder{}
 	builderInstance := strings.Builder{}
@@ -214,6 +226,7 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	dashboardReplacer := strings.NewReplacer(
+		"$JABLKO_TASKBAR", string(bTaskbar),
 		"$JABLKO_WEB_COMPONENT_MAP_DEF", builderWC.String(),
 		"$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF", builderInstance.String(),
 	)
@@ -222,6 +235,7 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 
 	return
 }
+
 
 func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
 	// Checks for JMOD_Source URL parameter
