@@ -19,5 +19,5 @@
 	<button onclick="window.location.pathname='/'" >Dash</button>
 	<button onclick="window.location.pathname='/admin'">Admin</button>
 	<div style="display: flex; justify-content: center; align-items: center; flex: 1; font-weight: bold; font-size: 2em;">JABLKO</div>
-	
+	<button onclick="(async () => {await fetch('/logout');document.location.reload();})()">Logout</button>
 </div>
