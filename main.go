@@ -26,10 +26,10 @@ func main() {
 	jablkoApp := new(app.JablkoCoreApp)
 	err := jablkoApp.Init()
 	if err != nil {
-		log.Panic().
+		log.Error().
 			Err(err).
 			Caller().
-			Msg("ASd")
+			Msg("Error in initialization")
 	}
 
 	log.Fatal().Err(http.ListenAndServe(":8080", jablkoApp.Router))

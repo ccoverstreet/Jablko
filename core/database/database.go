@@ -94,7 +94,7 @@ func (db *DatabaseHandler) SaveDatabase() error {
 
 	log.Printf("%s", b)
 
-	err = ioutil.WriteFile(db.filePath, b, 0777)
+	err = ioutil.WriteFile(db.filePath, b, 0666)
 
 	return nil
 }

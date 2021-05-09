@@ -63,7 +63,7 @@ func (app *JablkoCoreApp) Init() error {
 	if err != nil {
 		log.Warn().
 			Err(err).
-			Msg("Unable to load existing database")
+			Msg("Unable to load existing database. Defaulting to empty database")
 	}
 	log.Info().Msg("Created database handler")
 
