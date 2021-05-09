@@ -10,14 +10,30 @@
 }
 .taskbar > button {
 	margin: 0px;
+	padding: 0px;
 	font-weight: bold;	
 	border-style: none;
 	border-radius: 0px;
 }
 </style>
 <div class="taskbar">
-	<button onclick="window.location.pathname='/'" >Dash</button>
-	<button onclick="window.location.pathname='/admin'">Admin</button>
+	<button onclick="window.location.pathname='/'" >
+		<svg viewBox="0 0 360 360" style="height: 3em; width: 3em;">
+			<path d="M60,300 L60,140 L180,60 L300,140 L300,300 L60,300" stroke="var(--clr-font-high)" stroke-width="30" fill="transparent" stroke-linejoin="round" stroke-linecap="round"/>
+			<!-- Home Depot -->
+		</svg>
+	</button>
+	<button onclick="window.location.pathname='/admin'">
+		<svg viewBox="0 0 360 360" style="height: 3em; width: 3em;">
+			<path d="M120,80 L240,80 L300,180 L240,280 L120,280 L60,180 L120,80" stroke="var(--clr-font-high)" stroke-width="30" fill="transparent" stroke-linejoin="round" stroke-linecap="round"/>
+			<circle cx="180" cy="180" r="40" stroke-width="30" stroke="var(--clr-font-high)" stroke-width="30" fill="transparent"/>
+		</svg>
+	</button>
 	<div style="display: flex; justify-content: center; align-items: center; flex: 1; font-weight: bold; font-size: 1.5em; color: var(--clr-accent); background-color: var(--clr-surface-2)">JABLKO</div>
-	<button onclick="(async () => {await fetch('/logout');document.location.reload();})()">Logout</button>
+	<button onclick="(async () => {await fetch('/logout');document.location.reload();})()">
+		<svg viewBox="0 0 360 360" style="height: 3em; width: 3em;">
+			<path d="M150,120 L150,60 L300,60 L300,300 L150,300 L150,240" stroke="var(--clr-font-high)" stroke-width="30" fill="transparent" stroke-linejoin="round" stroke-linecap="round"/>
+			<path d="M240,180 L60,180 l30,60 M60,180 l30,-60" stroke="var(--clr-font-high)" stroke-width="30" fill="transparent" stroke-linejoin="round" stroke-linecap="round"/>
+		</svg>
+	</button>
 </div>
