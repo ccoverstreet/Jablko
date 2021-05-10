@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			async function jablko_login() {
+				const submitted_username = document.getElementById("username").value;
+				const submitted_password = document.getElementById("password").value;
+
+				const raw_response = await fetch("/login", {
+					method: "POST",
+					headers: {
+						"Accept": "application/json",
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({username: submitted_username, password: submitted_password})
+				})
+					.then(async (data) => {
+						res = await data.json();
+
+						if (res.status == "good") {
+							document.location.reload();
+						} else {
+							throw new Error("Incorrect Login");
+						}
+					})
+					.catch(err => {
+						document.getElementById("status").textContent = "Invalid Login";
+						console.error(err);
+					})
+			}
+
+			document.addEventListener("DOMContentLoaded", function() {
+				formElem = document.getElementById("login_box");
+			
+				formElem.addEventListener("submit", event => {
+					event.preventDefault();
+					jablko_login();
+				});
+			});
+		</script>
+
+		<style>
+body {
+	margin: 0px;
+	background-color: #121212;
+	color: #f5f6fa;
+	outline: none;
+	font-family: Arial;
+}
+
+#login_box {
+	position: absolute;
+	left: calc((100vw - 290px) / 2);
+	top: calc(33vh);
+	display: grid;
+	width: 250px;
+	grid-row-gap: 5px;
+	padding: 20px;
+	border-radius: 0px;
+	color: #d9d9d9;
+	background-color: #1d1d1d;
+}
+
+.field {
+	display: flex;
+	justify-content: flex-end;
+	width: 250px;	
+}
+
+button {
+	border-width: 0px;
+	border-radius: 5px;
+	padding: 5px;
+}
+
+input {
+	background-color: #ffffff;
+	border-radius: 0px;
+	width: 150px;
+	margin: 0px;
+	border: 1px solid #ffffff;
+}
+input:focus {
+	outline: none;
+	outline-offset: 0;
+	margin: 0px;
+	border: 1px solid #03dac6;
+}
+
+#status {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: #cf6679;
+}
+
+.field_label {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	padding-right: 10px;
+}
+		</style>
+	</head>
+	<body>
+		<form id="login_box" onsubmit="jablko_login">
+			<div class="field">
+				<div class="field_label">Username:</div>
+				<input id="username" autocomplete="username"></input>
+			</div>
+			<div class="field">
+				<div class="field_label">Password:</div>
+				<input id="password" type="password" autocomplete="current-password"></input>
+			</div>
+				
+			<div id="submission_box" style="display: grid; grid-template-columns: auto 100px;">
+				<div id="status"></div>
+				<button id="login_button" onclick="jablko_login()" style="background-color: #03dac6; color: #000000; font-size: 14px;">Login</button>
+			</div>
+		</form>
+	</body>
+</html>
+

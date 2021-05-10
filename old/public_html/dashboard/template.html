@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="/dashboard/dashboard.css">
+		<script type="text/javascript">
+			async function logout1() {
+				await fetch("/logout", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+					.then(async (data) => {
+						res = await data.json();
+
+						if (res.status == "good") {
+							document.location.reload();
+						} else {
+							throw new Error("Failed to logout.")
+						}
+					})
+					.catch(err => {
+						alert("Failed to logout.")
+						console.error(err);
+					})
+			}
+
+			$JABLKO_SOURCE_MAP
+
+			$JABLKO_INIT_ARR
+
+			jablko_loadedMods = {}
+			for (var i = 0; i < jablko_configArr.length; i++) {
+				jablko_loadedMods[jablko_configArr[i].config.id] = new jablko_sourceMap[jablko_configArr[i].mod](jablko_configArr[i].config)
+			}
+
+			console.log(jablko_loadedMods);
+
+			document.addEventListener("DOMContentLoaded", function() {
+				var modHolder = document.getElementById("module_holder");
+				for (mod in jablko_loadedMods) {
+					modHolder.insertAdjacentHTML("beforeend", jablko_loadedMods[mod].card());
+					jablko_loadedMods[mod].onLoad();
+				}
+			});
+
+			console.log(jablko_loadedMods);
+		</script>
+	</head>
+	<body class="dark_theme fonts">
+		$TOOLBAR
+		<div id="module_holder">
+		</div>
+	</body>
+</html>

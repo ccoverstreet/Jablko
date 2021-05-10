@@ -1,0 +1,448 @@
+<script>
+	document.addEventListener("click", function(event) {
+		const dropdown = document.getElementById("menu_dropdown");
+		const toolbar = document.getElementById("toolbar");
+		const adminElem = document.getElementById("admin_panel")
+		if (!dropdown.contains(event.target) && !toolbar.contains(event.target)) {
+			dropdown.style.display = "none";
+		}
+
+		if (!toolbar.contains(event.target) && !adminElem.contains(event.target)) {
+			adminElem.style.display = "none";
+		}
+	}); 
+
+	function toggle_dropdown() {
+		const dropdown = document.getElementById("menu_dropdown");
+
+		if (dropdown.style.display == "grid") {
+			dropdown.style.display = "none";
+		} else {
+			dropdown.style.display = "grid";
+		}
+	}
+
+	function toggle_admin() {
+		const adminElem = document.getElementById("admin_panel");
+
+		if (adminElem.style.display == "block") {
+			adminElem.style.display = "none";
+		} else {
+			adminElem.style.display = "block";
+			adminGetModConfig()
+		}
+	}
+
+	async function logout() {
+		await fetch("/logout", {method: "POST"});
+		document.location.reload();
+	}
+</script>
+
+<style>
+::-webkit-scrollbar {
+	display: none;
+}
+
+#menu_button:hover {
+	opacity: 70%;
+}
+
+.dropdown_item {
+	background-color: var(--color-surface-1);
+	display: grid;
+	grid-template-columns: 40px auto;
+	height: 50px;	
+	width: 100%;
+	color: var(--color-font-high);
+	font-size: 25px;
+	font-weight: bold;
+	border-width: 0px;
+	text-align: left;
+	vertical-align: middle;
+}
+.dropdown_label {
+	padding-left: 10px;
+	display: flex;
+	align-items: center;
+	height: 100%;
+}
+
+.toolbar_icon {
+	height: 90%;
+	width: 90%;
+}
+</style>
+
+<div id="toolbar" style="position: fixed; top: 0px; left: 0px; display: grid; grid-template-rows: 100%; grid-template-columns: 50px auto 50px; background-color: #262626; width: 100vw; height: 50px; z-index: 100; box-shadow: 0px 5px 10px;">
+	<button id="menu_button" onclick="toggle_dropdown()" style="grid-column: 1; height: 100%; border-width: 0px; background-color: inherit; outline: none;">
+		<svg class="module_icon" viewBox="0 0 150 150" style="margin-right: 0px;">
+			<path d="M 10 75 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
+			<path d="M 10 35 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
+			<path d="M 10 115 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
+		</svg>
+	</button>
+
+	<div style="display: flex; justify-content: center; align-items: center; color: var(--color-primary); font-weight: bold; font-size:30px;">
+		JABLKO
+	</div>
+
+	<button onclick="toggle_admin()" style="height: 100%; border-width: 0px; background-color: inherit;"> 
+		<svg class="module_icon" viewBox="0 0 150 150" style="margin-right: 0px;">
+
+			<path d="M 10 35 L 140 115" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
+			<path d="M 10 35 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
+			<path d="M 10 115 H 140" stroke="#ffffff" stroke-width="20px" stroke-linecap="round"/>
+		</svg>
+	</button>
+</div>
+
+<div id="menu_dropdown" style="position: fixed; top: 50px; left: 0px; background-color: #000000; display: none; z-index: 100; box-shadow: 3px 3px 5px;">
+	<button class="dropdown_item" onclick="location.replace('/')"> 
+		<svg class="toolbar_icon" viewBox="0 0 150 150"> 
+			<rect x="10" y="10" width="130" height="130" rx="15" stroke="var(--color-primary)" stroke-width="20px" fill="transparent"/>
+			<circle cx="65" cy="65" r="35" fill="var(--color-primary)"/>
+		</svg>
+		<div class="dropdown_label">
+			Dashboard
+		</div>
+	</button>
+	<button class="dropdown_item" onclick="logout()">
+		<svg class="toolbar_icon" viewBox="0 0 150 150">
+			<path d="M 10 10 L 140 140" stroke="var(--color-bad)" stroke-width="20px" stroke-linecap="round" fill="transparent"/>
+			<path d="M 140 10 L 10 140" stroke="var(--color-bad)" stroke-width="20px" stroke-linecap="round" fill="transparent"/>
+		</svg>
+		<div class="dropdown_label"> 
+			Logout
+		</div>
+	</button>
+</div>
+
+<script>
+	function adminSelectPanel() {
+		var selectedId = "";
+		switch(this.id) {
+			case "admin_button_install_mod":
+				selectedId = "admin_install_mod";
+				break;
+			case "admin_button_config_mod":
+				selectedId = "admin_config_mod";
+				break;
+			case "admin_button_user_control":
+				selectedId = "admin_user_control";
+				break;
+			case "admin_button_devices":
+				selectedId = "admin_devices";
+				break;
+			default:
+				return;
+		}
+
+		var pages = document.getElementsByClassName("control_panel_page");
+		for (page of pages) {
+			if (page.id != selectedId) {
+				page.style.display = "none";
+			} else {
+				page.style.display = "block";
+			}
+		}
+
+		if (selectedId == "admin_config_mod") {
+			adminGetModConfig();
+		}
+	}
+
+	function adminInstallMod() {
+		var inputElem = document.getElementById("admin_install_input");
+		var buttonElem = document.getElementById("admin_install_button");
+		buttonElem.disabled = true;
+
+		fetch("/admin/addMod", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({sourcePath: inputElem.value})
+		})
+			.then(async (data) => {
+				res = await data.json();
+				if (res.status == "fail") {
+					throw new Error(res.message);
+				}
+
+				document.location.reload();
+			})
+			.catch((err) => {
+				console.log(err);
+				messageElem = document.getElementById("admin_install_message");
+				messageElem.textContent = err.toString();
+
+				buttonElem.disabled = false;
+			})
+	}
+
+	function adminDeleteMod() {
+		var selectElem = document.getElementById("admin_config_select");
+
+		r = confirm(`Are you sure you want to delete \"${selectElem.value}\"`);
+		if (!r) {
+			return;
+		}
+
+		fetch("/admin/deleteMod", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({modId: selectElem.value})
+		})
+			.then(async (data) => {
+				res = await data.json();
+
+				if (res.status == "fail") {
+					throw new Error(res.message)
+				}
+
+				document.location.reload();
+			})
+			.catch(err => {
+				console.log(err);
+				configMessage = document.getElementById("admin_config_message");
+				configMessage.textContent = err.toString();
+			})
+	}
+
+	function getModIdList() {
+		modDivs = document.querySelectorAll("#module_holder > div");
+		modIds = [];
+
+		for (var i = 0; i < modDivs.length; i++) {
+			modIds.push(modDivs[i].id);
+		}
+
+		return modIds;
+	}
+
+	function fillModSelect() {
+		modIds = getModIdList();
+		configSelect = document.getElementById("admin_config_select")
+
+		for (item of modIds) {
+			newOption = document.createElement("option");
+			newOption.value = item;
+			newOption.text = item;
+			configSelect.add(newOption);
+		}
+	}
+
+	function adminGetModConfig() {
+		selectedMod = document.getElementById("admin_config_select").value;
+
+		fetch("/admin/getModConfig", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({modId: selectedMod})
+		})
+			.then(async (data) => {
+				res = await data.json();
+
+				configTextarea = document.getElementById("admin_config_textarea");
+
+				if (res.status == "fail") {
+					configTextarea.value = "N/A";
+					configTextarea.style.height = "0px";
+					configTextarea.style.height = configTextarea.scrollHeight + "px";
+					throw new Error(res.message);
+				}
+
+				configTextarea.value = JSON.stringify(res.modConfig, null, 2);
+				configTextarea.style.height = "0px";
+				configTextarea.style.height = configTextarea.scrollHeight + "px";
+			})
+			.catch(err => {
+				configMessage = document.getElementById("admin_config_message");
+				configMessage.textContent = err.toString();
+				console.log(err);
+			});
+	}
+
+	function adminUpdateModConfig() {
+		selectedMod = document.getElementById("admin_config_select").value;
+		configTextarea = document.getElementById("admin_config_textarea");
+
+		// Reset message
+		document.getElementById("admin_config_message").textContent = ""; 
+
+		userInput = configTextarea.value;
+
+		// For syntax validation
+		var parsedObject;
+
+		try {
+			parsedObject = JSON.parse(userInput);
+		} catch(err) {
+			configMessage = document.getElementById("admin_config_message");
+			configMessage.textContent = err.toString();
+			console.log(err);
+			return 
+		}
+
+		// parsedObject has been validated. Now return to string and send to Jablko
+		fetch("/admin/updateMod", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({modId: selectedMod, configStr: JSON.stringify(parsedObject)})
+		})
+			.then(async (data) => {
+				res = await data.json();
+				if (res.status == "fail") {
+					throw new Error(res.message);
+				}
+
+				document.location.reload();
+			})
+			.catch((err) => {
+				configMessage = document.getElementById("admin_config_message");
+				configMessage.textContent = err.toString();
+				console.log(err);
+			});
+	}
+
+	function adminAddUser() {
+		username = document.getElementById("admin_user_add_username").value;
+		passwordElem = document.getElementById("admin_user_add_password");
+		confPasswordElem = document.getElementById("admin_user_add_conf_password");
+		firstName = document.getElementById("admin_user_add_first_name").value;
+
+		userAddMessageElem = document.getElementById("admin_user_add_message");
+		userAddMessageElem.style.color = "var(--color-bad)"
+		userAddMessageElem.textContent = "";
+
+		if (passwordElem.value != confPasswordElem.value) {
+			passwordElem.value = "";
+			confPasswordElem.value = "";
+			userAddMessageElem.textContent = "Passwords do not match.";
+			return;
+		}
+
+		fetch("/admin/addUser", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({username: username, password: passwordElem.value, firstName: firstName})
+		})
+			.then(async data => {
+				res = await data.json();
+
+				userAddMessage = document.getElementById("admin_user_add_message");
+
+				console.log(res);
+
+				if (res.status == "fail") {
+					throw new Error(res.message);
+				} 
+
+				userAddMessage.style.color = "var(--color-good)";
+				userAddMessage.textContent = res.message;
+			})
+			.catch(err => {
+				configMessage = document.getElementById("admin_user_add_message");
+				configMessage.textContent = err.toString();
+				console.log("ASDASDA", err);
+			})
+	}
+
+	document.addEventListener("DOMContentLoaded", function(){
+		fillModSelect();
+	});
+
+</script>
+
+<style>
+#admin_panel {
+	position: fixed;
+	top: 65px;
+	left: calc(10vw - 10px);
+	width: 80vw; 
+	height: calc(100vh - 170px);
+	overflow-y: scroll;
+	padding: 10px;
+	background-color: var(--color-surface-2);
+	border-radius: 5px;
+	z-index:99;
+	box-shadow: 3px 3px 5px;
+}
+
+.admin_panel_select_button {
+	border-radius: 0px;
+}
+</style>
+
+<div id="admin_panel" style="display: none;">
+	<div class="module_title">Admin</div>
+	<hr>
+	<div style="display: grid; grid-template-columns: auto auto auto auto; grid-column-gap: 1px; grid-row-gap: 1px; margin-bottom: 10px;">
+		<button id="admin_button_install_mod" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">Install</button>
+		<button id="admin_button_config_mod" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">Settings</button>
+		<button id="admin_button_user_control" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">User</button>
+		<button id="admin_button_devices" class="admin_panel_select_button" onclick="adminSelectPanel.call(this)">Devices</button>
+	</div>
+
+	<div id="admin_install_mod" class="control_panel_page" style="padding: 0px 10px 0px 10px;">
+		<input id="admin_install_input" autocorrect="off" style="font-size: 16px; width: 250px;"> </input>
+		<br>
+		<button id="admin_install_button" onclick="adminInstallMod()" style="color: var(--color-background); margin: 5px 0px 0px 0px;">Install</button>
+		<div id="admin_install_message" style="color: var(--color-bad); padding: 5px;"></div>
+	</div>
+
+
+	<div id="admin_config_mod" class="control_panel_page" style="padding: 0px 10px 0px 10px; display: none;">
+		<select id="admin_config_select" onchange="adminGetModConfig()"></select>
+		<div style="padding: 5px 0px 5px 0px;">
+			<button onclick="adminUpdateModConfig()">Update Mod</button>
+			<button onclick="adminDeleteMod()" style="background-color: var(--color-bad)">Delete</button>
+		</div>
+
+		<textarea id="admin_config_textarea" oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"' style="width: calc(100% - 10px); height: 30vh; padding: 5px;font-size: 16px; color: var(--color-font-high); background-color: var(--color-surface-1)"></textarea>
+		<div id="admin_config_message" style="color: var(--color-bad); padding: 5px;"></div>
+	</div>
+
+
+	<div id="admin_user_control" class="control_panel_page" style="padding: 0px 10px 0px 10px; display: none;">
+		<div action="/admin/addUser" method="POST" style="width:max(250px, 40%);">
+			<div class="label_value_pair">
+				<div class="label" style="color:var(--color-font-high)">Username:</div>
+				<input id="admin_user_add_username" style="font-size: 16px"></input>
+			</div>
+
+			<div class="label_value_pair">
+				<div class="label" style="color:var(--color-font-high)">Password:</div>
+				<input id="admin_user_add_password" type="password" style="font-size: 16px"></input>
+			</div>
+
+			<div class="label_value_pair">
+				<div class="label" style="color:var(--color-font-high)">Password:</div>
+				<input id="admin_user_add_conf_password" type="password" style="font-size: 16px"></input>
+			</div>
+
+			<div class="label_value_pair">
+				<div class="label" style="color:var(--color-font-high)">First Name:</div>
+				<input id="admin_user_add_first_name" style="font-size: 16px"></input>
+			</div>
+			<div style="display:flex; justify-content:flex-end; padding: 5px 0px 0px 0px;">
+				<div id="admin_user_add_message" style="color: var(--color-bad); padding: 3px 10px 3px 5px;"></div>
+				<button onclick="adminAddUser()">Add User</button>
+			</div>
+		</div>
+	</div>
+
+
+	<div id="admin_devices" class="control_panel_page" style="padding: 0px 10px 0px 10px; display: none;">
+		<h1>DEVICE CONTROL</h1>
+	</div>
+</div>

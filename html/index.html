@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Jablko</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/assets/standard.css"></link>
+<style>
+#mod-holder {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	padding: 5px;
+}
+#mod-holder > * {
+	flex: 1 1 20em;
+	padding: 3px;;
+}
+</style>
+		<script> 
+			var jablkoWebCompMap = {} // Stores WebComponent source for each module
+			var jablkoInstanceConfMap = {} // Holds configs for each module used for init
+			var jablkoInstanceMap = {} // Holds initialized DOM elements for instances
+
+			$JABLKO_WEB_COMPONENT_MAP_DEF
+			$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF
+
+			document.addEventListener("DOMContentLoaded", function() {
+				const dashboardButton = document.getElementById("button-goto-dashboard");
+				dashboardButton.style.backgroundColor = "var(--clr-green)";
+
+				var mod_holder = document.getElementById("mod-holder");
+				for (source in jablkoWebCompMap) {
+					console.log(source);
+					var name = source.replace("/", "-");
+					customElements.define(name, jablkoWebCompMap[source]);
+					
+					for (const instName in jablkoInstanceConfMap[source]) {
+						var elem = document.createElement(name);
+						elem.init(source, instName, jablkoInstanceConfMap[source][instName]);
+						mod_holder.appendChild(elem);
+						jablkoInstanceMap[String(window.performance.now())] = elem;
+					}
+				}
+			})
+		</script>
+	</head>
+	$JABLKO_TASKBAR
+	<body>
+		<div id="mod-holder">
+	
+		</div>
+	</body>
+</html>
+<!-- Phil for all -->
+<!-- "My logic would be correct if I made the right assumptions" - Big Brain -->

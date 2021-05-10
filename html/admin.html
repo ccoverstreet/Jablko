@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Jablko</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/assets/standard.css"/>
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+				const adminButton = document.getElementById("button-goto-admin");
+				adminButton.style.backgroundColor = "var(--clr-green)";
+			});
+
+function switchPanel(panelId) {
+	const panels = document.querySelectorAll("#panel-switcher-content > div");
+	const buttons = document.querySelectorAll("#panel-switcher-header > button");
+	for (var i = 0; i < buttons.length; i++) {
+		if (panels[i].id == panelId) {
+			panels[i].style.display = "block";
+			buttons[i].style.borderColor = "var(--clr-green)";
+			continue
+		}
+
+		panels[i].style.display = "none";
+		buttons[i].style.borderColor = "var(--clr-font-high)";
+	}
+}	
+		</script>
+	</head>
+	<style>
+
+#panel-switcher {
+	padding: 0.4em;
+}
+#panel-switcher-header {
+	display: flex;
+	height: 3em;
+	background-color: var(--clr-surface-2);
+}
+#panel-switcher-header > button {
+	margin: 0px;
+	border: solid;
+	border-width: 0.2em;
+	border-radius: 0px;
+}
+#panel-switcher-content {
+	background-color: var(--clr-surface-1);
+	padding: 0.4em;
+}
+
+	</style>
+	<body>
+		$JABLKO_TASKBAR
+		<div id="panel-switcher">
+			<div id="panel-switcher-header">
+				<button onclick="switchPanel('jmod-settings-panel')">JMODS</button>
+				<button onclick="switchPanel('user-settings-panel')">Users</button>
+			</div>
+			<div id="panel-switcher-content">
+				<div id="jmod-settings-panel">
+					JMODS
+				</div>
+				<div id="user-settings-panel" style="display: none">
+					USERS
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
