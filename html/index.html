@@ -1,19 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<title>Jablko</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="/assets/standard.css"></link>
 <style>
-body {
-	padding: 0px;
-	background-color: var(--clr-background);
-}
-
 #mod-holder {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: stretch;
-	margin-top:  3em;
 	padding: 5px;
 }
 #mod-holder > * {
@@ -30,6 +25,9 @@ body {
 			$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF
 
 			document.addEventListener("DOMContentLoaded", function() {
+				const dashboardButton = document.getElementById("button-goto-dashboard");
+				dashboardButton.style.backgroundColor = "var(--clr-green)";
+
 				var mod_holder = document.getElementById("mod-holder");
 				for (source in jablkoWebCompMap) {
 					console.log(source);
@@ -54,3 +52,4 @@ body {
 	</body>
 </html>
 <!-- Phil for all -->
+<!-- "My logic would be correct if I made the right assumptions" -->

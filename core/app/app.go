@@ -80,6 +80,7 @@ func (app *JablkoCoreApp) initRouter() {
 	router.HandleFunc("/", app.DashboardHandler).Methods("GET")
 	router.HandleFunc("/login", app.LoginHandler).Methods("POST")
 	router.HandleFunc("/logout", app.LogoutHandler).Methods("GET", "POST")
+	router.HandleFunc("/admin", app.AdminPageHandler).Methods("GET", "POST")
 	router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
 	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
@@ -177,6 +178,26 @@ func (app *JablkoCoreApp) LogoutHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	app.DBHandler.DeleteSession(cookie.Value)
+}
+
+func (app *JablkoCoreApp) AdminPageHandler(w http.ResponseWriter, r *http.Request) {
+	b, err := ioutil.ReadFile("./html/admin.html")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to read admin.html.")
+		return
+	}
+
+	bTask, err := ioutil.ReadFile("./html/taskbar.html")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to read admin.html.")
+		return
+	}
+
+
+	log.Printf("ADMIN PAGE HANDLER")
+	fmt.Fprintf(w, "%s", strings.Replace(string(b), "$JABLKO_TASKBAR", string(bTask), 1))
 }
 
 func errHandlerDashboard(w http.ResponseWriter, r *http.Request) {

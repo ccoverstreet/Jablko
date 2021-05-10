@@ -16,6 +16,10 @@
 
 body {
 	margin: 0px;
+	margin-top: 3em;
+	padding: 0px;
+	background-color: var(--clr-background);
+	overflow: auto;
 }
 
 button {
