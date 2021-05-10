@@ -17,9 +17,9 @@
 }
 </style>
 		<script> 
-			var jablkoWebCompMap = {}
-			var jablkoInstanceConfMap = {}
-			var jablkoInstanceMap = {}
+			var jablkoWebCompMap = {} // Stores WebComponent source for each module
+			var jablkoInstanceConfMap = {} // Holds configs for each module used for init
+			var jablkoInstanceMap = {} // Holds initialized DOM elements for instances
 
 			$JABLKO_WEB_COMPONENT_MAP_DEF
 			$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF
@@ -34,9 +34,9 @@
 					var name = source.replace("/", "-");
 					customElements.define(name, jablkoWebCompMap[source]);
 					
-					for (instData of jablkoInstanceConfMap[source]) {
+					for (const instName in jablkoInstanceConfMap[source]) {
 						var elem = document.createElement(name);
-						elem.init(source, instData);
+						elem.init(source, instName, jablkoInstanceConfMap[source][instName]);
 						mod_holder.appendChild(elem);
 						jablkoInstanceMap[String(window.performance.now())] = elem;
 					}
@@ -52,4 +52,4 @@
 	</body>
 </html>
 <!-- Phil for all -->
-<!-- "My logic would be correct if I made the right assumptions" -->
+<!-- "My logic would be correct if I made the right assumptions" - Big Brain -->

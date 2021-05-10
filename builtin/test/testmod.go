@@ -18,16 +18,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Frontend instances
 type testInstance struct {
-	Id string `json:"id"`
-	Source string `json:"source"`
 	Value int `json:"value"`
 }
 
 type testConfig struct {
 	sync.Mutex
 	PortUDP int `json:"portUDP"`
-	Instances []testInstance `json:"instances"`
+	Instances map[string]testInstance `json:"instances"`
 }
 
 // 
@@ -41,16 +40,24 @@ var curConfig testConfig
 var curStateUDP = stateUDP{sync.Mutex{}, "Startup Message"}
 
 func main() {
-	router := mux.NewRouter()
-	router.HandleFunc("/webComponent", webComponentHandler)
-	router.HandleFunc("/instanceData", instanceDataHandler)
-	router.HandleFunc("/jmod/socket", SocketHandler)
-	router.HandleFunc("/jmod/getUDPState", UDPStateHandler)
-	//router.HandleFunc("/jmod/{func}", JMODHandler).Methods("GET")
+	curConfig.Instances = make(map[string]testInstance)
 
+	router := mux.NewRouter()
+	// Required Routes
+	router.HandleFunc("/webComponent", webComponentHandler) // Route called by Jablko
+	router.HandleFunc("/instanceData", instanceDataHandler) // Route called by Jablko
+
+	// Application Routes
+	router.HandleFunc("/jmod/socket", SocketHandler) // Application route for WebSockets
+	router.HandleFunc("/jmod/getUDPState", UDPStateHandler) // Simple GET for UDP Server State
+
+
+	// Pull in port for running HTTP server that communicates with Jablko
 	port := os.Getenv("JABLKO_MOD_PORT")
 	log.Println(port)
 
+	// Pull in config from environment variable and marshal into
+	// state struct
 	err := json.Unmarshal([]byte(os.Getenv("JABLKO_MOD_CONFIG")), &curConfig)
 	if err != nil {
 		panic(err)
@@ -65,6 +72,9 @@ func main() {
 	http.ListenAndServe(":" + port, router)
 }
 
+// The webcomponent handler returns the javascript for a WebComponent
+// javascript class. In production, the file should be cached so that
+// disk reads are kept to a minimum
 func webComponentHandler(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadFile("./webcomponent.js")
 	if err != nil {
@@ -74,6 +84,9 @@ func webComponentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", b)
 }
 
+// Instance data returns a javascript object string with
+// keys representing individual instances and sub objects 
+// representing instance data
 func instanceDataHandler(w http.ResponseWriter, r *http.Request) {
 	curConfig.Lock()
 	defer curConfig.Unlock()
@@ -88,7 +101,11 @@ func instanceDataHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", data)
 }
 
+// Returns the most recent UDP message received by the UDP Server
+// to the Jablko client
 func UDPStateHandler(w http.ResponseWriter, r *http.Request) {
+	// Shows how to get user permissions from r header
+	fmt.Println("User Permission Level:", r.Header.Get("Jablko-User-Permissions"))
 	curStateUDP.Lock()
 	defer curStateUDP.Unlock()
 	fmt.Fprintf(w, `{"state": "%s"}`, curStateUDP.Data)
@@ -103,6 +120,7 @@ func UDPStateHandler(w http.ResponseWriter, r *http.Request) {
 var upgrader = websocket.Upgrader{CheckOrigin: func(*http.Request) bool {return true}}
 
 func SocketHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("User Permission Level:", r.Header.Get("Jablko-User-Permissions"))
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)

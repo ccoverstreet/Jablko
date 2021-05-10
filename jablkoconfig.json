@@ -2,32 +2,26 @@
 	"sources": {
 		"builtin/test": {
 			"portUDP": 41000,
-			"instances": [
-				{
-					"id": "test1",
+			"instances": {
+				"inst0": {
 					"value": 32
 				},
-				{
-					"id": "test2",
+				"inst1": {
 					"value": 32
 				},
-				{
-					"id": "test2",
+				"inst2": {
 					"value": 32
 				},
-				{
-					"id": "test2",
+				"inst3": {
 					"value": 32
 				},
-				{
-					"id": "test2",
+				"inst4": {
 					"value": 32
 				},
-				{
-					"id": "test2",
+				"inst5": {
 					"value": 32
 				}
-			]
+			}
 		}
 	}
 }

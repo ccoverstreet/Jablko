@@ -29,14 +29,17 @@ import (
 
 type user struct {
 	PasswordHash string `json:"passwordHash"`
+	PermissionLevel int `json:"permissionLevel"`
 }
 
 type pmod struct {
 	Key string `json:"key"`
 }
 
+// PermissionLevel is 0 for regular user and 1 for admin
 type session struct {
 	username string
+	permissionLevel int
 	creationTime int64 // time.Now().Unix()
 }
 
@@ -80,6 +83,8 @@ func (db *DatabaseHandler) LoadDatabase(file string) error {
 		return err
 	}
 
+	log.Printf("%v", db)
+
 	return nil
 }
 
@@ -101,7 +106,7 @@ func (db *DatabaseHandler) SaveDatabase() error {
 
 // Adds user to in memory database and triggers
 // a file dump to store state
-func (db *DatabaseHandler) CreateUser(username string, password string) error {
+func (db *DatabaseHandler) CreateUser(username string, password string, permissionLevel int) error {
 	db.Lock()
 	defer db.Unlock()
 
@@ -114,7 +119,7 @@ func (db *DatabaseHandler) CreateUser(username string, password string) error {
 		return err
 	}
 
-	db.Users[username] = user{string(hash)}
+	db.Users[username] = user{string(hash), permissionLevel}
 
 	go db.SaveDatabase()
 
@@ -137,7 +142,7 @@ func (db *DatabaseHandler) DeleteUser(username string) error {
 	return nil
 }
 
-func (db *DatabaseHandler) IsValidCredentials(username string, password string) bool {
+func (db *DatabaseHandler) IsValidCredentials(username string, password string) (bool, int) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -145,12 +150,12 @@ func (db *DatabaseHandler) IsValidCredentials(username string, password string) 
 		res := bcrypt.CompareHashAndPassword([]byte(val.PasswordHash), []byte(password))
 		// res == nil on sucess
 		if res == nil {
-			return true
+			return true, val.PermissionLevel
 		}
-		return false
+		return false, 0
 	}
 
-	return false
+	return false, 0
 }
 
 // Code for generating random string used as cookie value
@@ -171,7 +176,7 @@ func RandomString(n int) (string, error) {
 }
 
 // Returns the cookie value and an error value
-func (db *DatabaseHandler) CreateSession(username string) (string, error) {
+func (db *DatabaseHandler) CreateSession(username string, permissionLevel int) (string, error) {
 	db.Lock()
 	defer db.Unlock()
 
@@ -180,7 +185,7 @@ func (db *DatabaseHandler) CreateSession(username string) (string, error) {
 		return "", err
 	}
 
-	db.userSessions[cookieValue] = session{username, time.Now().Unix()}
+	db.userSessions[cookieValue] = session{username, permissionLevel, time.Now().Unix()}
 
 	log.Printf("%v", db.userSessions)
 
@@ -194,25 +199,23 @@ func (db *DatabaseHandler) CreateSession(username string) (string, error) {
 // A secondary trigger is needed to prevent the database
 // from exploding in size in ideal operating conditions 
 // (when all cookies are time valid).
-func (db *DatabaseHandler) ValidateSession(cookieValue string) bool {
+func (db *DatabaseHandler) ValidateSession(cookieValue string) (bool, int) {
 	db.RLock()
 	defer db.RUnlock()
-
-	log.Printf("%v", db.userSessions)
 
 	if val, ok := db.userSessions[cookieValue]; ok {
 		// Check if session is expired
 		if (time.Now().Unix() - val.creationTime) > db.sessionLifetime {
 				// Purge old sessions from database
 				go db.CleanSessions()
-				return false
+				return false, 0
 		}
 
-		return true
+		return true, val.permissionLevel
 	}
 
 
-	return false
+	return false, 0
 }
 
 func (db *DatabaseHandler) DeleteSession(cookieValue string)  {
@@ -262,13 +265,13 @@ func (db *DatabaseHandler) LoginUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	isValid := db.IsValidCredentials(data.Username, data.Password)
+	isValid, permissionLevel := db.IsValidCredentials(data.Username, data.Password)
 	if !isValid {
 		fmt.Fprintf(w, "Invalid login")
 		return
 	}
 
-	cookieVal, err := db.CreateSession(data.Username)
+	cookieVal, err := db.CreateSession(data.Username, permissionLevel)
 	if err != nil {
 		fmt.Fprintf(w, "Unable to create user session")
 	}

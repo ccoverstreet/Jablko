@@ -101,7 +101,6 @@ func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
 // Checks for jablko-session cookie
 func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info().Msg("Authentication Middleware")
 		jablkoSession, err := r.Cookie("jablko-session")
 
 		// Allow assets to be obtained without authentication
@@ -133,7 +132,7 @@ func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		isValid := app.DBHandler.ValidateSession(jablkoSession.Value)
+		isValid, permissionLevel := app.DBHandler.ValidateSession(jablkoSession.Value)
 
 		if !isValid {
 			log.Warn().
@@ -149,6 +148,7 @@ func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		r.Header.Set("Jablko-User-Permissions", strconv.Itoa(permissionLevel))
 		next.ServeHTTP(w, r)
 	})
 }
