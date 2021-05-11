@@ -43,6 +43,7 @@ func NewModManager(conf []byte) (*ModManager, error) {
 
 	// Try to start all subprocesses
 	for key, conf := range newMM.ConfigMap {
+		// This will jmodKey generation will be moved to database
 		jmodKey, err := jutil.RandomString(32)
 		if err != nil {
 			log.Error().

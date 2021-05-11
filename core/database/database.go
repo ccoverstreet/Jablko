@@ -21,16 +21,18 @@ import (
 	"encoding/json"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
+	//"golang.org/x/crypto/bcrypt"
 	"github.com/rs/zerolog/log"
 
 	"github.com/ccoverstreet/Jablko/core/jutil"
 )
 
+/*
 type user struct {
 	PasswordHash string `json:"passwordHash"`
 	PermissionLevel int `json:"permissionLevel"`
 }
+*/
 
 type pmod struct {
 	Key string `json:"key"`
@@ -48,7 +50,7 @@ type session struct {
 // overwrites
 type DatabaseHandler struct {
 	sync.RWMutex
-	Users map[string]user `json:"users"`
+	Users *UserTable `json:"users"`
 	Pmods map[string]pmod `json:"pmods"`
 	userSessions map[string]session
 
@@ -58,7 +60,9 @@ type DatabaseHandler struct {
 
 func CreateDatabaseHandler() *DatabaseHandler {
 	dh := new(DatabaseHandler)
-	dh.Users = make(map[string]user)
+	//dh.Users = make(map[string]user)
+	dh.Users = CreateUserTable()
+
 	dh.Pmods = make(map[string]pmod)
 	dh.userSessions = make(map[string]session)
 
@@ -107,55 +111,25 @@ func (db *DatabaseHandler) SaveDatabase() error {
 // Adds user to in memory database and triggers
 // a file dump to store state
 func (db *DatabaseHandler) CreateUser(username string, password string, permissionLevel int) error {
-	db.Lock()
-	defer db.Unlock()
-
-	if _, ok := db.Users[username]; ok {
-		return fmt.Errorf("User already exists")
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	if err != nil {
-		return err
-	}
-
-	db.Users[username] = user{string(hash), permissionLevel}
+	err := db.Users.CreateUser(username, password, permissionLevel)
 
 	go db.SaveDatabase()
 
-	return nil
+	return err
 }
 
 // Delete user from memory database and triggers
 // a file dump to store state
 func (db *DatabaseHandler) DeleteUser(username string) error {
-	db.Lock()
-	defer db.Unlock()
-
-	if _, ok := db.Users[username]; !ok {
-		return fmt.Errorf("User does not exist in database")
-	}
-
-	delete(db.Users, username)
+	db.Users.DeleteUser(username)
 
 	go db.SaveDatabase()
+
 	return nil
 }
 
 func (db *DatabaseHandler) IsValidCredentials(username string, password string) (bool, int) {
-	db.RLock()
-	defer db.RUnlock()
-
-	if val, ok := db.Users[username]; ok {
-		res := bcrypt.CompareHashAndPassword([]byte(val.PasswordHash), []byte(password))
-		// res == nil on sucess
-		if res == nil {
-			return true, val.PermissionLevel
-		}
-		return false, 0
-	}
-
-	return false, 0
+	return db.Users.IsValidCredentials(username, password)
 }
 
 
