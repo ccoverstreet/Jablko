@@ -47,6 +47,9 @@ input {
 .jmod-header {
 	height: 3em;
 }
+.jmod-header > h1{
+	flex-grow: 1;
+}
 .jmod-header > svg {
 	height: 3em;
 	width: 3em;

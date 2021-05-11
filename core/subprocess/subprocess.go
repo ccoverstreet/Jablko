@@ -22,13 +22,13 @@ type Subprocess struct {
 	Port int
 }
 
-func CreateSubprocess(source string, jablkoPort int, processPort int, dataDir string, config []byte) (*Subprocess, error) {
+func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey string, dataDir string, config []byte) (*Subprocess, error) {
 	// Creates a subprocess from the given parameters
 	// Does not start the process
 
 	log.Info().
-	Str("subprocess", source).
-	Msg("Creating subprocess...")
+		Str("subprocess", source).
+		Msg("Creating subprocess...")
 
 	sub := new(Subprocess)
 	sub.Cmd = exec.Command("./jablkostart.sh")
@@ -36,6 +36,7 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, dataDir st
 	sub.Cmd.Env = []string{
 		"JABLKO_CORE_PORT=" + strconv.Itoa(jablkoPort),
 		"JABLKO_MOD_PORT=" + strconv.Itoa(processPort),
+		"JABLKO_MOD_KEY=" + jmodKey,
 		"JABLKO_MOD_DATA_DIR=" + dataDir,
 		"JABLKO_MOD_CONFIG=" + string(config),
 	}
@@ -58,7 +59,6 @@ func (sub *Subprocess) Build() error {
 	buildProc := exec.Command("./jablkobuild.sh")
 	buildProc.Dir = sub.Cmd.Dir
 
-	//err := buildProc.Run()
 	out, err := buildProc.CombinedOutput()
 	log.Debug().
 	Err(err).

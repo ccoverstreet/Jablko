@@ -29,16 +29,25 @@
 				dashboardButton.style.backgroundColor = "var(--clr-green)";
 
 				var mod_holder = document.getElementById("mod-holder");
-				for (source in jablkoWebCompMap) {
+				for (var source in jablkoWebCompMap) {
 					console.log(source);
-					var name = source.replace("/", "-");
+					compname = source;
+					if (source[0] === "/") {
+						compname = source.slice(1);
+					}
+					var name = compname.replaceAll("/", "-").replaceAll("_", "-").toLowerCase();
 					customElements.define(name, jablkoWebCompMap[source]);
 					
 					for (const instName in jablkoInstanceConfMap[source]) {
 						var elem = document.createElement(name);
-						elem.init(source, instName, jablkoInstanceConfMap[source][instName]);
-						mod_holder.appendChild(elem);
-						jablkoInstanceMap[String(window.performance.now())] = elem;
+						try {
+							elem.init(source, instName, jablkoInstanceConfMap[source][instName]);
+							mod_holder.appendChild(elem);
+							jablkoInstanceMap[String(window.performance.now())] = elem;
+						} catch(err) {
+							console.error(err);
+						}
+
 					}
 				}
 			})

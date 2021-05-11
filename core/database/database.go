@@ -20,11 +20,11 @@ import (
 	"net/http"
 	"encoding/json"
 	"time"
-	"math/big"
-	"crypto/rand"
 
 	"golang.org/x/crypto/bcrypt"
 	"github.com/rs/zerolog/log"
+
+	"github.com/ccoverstreet/Jablko/core/jutil"
 )
 
 type user struct {
@@ -158,29 +158,14 @@ func (db *DatabaseHandler) IsValidCredentials(username string, password string) 
 	return false, 0
 }
 
-// Code for generating random string used as cookie value
-const cookieChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-// Function from https://gist.github.com/dopey/c69559607800d2f2f90b1b1ed4e550fb
-func RandomString(n int) (string, error) {
-	res := make([]byte, n)
-	for i := 0; i < n; i++ {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(cookieChars))))
-		if err != nil {
-			return "", err
-		}
-		res[i] = cookieChars[num.Int64()]
-	}
-
-	return string(res), nil
-}
 
 // Returns the cookie value and an error value
 func (db *DatabaseHandler) CreateSession(username string, permissionLevel int) (string, error) {
 	db.Lock()
 	defer db.Unlock()
 
-	cookieValue, err := RandomString(32)
+	cookieValue, err := jutil.RandomString(32)
 	if err != nil {
 		return "", err
 	}

@@ -206,6 +206,8 @@ func errHandlerDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
+	// This should probably be moved into modmanager
+
 	bIndex, err := ioutil.ReadFile("./html/index.html")
 	if err != nil {
 		errHandlerDashboard(w, r)
