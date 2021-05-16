@@ -140,6 +140,10 @@ func (db *DatabaseHandler) SaveDatabase() error {
 	return nil
 }
 
+func (db *DatabaseHandler) GetUserList() []string {
+	return db.Users.GetUserList()
+}
+
 // Adds user to in memory database and triggers
 // a file dump to store state
 func (db *DatabaseHandler) CreateUser(username string, password string, permissionLevel int) error {
@@ -153,11 +157,11 @@ func (db *DatabaseHandler) CreateUser(username string, password string, permissi
 // Delete user from memory database and triggers
 // a file dump to store state
 func (db *DatabaseHandler) DeleteUser(username string) error {
-	db.Users.DeleteUser(username)
+	err := db.Users.DeleteUser(username)
 
 	go db.SaveDatabase()
 
-	return nil
+	return err
 }
 
 func (db *DatabaseHandler) IsValidCredentials(username string, password string) (bool, int) {

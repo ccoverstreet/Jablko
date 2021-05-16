@@ -41,9 +41,30 @@ func (ut *UserTable) MarshalJSON() ([]byte, error) {
 	return b, err
 }
 
+func (ut *UserTable) GetUserList() []string {
+	ut.RLock()
+	defer ut.RUnlock()
+
+	arr := []string{}
+	for username, _ := range ut.Users {
+		arr = append(arr, username)
+	}
+
+	return arr
+}
+
 func (ut *UserTable) CreateUser(username string, password string, permissionLevel int) error {
 	ut.Lock()
 	defer ut.Unlock()
+
+	if len(username) == 0 {
+		return fmt.Errorf("Username cannot be empty")
+	}
+
+	fmt.Printf("'%s': %d", password, len(password))
+	if len(password) < 12 {
+		return fmt.Errorf("Password must be at least 12 characters")
+	}
 
 	if _, ok := ut.Users[username]; ok {
 		return fmt.Errorf("User already exists")

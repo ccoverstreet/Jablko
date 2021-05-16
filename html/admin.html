@@ -25,32 +25,93 @@
 				}
 			}	
 
+function getUserList() {
+	fetch("/admin/getUserList", {
+		method: "POST"
+	})
+		.then(async data => {
+			const res = await data.json();
+			const holder = document.getElementById("user-list");
+
+			holder.innerHTML = "";
+
+			for (user of res) {
+				const userDisplay = document.createElement("p");
+				userDisplay.textContent = "- " + user;
+
+				holder.appendChild(userDisplay);
+			}
+		})
+		.catch(err => {
+			console.error(err);
+		});
+}
+
 function createUser(event) {
 	if (event.key != "Enter") {
 		return;
 	}
 
 	const username = document.getElementById("create-user-username").value;
-	const password = document.getElementById("create-user-password").value;
+	const password1 = document.getElementById("create-user-password1").value;
+	const password2 = document.getElementById("create-user-password2").value;
+
+	if (password1 !== password2) {
+		console.error(new Error("Passwords do not match"));
+		alert("Passwords do not match");
+		return
+	}
 
 	event.preventDefault();
 
-	fetch("/admin/addUser", {
+	fetch("/admin/createUser", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json"
 		},
-		body: JSON.stringify({username, password})
+		body: JSON.stringify({username, password: password1})
 	})
 		.then(async data => {
 			console.log(await data.text());
+			getUserList()
 		})
 		.catch(err => {
 			console.log(err);
 			console.error(err);
 		})
-	console.log("Submitting data for creating user");
 }
+
+function deleteUser(event) {
+	if (event.key != "Enter") {
+		return;
+	}
+
+	event.preventDefault();
+
+	const username = document.getElementById("delete-user-username").value;
+
+	fetch("/admin/deleteUser", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({username})
+	})
+		.then(async data => {
+			console.log(await data.text());
+			getUserList()
+		})
+		.catch(err => {
+			console.log(err);
+			console.error(err);
+		})
+}
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
+	getUserList();
+})
 		</script>
 	</head>
 	<style>
@@ -68,6 +129,7 @@ function createUser(event) {
 			border-width: 0.2em;
 			border-radius: 0px;
 		}
+
 		#panel-switcher-content {
 			background-color: var(--clr-surface-1);
 			padding: 0.4em;
@@ -94,10 +156,20 @@ function createUser(event) {
 			width: 100%;
 		}
 
+		#jmod-settings-panel {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
 		#user-settings-panel {
 			display: flex;
 			flex-wrap: wrap;
 			justify-content: center;
+		}
+
+		#user-settings-panel > div {
+			flex: 0 0 20em;
 		}
 
 	</style>
@@ -110,23 +182,53 @@ function createUser(event) {
 			</div>
 			<div id="panel-switcher-content">
 				<div id="jmod-settings-panel">
-					JMODS
+					<div>
+						<h2>Installed JMODs</h2>
+						<div>
+						</div>
+					</div>
 				</div>
+
 				<div id="user-settings-panel" style="display: none">
+					<div>
+						<h2>User List</h2>
+						<div id="user-list">
+						</div>
+					</div>
+
 					<div>
 						<h2>Create User</h2>
 						<form>
-							<div class="label_input_pair" style="flex: 1 1 20em">
+							<div class="label_input_pair">
 								<p>Username:</p>
 								<input id="create-user-username" type="username" onkeypress="createUser(event)"></input>
 							</div>
+
 							<div class="label_input_pair" style="flex: 1 1 20em">
 								<p>Password:</p>
-								<input id="create-user-password" type="password" onkeypress="createUser(event)"></input>
+								<input id="create-user-password1" type="password" onkeypress="createUser(event)"></input>
+							</div>
+
+							<div class="label_input_pair" style="flex: 1 1 20em">
+								<p>Confirm Password:</p>
+								<input id="create-user-password2" type="password" onkeypress="createUser(event)"></input>
 							</div>
 						</form>
+
+						<button onclick="event.key = 'Enter'; createUser(event);">Create</button>
 					</div>
-					USERS
+
+					<div>
+						<h2>Delete User</h2>
+						<form>
+							<div class="label_input_pair">
+								<p>Username:</p>
+								<input id="delete-user-username" type="username" onkeypress="deleteUser(event)"></input>
+							</div>
+
+							<button onclick="event.key='Enter'; deleteUser(event)" style="border-color: var(--clr-red)">Delete</button>
+						</form>
+					</div>
 				</div>
 			</div>
 		</div>

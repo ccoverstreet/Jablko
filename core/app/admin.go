@@ -11,6 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Dispatches admin functions based on incoming HTTP requests
+//
 func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Request) {
 	// First check if user has correct privileges
 	permissionLevel, err := strconv.Atoi(r.Header.Get("Jablko-User-Permissions"))
@@ -34,13 +36,35 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 	vars := mux.Vars(r)
 
 	switch vars["func"] {
+	case "getUserList":
+		app.getUserList(w, r)
 	case "createUser":
-		log.Printf("addUser route called")
 		app.addUser(w, r)
+	case "deleteUser":
+		app.deleteUser(w, r)
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Invalid admin function requested")
 	}
+}
+
+func (app *JablkoCoreApp) getUserList(w http.ResponseWriter, r *http.Request) {
+	userList := app.DBHandler.GetUserList()
+
+	body, err := json.Marshal(userList)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to marshal userList to JSON")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to marshal userList")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, "%s", body)
 }
 
 func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +75,6 @@ func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
 
 	var data submittedData
 
-	log.Printf("ASDASDASDASDASDASDASDS")
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error().
@@ -76,6 +99,9 @@ func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("%s", reqBody)
+	log.Printf("%v", data)
+
 	err = app.DBHandler.CreateUser(data.Username, data.Password, 0)
 
 	if err != nil {
@@ -91,4 +117,52 @@ func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Created user")
+}
+
+func (app *JablkoCoreApp) deleteUser(w http.ResponseWriter, r *http.Request) {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to read body for admin/deleteUser")
+
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Unable to read body for admin/deleteUser")
+		return
+	}
+
+	type delUserBody struct {
+		Username string `json:"username"`
+	}
+
+	var body delUserBody
+
+	err = json.Unmarshal(reqBody, &body)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to parse body for admin/deleteUser")
+
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Unable to parse body for admin/deleteUser")
+		return
+	}
+
+	err = app.DBHandler.DeleteUser(body.Username)
+
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to delete user for admin/deleteUser")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to delete user for admin/deleteUser")
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Deleted user")
 }
