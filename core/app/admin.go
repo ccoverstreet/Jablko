@@ -34,7 +34,7 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 	vars := mux.Vars(r)
 
 	switch vars["func"] {
-	case "addUser":
+	case "createUser":
 		log.Printf("addUser route called")
 		app.addUser(w, r)
 	default:
