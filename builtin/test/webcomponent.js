@@ -5,6 +5,7 @@ class extends HTMLElement {
 		this.attachShadow({mode: "open"});
 		this.webSocketResHandler = this.webSocketResHandler.bind(this);
 		this.getUDPState = this.getUDPState.bind(this);
+		this.testSave = this.testSave.bind(this);
 
 		this.shadowRoot.innerHTML = `
 <link rel="stylesheet" href="/assets/standard.css"></link>
@@ -45,6 +46,7 @@ class extends HTMLElement {
 		</div>
 
 		<button onclick="this.getRootNode().host.talk()" style="border-color: var(--clr-red);">Talk</button>
+		<button onclick="this.getRootNode().host.testSave()">Test Save</button>
 	</div>
 </div>
 		`
@@ -94,5 +96,10 @@ class extends HTMLElement {
 
 	talk() {
 		alert("Hello");
+	}
+
+	testSave() {
+		console.log("HelloWorld");
+		fetch(`/jmod/testConfigSave?JMOD-Source=${this.source}`)
 	}
 }

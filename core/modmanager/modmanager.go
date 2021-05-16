@@ -9,12 +9,14 @@ package modmanager
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"sync"
 
 	"github.com/buger/jsonparser"
 	"github.com/gorilla/mux"
@@ -25,6 +27,7 @@ import (
 )
 
 type ModManager struct {
+	sync.RWMutex
 	ProcMap map[string]*subprocess.Subprocess
 }
 
@@ -77,6 +80,24 @@ func NewModManager(conf []byte) (*ModManager, error) {
 	return newMM, nil
 }
 
+func (mm *ModManager) SaveConfigToFile() {
+	mm.Lock()
+	defer mm.Unlock()
+
+	log.Info().
+		Msg("Saving JMOD data to jmods.json")
+
+	configByte, err := json.Marshal(mm.ProcMap)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to marshal mod manager")
+	}
+
+	log.Printf("%s", configByte)
+}
+
 func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 	source := r.FormValue("JMOD-Source")
 
@@ -101,7 +122,16 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, string) {
-	return true, ""
+	mm.RLock()
+	defer mm.RUnlock()
+
+	for key, jmod := range mm.ProcMap {
+		if jmod.Port == portNumber && jmod.Key == jmodKey {
+			return true, key
+		}
+	}
+
+	return false, ""
 }
 
 func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -109,18 +139,31 @@ func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	// JMOD for authentication. JMODs can save their configs
 	// or retrieve information
 
+	log.Printf("ASDASDASD")
+
 	// Check JMOD-KEY header value
 	keyValue := r.Header.Get("JMOD-KEY")
 	if keyValue == "" {
+		log.Error().
+			Msg("Empty JMOD-KEY")
+
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Empty JMOD-KEY")
 		return
 	}
 
-	portValue := r.Header.Get("JMOD-PORT")
-	if portValue == "" {
+	portValueStr := r.Header.Get("JMOD-PORT")
+	portValue, err := strconv.Atoi(portValueStr)
+	if portValueStr == "" || err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Empty JMOD-KEY")
+		fmt.Fprintf(w, "Invalid JMOD-PORT")
+		return
+	}
+
+	isValid, modName := mm.IsValidService(keyValue, portValue)
+	if !isValid {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Specified service doesn't exist")
 		return
 	}
 
@@ -128,9 +171,24 @@ func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch vars["func"] {
 	case "saveConfig":
-
+		mm.saveModConfig(w, r, modName)
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Invalid function requested")
 	}
+}
+
+func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modName string) {
+	newConfigByte, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to read body")
+		return
+	}
+
+	fmt.Println("ASDJAJSSAJDSJ DMOD ASMDASD")
+
+	mm.ProcMap[modName].Config = newConfigByte
+
+	go mm.SaveConfigToFile()
 }

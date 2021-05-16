@@ -52,6 +52,10 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey st
 	return sub
 }
 
+func (sub *Subprocess) MarshalJSON() ([]byte, error) {
+	return sub.Config, nil
+}
+
 func (sub *Subprocess) Start() error {
 	err := sub.Cmd.Start()
 
