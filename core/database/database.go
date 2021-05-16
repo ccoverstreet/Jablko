@@ -4,7 +4,7 @@
 
 /*
 All accesses to Jablko's database should go through
-this handler. Handles creation and state management 
+this handler. Handles creation and state management
 for user logins, registered pmods.
 
 Only write processes trigger updates to the database
@@ -14,67 +14,103 @@ file. userSessions are not stored on disk.
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"sync"
 	"net/http"
-	"encoding/json"
-	"time"
-	"math/big"
-	"crypto/rand"
+	"os"
+	"sync"
 
-	"golang.org/x/crypto/bcrypt"
+	//"golang.org/x/crypto/bcrypt"
 	"github.com/rs/zerolog/log"
 )
-
-type user struct {
-	PasswordHash string `json:"passwordHash"`
-	PermissionLevel int `json:"permissionLevel"`
-}
 
 type pmod struct {
 	Key string `json:"key"`
 }
 
-// PermissionLevel is 0 for regular user and 1 for admin
-type session struct {
-	username string
-	permissionLevel int
-	creationTime int64 // time.Now().Unix()
-}
-
 // userSessions should be indexed by cookie value
-// to prevent users from being logged out by 
+// to prevent users from being logged out by
 // overwrites
 type DatabaseHandler struct {
 	sync.RWMutex
-	Users map[string]user `json:"users"`
-	Pmods map[string]pmod `json:"pmods"`
-	userSessions map[string]session
+	Users        *UserTable      `json:"users"`
+	Pmods        map[string]pmod `json:"pmods"`
+	userSessions *SessionsTable
 
 	filePath string
-	sessionLifetime int64 // How long in seconds a session is valid
 }
 
 func CreateDatabaseHandler() *DatabaseHandler {
 	dh := new(DatabaseHandler)
-	dh.Users = make(map[string]user)
-	dh.Pmods = make(map[string]pmod)
-	dh.userSessions = make(map[string]session)
+	//dh.Users = make(map[string]user)
+	dh.Users = CreateUserTable()
 
-	// TEMPORARY
-	// Used for testing. Should be specified in config in the future
-	dh.sessionLifetime = 3600
+	dh.Pmods = make(map[string]pmod)
+	dh.userSessions = CreateSessionsTable()
 
 	return dh
+}
+
+func (db *DatabaseHandler) InitEmptyDatabase() {
+	username := ""
+	fmt.Printf("\nCreating Admin User...\n")
+
+	for {
+		fmt.Printf("Enter username for admin user: ")
+		_, err := fmt.Scanln(&username)
+		if err != nil {
+			fmt.Printf("Error reading input: %v\n", err)
+		}
+
+		// Break if username input was accepted
+		if username != "" {
+			break
+		}
+	}
+
+	password := ""
+	for {
+		fmt.Printf("Enter password for admin user: ")
+		fmt.Printf("\033[8m") // Makes entered text invisible
+
+		_, err := fmt.Scanln(&password)
+		if err != nil {
+			fmt.Printf("Error reading input: %v\n", err)
+		}
+		fmt.Printf("\033[0m")
+
+		// Break if password passes
+		if len(password) >= 12 {
+			break
+		}
+
+		fmt.Printf("Password too short\n")
+	}
+
+	err := db.CreateUser(username, password, 1)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to create admin user in empty database")
+
+		panic(err)
+	}
 }
 
 // Loads existing database from JSON file
 func (db *DatabaseHandler) LoadDatabase(file string) error {
 	db.filePath = file
 
+	// Check if file exists, create if not
+	_, err := os.Stat(file)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("File does not exist")
+	}
+
 	b, err := ioutil.ReadFile(file)
 	if err != nil {
+		log.Printf("%v", err)
 		return err
 	}
 
@@ -104,142 +140,52 @@ func (db *DatabaseHandler) SaveDatabase() error {
 	return nil
 }
 
+func (db *DatabaseHandler) GetUserList() []string {
+	return db.Users.GetUserList()
+}
+
 // Adds user to in memory database and triggers
 // a file dump to store state
 func (db *DatabaseHandler) CreateUser(username string, password string, permissionLevel int) error {
-	db.Lock()
-	defer db.Unlock()
-
-	if _, ok := db.Users[username]; ok {
-		return fmt.Errorf("User already exists")
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	if err != nil {
-		return err
-	}
-
-	db.Users[username] = user{string(hash), permissionLevel}
+	err := db.Users.CreateUser(username, password, permissionLevel)
 
 	go db.SaveDatabase()
 
-	return nil
+	return err
 }
 
 // Delete user from memory database and triggers
 // a file dump to store state
 func (db *DatabaseHandler) DeleteUser(username string) error {
-	db.Lock()
-	defer db.Unlock()
-
-	if _, ok := db.Users[username]; !ok {
-		return fmt.Errorf("User does not exist in database")
-	}
-
-	delete(db.Users, username)
+	err := db.Users.DeleteUser(username)
 
 	go db.SaveDatabase()
-	return nil
+
+	return err
 }
 
 func (db *DatabaseHandler) IsValidCredentials(username string, password string) (bool, int) {
-	db.RLock()
-	defer db.RUnlock()
-
-	if val, ok := db.Users[username]; ok {
-		res := bcrypt.CompareHashAndPassword([]byte(val.PasswordHash), []byte(password))
-		// res == nil on sucess
-		if res == nil {
-			return true, val.PermissionLevel
-		}
-		return false, 0
-	}
-
-	return false, 0
-}
-
-// Code for generating random string used as cookie value
-const cookieChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-
-// Function from https://gist.github.com/dopey/c69559607800d2f2f90b1b1ed4e550fb
-func RandomString(n int) (string, error) {
-	res := make([]byte, n)
-	for i := 0; i < n; i++ {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(cookieChars))))
-		if err != nil {
-			return "", err
-		}
-		res[i] = cookieChars[num.Int64()]
-	}
-
-	return string(res), nil
+	return db.Users.IsValidCredentials(username, password)
 }
 
 // Returns the cookie value and an error value
 func (db *DatabaseHandler) CreateSession(username string, permissionLevel int) (string, error) {
-	db.Lock()
-	defer db.Unlock()
-
-	cookieValue, err := RandomString(32)
-	if err != nil {
-		return "", err
-	}
-
-	db.userSessions[cookieValue] = session{username, permissionLevel, time.Now().Unix()}
-
-	log.Printf("%v", db.userSessions)
-
-	return cookieValue, nil
+	return db.userSessions.CreateSession(username, permissionLevel)
 }
 
 // Checks database for session
 // Purges expired sessions if value is found
-// in database but is expired. This is 
+// in database but is expired. This is
 // kind of a lazy approach to cleaning the database.
 // A secondary trigger is needed to prevent the database
-// from exploding in size in ideal operating conditions 
+// from exploding in size in ideal operating conditions
 // (when all cookies are time valid).
 func (db *DatabaseHandler) ValidateSession(cookieValue string) (bool, int) {
-	db.RLock()
-	defer db.RUnlock()
-
-	if val, ok := db.userSessions[cookieValue]; ok {
-		// Check if session is expired
-		if (time.Now().Unix() - val.creationTime) > db.sessionLifetime {
-				// Purge old sessions from database
-				go db.CleanSessions()
-				return false, 0
-		}
-
-		return true, val.permissionLevel
-	}
-
-
-	return false, 0
+	return db.userSessions.ValidateSession(cookieValue)
 }
 
-func (db *DatabaseHandler) DeleteSession(cookieValue string)  {
-	db.Lock()
-	defer db.Unlock()
-
-	if _, ok := db.userSessions[cookieValue]; ok {
-		delete(db.userSessions, cookieValue)
-	}
-}
-
-// Removes expired sessions from the database
-// Called when a session value queried is found 
-// to be invalid and once an hour
-func (db *DatabaseHandler) CleanSessions() {
-	db.Lock()
-	defer db.Unlock()
-
-	checkTime := time.Now().Unix()
-	for cookieValue, data := range db.userSessions {
-		if (checkTime - data.creationTime) > db.sessionLifetime {
-			delete(db.userSessions, cookieValue)
-		}
-	}
+func (db *DatabaseHandler) DeleteSession(cookieValue string) {
+	db.userSessions.DeleteSession(cookieValue)
 }
 
 // HTTP Handler for login route
@@ -277,9 +223,9 @@ func (db *DatabaseHandler) LoginUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	cookie := http.Cookie{
-		Name: "jablko-session",
-		Value: cookieVal,
-		MaxAge: int(db.sessionLifetime),
+		Name:   "jablko-session",
+		Value:  cookieVal,
+		MaxAge: int(db.userSessions.SessionLifetime),
 	}
 
 	http.SetCookie(w, &cookie)

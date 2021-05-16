@@ -21,11 +21,10 @@ class extends HTMLElement {
 <div class="jmod-wrapper">
 	<div class="jmod-header" style="display: flex; ">
 		<h1>My Module</h1>
-		<div style="flex-grow: 1;"></div>
 		<svg viewBox="0 0 360 360">
 			<circle cx="180" 
 				cy="180" 
-				r="90" 
+				r="120" 
 				stroke="var(--clr-accent)" 
 				stroke-width="30"
 				fill="transparent"/>		

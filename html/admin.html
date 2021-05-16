@@ -10,42 +10,167 @@
 				adminButton.style.backgroundColor = "var(--clr-green)";
 			});
 
-function switchPanel(panelId) {
-	const panels = document.querySelectorAll("#panel-switcher-content > div");
-	const buttons = document.querySelectorAll("#panel-switcher-header > button");
-	for (var i = 0; i < buttons.length; i++) {
-		if (panels[i].id == panelId) {
-			panels[i].style.display = "block";
-			buttons[i].style.borderColor = "var(--clr-green)";
-			continue
-		}
+			function switchPanel(panelId) {
+				const panels = document.querySelectorAll("#panel-switcher-content > div");
+				const buttons = document.querySelectorAll("#panel-switcher-header > button");
+				for (var i = 0; i < buttons.length; i++) {
+					if (panels[i].id == panelId) {
+						panels[i].style.display = "flex";
+						buttons[i].style.borderColor = "var(--clr-green)";
+						continue
+					}
 
-		panels[i].style.display = "none";
-		buttons[i].style.borderColor = "var(--clr-font-high)";
+					panels[i].style.display = "none";
+					buttons[i].style.borderColor = "var(--clr-font-high)";
+				}
+			}	
+
+function getUserList() {
+	fetch("/admin/getUserList", {
+		method: "POST"
+	})
+		.then(async data => {
+			const res = await data.json();
+			const holder = document.getElementById("user-list");
+
+			holder.innerHTML = "";
+
+			for (user of res) {
+				const userDisplay = document.createElement("p");
+				userDisplay.textContent = "- " + user;
+
+				holder.appendChild(userDisplay);
+			}
+		})
+		.catch(err => {
+			console.error(err);
+		});
+}
+
+function createUser(event) {
+	if (event.key != "Enter") {
+		return;
 	}
-}	
+
+	const username = document.getElementById("create-user-username").value;
+	const password1 = document.getElementById("create-user-password1").value;
+	const password2 = document.getElementById("create-user-password2").value;
+
+	if (password1 !== password2) {
+		console.error(new Error("Passwords do not match"));
+		alert("Passwords do not match");
+		return
+	}
+
+	event.preventDefault();
+
+	fetch("/admin/createUser", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({username, password: password1})
+	})
+		.then(async data => {
+			console.log(await data.text());
+			getUserList()
+		})
+		.catch(err => {
+			console.log(err);
+			console.error(err);
+		})
+}
+
+function deleteUser(event) {
+	if (event.key != "Enter") {
+		return;
+	}
+
+	event.preventDefault();
+
+	const username = document.getElementById("delete-user-username").value;
+
+	fetch("/admin/deleteUser", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({username})
+	})
+		.then(async data => {
+			console.log(await data.text());
+			getUserList()
+		})
+		.catch(err => {
+			console.log(err);
+			console.error(err);
+		})
+}
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
+	getUserList();
+})
 		</script>
 	</head>
 	<style>
+		#panel-switcher {
+			padding: 0.4em;
+		}
+		#panel-switcher-header {
+			display: flex;
+			height: 3em;
+			background-color: var(--clr-surface-2);
+		}
+		#panel-switcher-header > button {
+			margin: 0px;
+			border: solid;
+			border-width: 0.2em;
+			border-radius: 0px;
+		}
 
-#panel-switcher {
-	padding: 0.4em;
-}
-#panel-switcher-header {
-	display: flex;
-	height: 3em;
-	background-color: var(--clr-surface-2);
-}
-#panel-switcher-header > button {
-	margin: 0px;
-	border: solid;
-	border-width: 0.2em;
-	border-radius: 0px;
-}
-#panel-switcher-content {
-	background-color: var(--clr-surface-1);
-	padding: 0.4em;
-}
+		#panel-switcher-content {
+			background-color: var(--clr-surface-1);
+			padding: 0.4em;
+		}
+
+		.label_input_pair {
+			display: flex;
+		}
+		.label_input_pair > p {
+			display: flex;
+			padding-right: 0.5em;
+			margin-left: 1em;
+		}
+		.label_input_pair > input {
+			display: flex;
+			margin-right: 1em;
+		}
+
+		h2 {
+			width: 100%;
+		}
+
+		hr {
+			width: 100%;
+		}
+
+		#jmod-settings-panel {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
+		#user-settings-panel {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
+		#user-settings-panel > div {
+			flex: 0 0 20em;
+		}
 
 	</style>
 	<body>
@@ -57,10 +182,53 @@ function switchPanel(panelId) {
 			</div>
 			<div id="panel-switcher-content">
 				<div id="jmod-settings-panel">
-					JMODS
+					<div>
+						<h2>Installed JMODs</h2>
+						<div>
+						</div>
+					</div>
 				</div>
+
 				<div id="user-settings-panel" style="display: none">
-					USERS
+					<div>
+						<h2>User List</h2>
+						<div id="user-list">
+						</div>
+					</div>
+
+					<div>
+						<h2>Create User</h2>
+						<form>
+							<div class="label_input_pair">
+								<p>Username:</p>
+								<input id="create-user-username" type="username" onkeypress="createUser(event)"></input>
+							</div>
+
+							<div class="label_input_pair" style="flex: 1 1 20em">
+								<p>Password:</p>
+								<input id="create-user-password1" type="password" onkeypress="createUser(event)"></input>
+							</div>
+
+							<div class="label_input_pair" style="flex: 1 1 20em">
+								<p>Confirm Password:</p>
+								<input id="create-user-password2" type="password" onkeypress="createUser(event)"></input>
+							</div>
+						</form>
+
+						<button onclick="event.key = 'Enter'; createUser(event);">Create</button>
+					</div>
+
+					<div>
+						<h2>Delete User</h2>
+						<form>
+							<div class="label_input_pair">
+								<p>Username:</p>
+								<input id="delete-user-username" type="username" onkeypress="deleteUser(event)"></input>
+							</div>
+
+							<button onclick="event.key='Enter'; deleteUser(event)" style="border-color: var(--clr-red)">Delete</button>
+						</form>
+					</div>
 				</div>
 			</div>
 		</div>

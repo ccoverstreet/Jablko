@@ -7,7 +7,7 @@
 
 package modmanager
 
-import ( 
+import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -19,6 +19,7 @@ import (
 	"github.com/buger/jsonparser"
 
 	"github.com/ccoverstreet/Jablko/core/subprocess"
+	"github.com/ccoverstreet/Jablko/core/jutil"
 )
 
 type ModManager struct {
@@ -42,7 +43,17 @@ func NewModManager(conf []byte) (*ModManager, error) {
 
 	// Try to start all subprocesses
 	for key, conf := range newMM.ConfigMap {
-		newSub, err := subprocess.CreateSubprocess(key, 8080, curPort, "./data", conf)
+		// This will jmodKey generation will be moved to database
+		jmodKey, err := jutil.RandomString(32)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Unable to generate random string for jmodKey")
+
+			continue
+		}
+
+		newSub, err := subprocess.CreateSubprocess(key, 8080, curPort, jmodKey, "./data", conf)
 		if err != nil {
 			log.Error().
 				Err(err).

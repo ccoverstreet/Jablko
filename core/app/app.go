@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -49,6 +50,33 @@ func (app *JablkoCoreApp) Init() error {
 		panic(err)
 	}
 
+	// Create data folder
+	// Is a fatal error if this fails
+	err = os.MkdirAll("./data", 0755)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to create data directory")
+		panic(err)
+	}
+
+	log.Info().Msg("Creating database handler...")
+	app.DBHandler = database.CreateDatabaseHandler()
+	err = app.DBHandler.LoadDatabase("./data/database.json")
+	if err != nil {
+		if err.Error() == "File does not exist" {
+			log.Warn().
+				Err(err).
+				Msg("Unable to load existing database. Defaulting to empty database")
+
+			// Initialize Empty Database
+			app.DBHandler.InitEmptyDatabase()
+		} else {
+			panic(err)
+		}
+	}
+	log.Info().Msg("Created database handler")
+
 	log.Info().Msg("Creating module manager...")
 	newModM, err := modmanager.NewModManager(sourceConf)
 	if err != nil {
@@ -56,16 +84,6 @@ func (app *JablkoCoreApp) Init() error {
 	}
 	app.ModM = newModM
 	log.Info().Msg("Created module manager")
-
-	log.Info().Msg("Creating database handler...")
-	app.DBHandler = database.CreateDatabaseHandler()
-	err = app.DBHandler.LoadDatabase("./data/database.json")
-	if err != nil {
-		log.Warn().
-			Err(err).
-			Msg("Unable to load existing database. Defaulting to empty database")
-	}
-	log.Info().Msg("Created database handler")
 
 	return nil
 }
@@ -81,6 +99,7 @@ func (app *JablkoCoreApp) initRouter() {
 	router.HandleFunc("/login", app.LoginHandler).Methods("POST")
 	router.HandleFunc("/logout", app.LogoutHandler).Methods("GET", "POST")
 	router.HandleFunc("/admin", app.AdminPageHandler).Methods("GET", "POST")
+	router.HandleFunc("/admin/{func}", app.AdminFuncHandler).Methods("GET", "POST")
 	router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
 	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
@@ -195,7 +214,6 @@ func (app *JablkoCoreApp) AdminPageHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-
 	log.Printf("ADMIN PAGE HANDLER")
 	fmt.Fprintf(w, "%s", strings.Replace(string(b), "$JABLKO_TASKBAR", string(bTask), 1))
 }
@@ -206,6 +224,8 @@ func errHandlerDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
+	// This should probably be moved into modmanager
+
 	bIndex, err := ioutil.ReadFile("./html/index.html")
 	if err != nil {
 		errHandlerDashboard(w, r)
@@ -256,7 +276,6 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 
 	return
 }
-
 
 func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
 	// Checks for JMOD_Source URL parameter

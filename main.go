@@ -32,6 +32,9 @@ func main() {
 			Msg("Error in initialization")
 	}
 
+	log.Printf("USER TABLE: %v", jablkoApp.DBHandler.Users)
+
+	log.Info().Msg("Starting HTTP Server")
 	log.Fatal().Err(http.ListenAndServe(":8080", jablkoApp.Router))
 }
 

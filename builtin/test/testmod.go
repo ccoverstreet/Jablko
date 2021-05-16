@@ -1,18 +1,16 @@
-
-
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
-	"fmt"
-	"log"
 	"os"
-	"io/ioutil"
-	"sync"
 	"strconv"
 	"strings"
-	"encoding/json"
+	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -25,11 +23,11 @@ type testInstance struct {
 
 type testConfig struct {
 	sync.Mutex
-	PortUDP int `json:"portUDP"`
+	PortUDP   int                     `json:"portUDP"`
 	Instances map[string]testInstance `json:"instances"`
 }
 
-// 
+//
 type stateUDP struct {
 	sync.Mutex
 	Data string
@@ -48,9 +46,8 @@ func main() {
 	router.HandleFunc("/instanceData", instanceDataHandler) // Route called by Jablko
 
 	// Application Routes
-	router.HandleFunc("/jmod/socket", SocketHandler) // Application route for WebSockets
+	router.HandleFunc("/jmod/socket", SocketHandler)        // Application route for WebSockets
 	router.HandleFunc("/jmod/getUDPState", UDPStateHandler) // Simple GET for UDP Server State
-
 
 	// Pull in port for running HTTP server that communicates with Jablko
 	port := os.Getenv("JABLKO_MOD_PORT")
@@ -69,7 +66,7 @@ func main() {
 	go UDPServer(curConfig.PortUDP)
 
 	log.Println("Starting HTTP server...")
-	http.ListenAndServe(":" + port, router)
+	http.ListenAndServe(":"+port, router)
 }
 
 // The webcomponent handler returns the javascript for a WebComponent
@@ -85,7 +82,7 @@ func webComponentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Instance data returns a javascript object string with
-// keys representing individual instances and sub objects 
+// keys representing individual instances and sub objects
 // representing instance data
 func instanceDataHandler(w http.ResponseWriter, r *http.Request) {
 	curConfig.Lock()
@@ -113,11 +110,11 @@ func UDPStateHandler(w http.ResponseWriter, r *http.Request) {
 
 // ---------- WEB SOCKETS ----------
 // Example for implementation of Web Sockets
-// The CheckOrigin method of the upgrader 
+// The CheckOrigin method of the upgrader
 // must be ignored to as the origin of the
 // request is modified by the Jablko Core
 // proxy
-var upgrader = websocket.Upgrader{CheckOrigin: func(*http.Request) bool {return true}}
+var upgrader = websocket.Upgrader{CheckOrigin: func(*http.Request) bool { return true }}
 
 func SocketHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("User Permission Level:", r.Header.Get("Jablko-User-Permissions"))
@@ -155,7 +152,7 @@ type restartFlag struct {
 
 func UDPServer(port int) {
 	log.Println("Starting UDP Server...")
-	serverAddr, err := net.ResolveUDPAddr("udp", ":" + strconv.Itoa(port))
+	serverAddr, err := net.ResolveUDPAddr("udp", ":"+strconv.Itoa(port))
 	if err != nil {
 		panic(err)
 	}
@@ -179,7 +176,7 @@ func UDPServer(port int) {
 		curStateUDP.Unlock()
 
 		// Echo data
-		serverConn.WriteToUDP([]byte("ECHO: " + x), addr)
+		serverConn.WriteToUDP([]byte("ECHO: "+x), addr)
 
 		log.Println("From Client:", string(buf[0:n]))
 	}
