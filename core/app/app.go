@@ -99,6 +99,7 @@ func (app *JablkoCoreApp) initRouter() {
 	router.HandleFunc("/login", app.LoginHandler).Methods("POST")
 	router.HandleFunc("/logout", app.LogoutHandler).Methods("GET", "POST")
 	router.HandleFunc("/admin", app.AdminPageHandler).Methods("GET", "POST")
+	router.HandleFunc("/admin/{func}", app.AdminFuncHandler).Methods("GET", "POST")
 	router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
 	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 

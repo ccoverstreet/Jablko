@@ -54,7 +54,7 @@ func CreateDatabaseHandler() *DatabaseHandler {
 
 func (db *DatabaseHandler) InitEmptyDatabase() {
 	username := ""
-	log.Printf("ASDASD123")
+	fmt.Printf("\nCreating Admin User...\n")
 
 	for {
 		fmt.Printf("Enter username for admin user: ")
