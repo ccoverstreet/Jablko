@@ -100,6 +100,7 @@ func (app *JablkoCoreApp) initRouter() {
 	router.HandleFunc("/logout", app.LogoutHandler).Methods("GET", "POST")
 	router.HandleFunc("/admin", app.AdminPageHandler).Methods("GET", "POST")
 	router.HandleFunc("/admin/{func}", app.AdminFuncHandler).Methods("GET", "POST")
+	router.HandleFunc("/service/{func}", app.ServiceHandler).Methods("GET", "POST")
 	router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
 	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
@@ -130,6 +131,12 @@ func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 
 		// Allow login requests to go through
 		if strings.HasPrefix(r.URL.String(), "/login") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Pass through to modmanager routes from jmods
+		if strings.HasPrefix(r.URL.String(), "/service") {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -214,8 +221,11 @@ func (app *JablkoCoreApp) AdminPageHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	log.Printf("ADMIN PAGE HANDLER")
 	fmt.Fprintf(w, "%s", strings.Replace(string(b), "$JABLKO_TASKBAR", string(bTask), 1))
+}
+
+func (app *JablkoCoreApp) ServiceHandler(w http.ResponseWriter, r *http.Request) {
+	app.ModM.ServiceHandler(w, r)
 }
 
 func errHandlerDashboard(w http.ResponseWriter, r *http.Request) {

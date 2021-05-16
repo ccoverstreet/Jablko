@@ -4,7 +4,7 @@
 
 // The subprocess struct spawned for each Jablko
 // Mod. Provides the Jablko-specific environment
-// variables 
+// variables
 
 package subprocess
 
@@ -16,13 +16,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-
 type Subprocess struct {
-	Cmd *exec.Cmd
-	Port int
+	Cmd    *exec.Cmd
+	Port   int
+	Key    string
+	Config []byte
 }
 
-func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey string, dataDir string, config []byte) (*Subprocess, error) {
+func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey string, dataDir string, config []byte) *Subprocess {
 	// Creates a subprocess from the given parameters
 	// Does not start the process
 
@@ -31,6 +32,10 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey st
 		Msg("Creating subprocess...")
 
 	sub := new(Subprocess)
+	sub.Port = processPort
+	sub.Key = jmodKey
+	sub.Config = config
+
 	sub.Cmd = exec.Command("./jablkostart.sh")
 	sub.Cmd.Dir = source
 	sub.Cmd.Env = []string{
@@ -44,9 +49,7 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey st
 	sub.Cmd.Stdout = ColoredWriter{os.Stdout}
 	sub.Cmd.Stderr = ColoredWriter{os.Stderr}
 
-	sub.Port = processPort
-
-	return sub, nil
+	return sub
 }
 
 func (sub *Subprocess) Start() error {
@@ -61,9 +64,9 @@ func (sub *Subprocess) Build() error {
 
 	out, err := buildProc.CombinedOutput()
 	log.Debug().
-	Err(err).
-	Str("buildOutput", string(out)).
-	Msg("Build finished")
+		Err(err).
+		Str("buildOutput", string(out)).
+		Msg("Build finished")
 
 	return err
 }
