@@ -1,15 +1,16 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
+
 	"golang.org/x/crypto/bcrypt"
-	"encoding/json"
 )
 
 type user struct {
-	PasswordHash string `json:"passwordHash"`
-	PermissionLevel int `json:"permissionLevel"`
+	PasswordHash    string `json:"passwordHash"`
+	PermissionLevel int    `json:"permissionLevel"`
 }
 
 type UserTable struct {
@@ -17,7 +18,7 @@ type UserTable struct {
 	Users map[string]user `json:"users"`
 }
 
-func CreateUserTable() (*UserTable) {
+func CreateUserTable() *UserTable {
 	ut := new(UserTable)
 	ut.Users = make(map[string]user)
 
@@ -31,7 +32,6 @@ func (ut *UserTable) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &ut.Users)
 	return err
 }
-
 
 // This is critical for making the database JSON Marshalable
 func (ut *UserTable) MarshalJSON() ([]byte, error) {
@@ -71,7 +71,6 @@ func (ut *UserTable) DeleteUser(username string) error {
 
 	return nil
 }
-
 
 func (ut *UserTable) IsValidCredentials(username string, password string) (bool, int) {
 	ut.RLock()

@@ -4,7 +4,7 @@
 
 /*
 All accesses to Jablko's database should go through
-this handler. Handles creation and state management 
+this handler. Handles creation and state management
 for user logins, registered pmods.
 
 Only write processes trigger updates to the database
@@ -14,48 +14,30 @@ file. userSessions are not stored on disk.
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"sync"
 	"net/http"
-	"encoding/json"
-	"time"
+	"sync"
 
 	//"golang.org/x/crypto/bcrypt"
 	"github.com/rs/zerolog/log"
-
-	"github.com/ccoverstreet/Jablko/core/jutil"
 )
-
-/*
-type user struct {
-	PasswordHash string `json:"passwordHash"`
-	PermissionLevel int `json:"permissionLevel"`
-}
-*/
 
 type pmod struct {
 	Key string `json:"key"`
 }
 
-// PermissionLevel is 0 for regular user and 1 for admin
-type session struct {
-	username string
-	permissionLevel int
-	creationTime int64 // time.Now().Unix()
-}
-
 // userSessions should be indexed by cookie value
-// to prevent users from being logged out by 
+// to prevent users from being logged out by
 // overwrites
 type DatabaseHandler struct {
 	sync.RWMutex
-	Users *UserTable `json:"users"`
-	Pmods map[string]pmod `json:"pmods"`
-	userSessions map[string]session
+	Users        *UserTable      `json:"users"`
+	Pmods        map[string]pmod `json:"pmods"`
+	userSessions *SessionsTable
 
 	filePath string
-	sessionLifetime int64 // How long in seconds a session is valid
 }
 
 func CreateDatabaseHandler() *DatabaseHandler {
@@ -64,11 +46,7 @@ func CreateDatabaseHandler() *DatabaseHandler {
 	dh.Users = CreateUserTable()
 
 	dh.Pmods = make(map[string]pmod)
-	dh.userSessions = make(map[string]session)
-
-	// TEMPORARY
-	// Used for testing. Should be specified in config in the future
-	dh.sessionLifetime = 3600
+	dh.userSessions = CreateSessionsTable()
 
 	return dh
 }
@@ -132,73 +110,24 @@ func (db *DatabaseHandler) IsValidCredentials(username string, password string) 
 	return db.Users.IsValidCredentials(username, password)
 }
 
-
-
 // Returns the cookie value and an error value
 func (db *DatabaseHandler) CreateSession(username string, permissionLevel int) (string, error) {
-	db.Lock()
-	defer db.Unlock()
-
-	cookieValue, err := jutil.RandomString(32)
-	if err != nil {
-		return "", err
-	}
-
-	db.userSessions[cookieValue] = session{username, permissionLevel, time.Now().Unix()}
-
-	log.Printf("%v", db.userSessions)
-
-	return cookieValue, nil
+	return db.userSessions.CreateSession(username, permissionLevel)
 }
 
 // Checks database for session
 // Purges expired sessions if value is found
-// in database but is expired. This is 
+// in database but is expired. This is
 // kind of a lazy approach to cleaning the database.
 // A secondary trigger is needed to prevent the database
-// from exploding in size in ideal operating conditions 
+// from exploding in size in ideal operating conditions
 // (when all cookies are time valid).
 func (db *DatabaseHandler) ValidateSession(cookieValue string) (bool, int) {
-	db.RLock()
-	defer db.RUnlock()
-
-	if val, ok := db.userSessions[cookieValue]; ok {
-		// Check if session is expired
-		if (time.Now().Unix() - val.creationTime) > db.sessionLifetime {
-				// Purge old sessions from database
-				go db.CleanSessions()
-				return false, 0
-		}
-
-		return true, val.permissionLevel
-	}
-
-
-	return false, 0
+	return db.userSessions.ValidateSession(cookieValue)
 }
 
-func (db *DatabaseHandler) DeleteSession(cookieValue string)  {
-	db.Lock()
-	defer db.Unlock()
-
-	if _, ok := db.userSessions[cookieValue]; ok {
-		delete(db.userSessions, cookieValue)
-	}
-}
-
-// Removes expired sessions from the database
-// Called when a session value queried is found 
-// to be invalid and once an hour
-func (db *DatabaseHandler) CleanSessions() {
-	db.Lock()
-	defer db.Unlock()
-
-	checkTime := time.Now().Unix()
-	for cookieValue, data := range db.userSessions {
-		if (checkTime - data.creationTime) > db.sessionLifetime {
-			delete(db.userSessions, cookieValue)
-		}
-	}
+func (db *DatabaseHandler) DeleteSession(cookieValue string) {
+	db.userSessions.DeleteSession(cookieValue)
 }
 
 // HTTP Handler for login route
@@ -236,9 +165,9 @@ func (db *DatabaseHandler) LoginUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	cookie := http.Cookie{
-		Name: "jablko-session",
-		Value: cookieVal,
-		MaxAge: int(db.sessionLifetime),
+		Name:   "jablko-session",
+		Value:  cookieVal,
+		MaxAge: int(db.userSessions.SessionLifetime),
 	}
 
 	http.SetCookie(w, &cookie)
