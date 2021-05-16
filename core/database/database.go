@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sync"
 
 	//"golang.org/x/crypto/bcrypt"
@@ -51,12 +52,65 @@ func CreateDatabaseHandler() *DatabaseHandler {
 	return dh
 }
 
+func (db *DatabaseHandler) InitEmptyDatabase() {
+	username := ""
+	log.Printf("ASDASD123")
+
+	for {
+		fmt.Printf("Enter username for admin user: ")
+		_, err := fmt.Scanln(&username)
+		if err != nil {
+			fmt.Printf("Error reading input: %v\n", err)
+		}
+
+		// Break if username input was accepted
+		if username != "" {
+			break
+		}
+	}
+
+	password := ""
+	for {
+		fmt.Printf("Enter password for admin user: ")
+		fmt.Printf("\033[8m") // Makes entered text invisible
+
+		_, err := fmt.Scanln(&password)
+		if err != nil {
+			fmt.Printf("Error reading input: %v\n", err)
+		}
+		fmt.Printf("\033[0m")
+
+		// Break if password passes
+		if len(password) >= 12 {
+			break
+		}
+
+		fmt.Printf("Password too short\n")
+	}
+
+	err := db.CreateUser(username, password, 1)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to create admin user in empty database")
+
+		panic(err)
+	}
+}
+
 // Loads existing database from JSON file
 func (db *DatabaseHandler) LoadDatabase(file string) error {
 	db.filePath = file
 
+	// Check if file exists, create if not
+	_, err := os.Stat(file)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("File does not exist")
+	}
+
 	b, err := ioutil.ReadFile(file)
 	if err != nil {
+		log.Printf("%v", err)
 		return err
 	}
 

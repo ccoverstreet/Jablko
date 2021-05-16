@@ -49,6 +49,23 @@ func (app *JablkoCoreApp) Init() error {
 		panic(err)
 	}
 
+	log.Info().Msg("Creating database handler...")
+	app.DBHandler = database.CreateDatabaseHandler()
+	err = app.DBHandler.LoadDatabase("./data/database.json")
+	if err != nil {
+		if err.Error() == "File does not exist" {
+			log.Warn().
+				Err(err).
+				Msg("Unable to load existing database. Defaulting to empty database")
+
+			// Initialize Empty Database
+			app.DBHandler.InitEmptyDatabase()
+		} else {
+			panic(err)
+		}
+	}
+	log.Info().Msg("Created database handler")
+
 	log.Info().Msg("Creating module manager...")
 	newModM, err := modmanager.NewModManager(sourceConf)
 	if err != nil {
@@ -56,16 +73,6 @@ func (app *JablkoCoreApp) Init() error {
 	}
 	app.ModM = newModM
 	log.Info().Msg("Created module manager")
-
-	log.Info().Msg("Creating database handler...")
-	app.DBHandler = database.CreateDatabaseHandler()
-	err = app.DBHandler.LoadDatabase("./data/database.json")
-	if err != nil {
-		log.Warn().
-			Err(err).
-			Msg("Unable to load existing database. Defaulting to empty database")
-	}
-	log.Info().Msg("Created database handler")
 
 	return nil
 }
@@ -195,7 +202,6 @@ func (app *JablkoCoreApp) AdminPageHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-
 	log.Printf("ADMIN PAGE HANDLER")
 	fmt.Fprintf(w, "%s", strings.Replace(string(b), "$JABLKO_TASKBAR", string(bTask), 1))
 }
@@ -258,7 +264,6 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 
 	return
 }
-
 
 func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
 	// Checks for JMOD_Source URL parameter
