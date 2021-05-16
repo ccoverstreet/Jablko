@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -46,6 +47,16 @@ func (app *JablkoCoreApp) Init() error {
 
 	sourceConf, _, _, err := jsonparser.Get(confByte, "sources")
 	if err != nil {
+		panic(err)
+	}
+
+	// Create data folder
+	// Is a fatal error if this fails
+	err = os.MkdirAll("./data", 0755)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to create data directory")
 		panic(err)
 	}
 
