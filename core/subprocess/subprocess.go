@@ -56,10 +56,13 @@ func (sub *Subprocess) MarshalJSON() ([]byte, error) {
 	return sub.Config, nil
 }
 
-func (sub *Subprocess) Start() error {
-	err := sub.Cmd.Start()
+func (sub *Subprocess) Start() {
+	err := sub.Cmd.Run()
 
-	return err
+	log.Warn().
+		Err(err).
+		Int("exitCode", sub.Cmd.ProcessState.ExitCode()).
+		Msg("Process exited")
 }
 
 func (sub *Subprocess) Build() error {

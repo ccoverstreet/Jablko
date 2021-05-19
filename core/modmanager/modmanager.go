@@ -68,13 +68,7 @@ func NewModManager(conf []byte) (*ModManager, error) {
 			continue
 		}
 
-		err = subProc.Start()
-		if err != nil {
-			log.Error().
-				Err(err).
-				Str("subprocess", key).
-				Msg("Unable to start subprocess")
-		}
+		go subProc.Start()
 	}
 
 	return newMM, nil
