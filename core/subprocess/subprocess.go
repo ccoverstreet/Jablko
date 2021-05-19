@@ -21,6 +21,8 @@ type Subprocess struct {
 	Port   int
 	Key    string
 	Config []byte
+	Dir    string
+	Env    []string
 }
 
 func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey string, dataDir string, config []byte) *Subprocess {
@@ -35,16 +37,18 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey st
 	sub.Port = processPort
 	sub.Key = jmodKey
 	sub.Config = config
-
-	sub.Cmd = exec.Command("./jablkostart.sh")
-	sub.Cmd.Dir = source
-	sub.Cmd.Env = []string{
+	sub.Dir = source
+	sub.Env = []string{
 		"JABLKO_CORE_PORT=" + strconv.Itoa(jablkoPort),
 		"JABLKO_MOD_PORT=" + strconv.Itoa(processPort),
 		"JABLKO_MOD_KEY=" + jmodKey,
 		"JABLKO_MOD_DATA_DIR=" + dataDir,
 		"JABLKO_MOD_CONFIG=" + string(config),
 	}
+
+	sub.Cmd = exec.Command("./jablkostart.sh")
+	sub.Cmd.Dir = sub.Dir
+	sub.Cmd.Env = sub.Env
 
 	sub.Cmd.Stdout = ColoredWriter{os.Stdout}
 	sub.Cmd.Stderr = ColoredWriter{os.Stderr}
@@ -63,6 +67,17 @@ func (sub *Subprocess) Start() {
 		Err(err).
 		Int("exitCode", sub.Cmd.ProcessState.ExitCode()).
 		Msg("Process exited")
+
+}
+
+func (sub *Subprocess) Restart() {
+	sub.Cmd = exec.Command("./jablkostart.sh")
+	sub.Cmd.Dir = sub.Dir
+	sub.Cmd.Env = sub.Env
+	sub.Cmd.Stdout = ColoredWriter{os.Stdout}
+	sub.Cmd.Stderr = ColoredWriter{os.Stderr}
+
+	go sub.Start()
 }
 
 func (sub *Subprocess) Build() error {
