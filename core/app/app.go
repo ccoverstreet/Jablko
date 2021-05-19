@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/buger/jsonparser"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 
@@ -36,23 +35,27 @@ func (app *JablkoCoreApp) Init() error {
 	app.initRouter()
 
 	// Read jablkoconfig.json
-	confByte, err := ioutil.ReadFile("./jablkoconfig.json")
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to read jablkoconfig.json")
+	/*
+		confByte, err := ioutil.ReadFile("./jablkoconfig.json")
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Unable to read jablkoconfig.json")
 
-		return err
-	}
+			return err
+		}
+	*/
 
+	/* not used right now
 	sourceConf, _, _, err := jsonparser.Get(confByte, "sources")
 	if err != nil {
 		panic(err)
 	}
+	*/
 
 	// Create data folder
 	// Is a fatal error if this fails
-	err = os.MkdirAll("./data", 0755)
+	err := os.MkdirAll("./data", 0755)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -77,8 +80,16 @@ func (app *JablkoCoreApp) Init() error {
 	}
 	log.Info().Msg("Created database handler")
 
+	// Load jmods.json for JMOD data
+	jmodData, err := ioutil.ReadFile("./jmods.json")
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("\"jmods.json\" not found. Starting with no JMODs initialized")
+	}
+
 	log.Info().Msg("Creating module manager...")
-	newModM, err := modmanager.NewModManager(sourceConf)
+	newModM, err := modmanager.NewModManager(jmodData)
 	if err != nil {
 		panic(err)
 	}
