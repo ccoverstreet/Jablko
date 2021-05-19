@@ -147,6 +147,8 @@ func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		// Pass through to modmanager routes from jmods
+		// This route is what JMODs use to request functions
+		// from Jablko Core.
 		if strings.HasPrefix(r.URL.String(), "/service") {
 			next.ServeHTTP(w, r)
 			return
