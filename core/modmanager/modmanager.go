@@ -87,7 +87,7 @@ func (mm *ModManager) SaveConfigToFile() {
 	log.Info().
 		Msg("Saving JMOD data to jmods.json")
 
-	configByte, err := json.Marshal(mm.ProcMap)
+	configByte, err := json.MarshalIndent(mm.ProcMap, "", "    ")
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -96,6 +96,15 @@ func (mm *ModManager) SaveConfigToFile() {
 	}
 
 	log.Printf("%s", configByte)
+
+	err = ioutil.WriteFile("./jmods.json", configByte, 0666)
+
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to save jmods.json")
+	}
 }
 
 func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
@@ -133,6 +142,8 @@ func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, stri
 
 	return false, ""
 }
+
+// ---------- Routes called by JMODs ----------
 
 func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	// Uses the JMOD-KEY and PORT-NUMBER assigned to each
