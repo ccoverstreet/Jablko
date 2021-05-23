@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go build -o tester .
+go build -o jablkomod .

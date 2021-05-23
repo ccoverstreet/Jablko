@@ -47,6 +47,24 @@ function getUserList() {
 		});
 }
 
+function stopJMOD() {
+	const jmodName = document.getElementById("jmod-stop-input").value;
+
+	fetch("/admin/stopJMOD", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({jmodName})
+	})
+		.then(async data => {
+			console.log(await data.text());
+		})
+		.catch(err => {
+			console.error(err);
+		});
+}
+
 function createUser(event) {
 	if (event.key != "Enter") {
 		return;
@@ -182,6 +200,8 @@ document.addEventListener("DOMContentLoaded", function() {
 			</div>
 			<div id="panel-switcher-content">
 				<div id="jmod-settings-panel">
+					<input id="jmod-stop-input"></input>
+					<button onclick="stopJMOD()">Stop JMOD</button>
 					<div>
 						<h2>Installed JMODs</h2>
 						<div>

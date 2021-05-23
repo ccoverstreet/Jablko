@@ -9,14 +9,17 @@
 package subprocess
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
+	"sync"
 
 	"github.com/rs/zerolog/log"
 )
 
 type Subprocess struct {
+	sync.Mutex
 	Cmd    *exec.Cmd
 	Port   int
 	Key    string
@@ -46,18 +49,23 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey st
 		"JABLKO_MOD_CONFIG=" + string(config),
 	}
 
-	sub.Cmd = exec.Command("./jablkostart.sh")
-	sub.Cmd.Dir = sub.Dir
-	sub.Cmd.Env = sub.Env
-
-	sub.Cmd.Stdout = ColoredWriter{os.Stdout}
-	sub.Cmd.Stderr = ColoredWriter{os.Stderr}
+	sub.GenerateCMD()
 
 	return sub
 }
 
 func (sub *Subprocess) MarshalJSON() ([]byte, error) {
 	return sub.Config, nil
+}
+
+// Copies parameters stored in the subprocess into a
+// new exec.Cmd and sets the environment
+func (sub *Subprocess) GenerateCMD() {
+	sub.Cmd = exec.Command("./jablkostart.sh")
+	sub.Cmd.Dir = sub.Dir
+	sub.Cmd.Env = sub.Env
+	sub.Cmd.Stdout = ColoredWriter{os.Stdout}
+	sub.Cmd.Stderr = ColoredWriter{os.Stderr}
 }
 
 func (sub *Subprocess) Start() {
@@ -72,17 +80,19 @@ func (sub *Subprocess) Start() {
 		Int("exitCode", sub.Cmd.ProcessState.ExitCode()).
 		Msg("Process exited")
 
-	sub.Restart()
+	sub.Lock()
+	defer sub.Unlock()
 }
 
-func (sub *Subprocess) Restart() {
-	sub.Cmd = exec.Command("./jablkostart.sh")
-	sub.Cmd.Dir = sub.Dir
-	sub.Cmd.Env = sub.Env
-	sub.Cmd.Stdout = ColoredWriter{os.Stdout}
-	sub.Cmd.Stderr = ColoredWriter{os.Stderr}
+func (sub *Subprocess) Stop() error {
+	sub.Lock()
+	defer sub.Unlock()
 
-	go sub.Start()
+	if sub.Cmd.ProcessState != nil {
+		return fmt.Errorf("Process already stopped")
+	}
+
+	return sub.Cmd.Process.Kill()
 }
 
 func (sub *Subprocess) Build() error {

@@ -32,10 +32,11 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	log.Printf("%d", permissionLevel)
 	vars := mux.Vars(r)
 
 	switch vars["func"] {
+	case "stopJMOD":
+		app.stopJMOD(w, r)
 	case "getUserList":
 		app.getUserList(w, r)
 	case "createUser":
@@ -65,6 +66,49 @@ func (app *JablkoCoreApp) getUserList(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, "%s", body)
+}
+
+func (app *JablkoCoreApp) stopJMOD(w http.ResponseWriter, r *http.Request) {
+	type stopData struct {
+		JMODName string `json:"jmodName"`
+	}
+
+	var reqData stopData
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	err = json.Unmarshal(reqBody, &reqData)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	err = app.ModM.StopJMOD(reqData.JMODName)
+
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Str("source", reqData.JMODName).
+			Msg("Unable to stop JMOD")
+
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	log.Info().
+		Str("source", reqData.JMODName).
+		Msg("Stopped JMOD")
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
@@ -98,9 +142,6 @@ func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Invalid request body format")
 		return
 	}
-
-	log.Printf("%s", reqBody)
-	log.Printf("%v", data)
 
 	err = app.DBHandler.CreateUser(data.Username, data.Password, 0)
 

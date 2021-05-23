@@ -89,8 +89,6 @@ func (mm *ModManager) SaveConfigToFile() {
 			Msg("Unable to marshal mod manager")
 	}
 
-	log.Printf("%s", configByte)
-
 	err = ioutil.WriteFile("./jmods.json", configByte, 0666)
 
 	if err != nil {
@@ -124,17 +122,15 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 	proxy.ServeHTTP(w, r)
 }
 
-func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, string) {
-	mm.RLock()
-	defer mm.RUnlock()
+func (mm *ModManager) StopJMOD(jmodName string) error {
+	mm.Lock()
+	defer mm.Unlock()
 
-	for key, jmod := range mm.ProcMap {
-		if jmod.Port == portNumber && jmod.Key == jmodKey {
-			return true, key
-		}
+	if subProc, ok := mm.ProcMap[jmodName]; ok {
+		return subProc.Stop()
 	}
 
-	return false, ""
+	return fmt.Errorf("JMOD not found")
 }
 
 // ---------- Routes called by JMODs ----------
@@ -143,8 +139,6 @@ func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	// Uses the JMOD-KEY and PORT-NUMBER assigned to each
 	// JMOD for authentication. JMODs can save their configs
 	// or retrieve information
-
-	log.Printf("ASDASDASD")
 
 	// Check JMOD-KEY header value
 	keyValue := r.Header.Get("JMOD-KEY")
@@ -181,6 +175,19 @@ func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Invalid function requested")
 	}
+}
+
+func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, string) {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	for key, jmod := range mm.ProcMap {
+		if jmod.Port == portNumber && jmod.Key == jmodKey {
+			return true, key
+		}
+	}
+
+	return false, ""
 }
 
 func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modName string) {
