@@ -25,10 +25,12 @@ class JMODEntry extends HTMLElement {
 
 #config-editor-panel {
 	display: flex;
+	flex-wrap: wrap;
 	width: 100%;
+	justify-content: flex-end;
 }
-#config-editor-panel > textarea {
-	flex: 1;
+#config-editor {
+	width:100%;
 	height: 7em;
 	background-color: var(--clr-surface-1);
 	color: var(--clr-font-high);
@@ -42,6 +44,8 @@ class JMODEntry extends HTMLElement {
 
 	<div id="config-editor-panel" style="display:none;">
 		<textarea id="config-editor"></textarea>
+		<button>Apply</button>
+		<button style="border-color: var(--clr-red)">Cancel</button>
 	</div>
 </div>
 		`

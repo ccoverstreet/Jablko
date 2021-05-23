@@ -78,12 +78,16 @@
 
 		#jmod-entry-holder {
 			display: flex;
+			flex-direction: column;
 			flex-wrap: wrap;
-			align-items: stretch;
+			justify-content: center;
+			align-items: center;
 			width: 100%;
 		}
 		#jmod-entry-holder > * {
-			flex: 1 1 20em;
+			flex: 1 1;
+			max-width: 30em;
+			width: 100%;
 			padding: 0.1em;
 		}
 
