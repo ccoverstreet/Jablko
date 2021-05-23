@@ -382,6 +382,15 @@ func (app *JablkoCoreApp) AssetsHandler(w http.ResponseWriter, r *http.Request) 
 
 		w.Header().Set("Content-Type", "text/css")
 		fmt.Fprintf(w, "%s", b)
+	case "admin.js":
+		b, err := ioutil.ReadFile("./html/admin.js")
+		if err != nil {
+			flagFail = true
+			break
+		}
+
+		w.Header().Set("Content-Type", "text/javascript")
+		fmt.Fprintf(w, "%s", b)
 	default:
 		flagFail = true
 	}

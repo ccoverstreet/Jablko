@@ -122,6 +122,30 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 	proxy.ServeHTTP(w, r)
 }
 
+func (mm *ModManager) JMODData() ([]byte, error) {
+	mm.Lock()
+	defer mm.Unlock()
+
+	return json.Marshal(mm.ProcMap)
+}
+
+func (mm *ModManager) StartJMOD(jmodName string) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if subProc, ok := mm.ProcMap[jmodName]; ok {
+		if subProc.Cmd.ProcessState == nil {
+			return fmt.Errorf("JMOD still running")
+		}
+
+		subProc.GenerateCMD()
+		go subProc.Start()
+		return nil
+	}
+
+	return fmt.Errorf("JMOD not found")
+}
+
 func (mm *ModManager) StopJMOD(jmodName string) error {
 	mm.Lock()
 	defer mm.Unlock()
