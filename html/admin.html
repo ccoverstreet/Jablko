@@ -24,95 +24,8 @@
 					buttons[i].style.borderColor = "var(--clr-font-high)";
 				}
 			}	
-
-function getUserList() {
-	fetch("/admin/getUserList", {
-		method: "POST"
-	})
-		.then(async data => {
-			const res = await data.json();
-			const holder = document.getElementById("user-list");
-
-			holder.innerHTML = "";
-
-			for (user of res) {
-				const userDisplay = document.createElement("p");
-				userDisplay.textContent = "- " + user;
-
-				holder.appendChild(userDisplay);
-			}
-		})
-		.catch(err => {
-			console.error(err);
-		});
-}
-
-function createUser(event) {
-	if (event.key != "Enter") {
-		return;
-	}
-
-	const username = document.getElementById("create-user-username").value;
-	const password1 = document.getElementById("create-user-password1").value;
-	const password2 = document.getElementById("create-user-password2").value;
-
-	if (password1 !== password2) {
-		console.error(new Error("Passwords do not match"));
-		alert("Passwords do not match");
-		return
-	}
-
-	event.preventDefault();
-
-	fetch("/admin/createUser", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({username, password: password1})
-	})
-		.then(async data => {
-			console.log(await data.text());
-			getUserList()
-		})
-		.catch(err => {
-			console.log(err);
-			console.error(err);
-		})
-}
-
-function deleteUser(event) {
-	if (event.key != "Enter") {
-		return;
-	}
-
-	event.preventDefault();
-
-	const username = document.getElementById("delete-user-username").value;
-
-	fetch("/admin/deleteUser", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({username})
-	})
-		.then(async data => {
-			console.log(await data.text());
-			getUserList()
-		})
-		.catch(err => {
-			console.log(err);
-			console.error(err);
-		})
-}
-
-
-
-document.addEventListener("DOMContentLoaded", function() {
-	getUserList();
-})
 		</script>
+		<script src="/assets/admin.js"></script>
 	</head>
 	<style>
 		#panel-switcher {
@@ -124,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			background-color: var(--clr-surface-2);
 		}
 		#panel-switcher-header > button {
+			flex: 1;
 			margin: 0px;
 			border: solid;
 			border-width: 0.2em;
@@ -162,6 +76,17 @@ document.addEventListener("DOMContentLoaded", function() {
 			justify-content: center;
 		}
 
+		#jmod-entry-holder {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: stretch;
+			width: 100%;
+		}
+		#jmod-entry-holder > * {
+			flex: 1 1 20em;
+			padding: 0.1em;
+		}
+
 		#user-settings-panel {
 			display: flex;
 			flex-wrap: wrap;
@@ -177,17 +102,17 @@ document.addEventListener("DOMContentLoaded", function() {
 		$JABLKO_TASKBAR
 		<div id="panel-switcher">
 			<div id="panel-switcher-header">
-				<button onclick="switchPanel('jmod-settings-panel')">JMODS</button>
+				<button onclick="switchPanel('jmod-settings-panel')" style="border-color: var(--clr-green)">JMODS</button>
 				<button onclick="switchPanel('user-settings-panel')">Users</button>
 			</div>
+
+			<hr style="border-color: var(--clr-font-high)">
+
 			<div id="panel-switcher-content">
 				<div id="jmod-settings-panel">
-					<div>
-						<h2>Installed JMODs</h2>
-						<div>
-						</div>
-					</div>
+					<div id="jmod-entry-holder"></div>
 				</div>
+
 
 				<div id="user-settings-panel" style="display: none">
 					<div>

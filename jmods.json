@@ -1,0 +1,22 @@
+{
+    "/home/coverstreet/Coding/Jablko_Home/My_Mods/Jarmuz-RGB-Light": {
+        "instances": {
+            "inst1": {
+                "lightIPs": [
+                    "10.0.0.43"
+                ]
+            }
+        }
+    },
+    "builtin/test": {
+        "portUDP": 41000,
+        "instances": {
+            "inst0": {
+                "value": 32
+            },
+            "inst1": {
+                "value": 32
+            }
+        }
+    }
+}

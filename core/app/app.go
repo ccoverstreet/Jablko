@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/buger/jsonparser"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 
@@ -36,23 +35,27 @@ func (app *JablkoCoreApp) Init() error {
 	app.initRouter()
 
 	// Read jablkoconfig.json
-	confByte, err := ioutil.ReadFile("./jablkoconfig.json")
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to read jablkoconfig.json")
+	/*
+		confByte, err := ioutil.ReadFile("./jablkoconfig.json")
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Unable to read jablkoconfig.json")
 
-		return err
-	}
+			return err
+		}
+	*/
 
+	/* not used right now
 	sourceConf, _, _, err := jsonparser.Get(confByte, "sources")
 	if err != nil {
 		panic(err)
 	}
+	*/
 
 	// Create data folder
 	// Is a fatal error if this fails
-	err = os.MkdirAll("./data", 0755)
+	err := os.MkdirAll("./data", 0755)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -77,8 +80,16 @@ func (app *JablkoCoreApp) Init() error {
 	}
 	log.Info().Msg("Created database handler")
 
+	// Load jmods.json for JMOD data
+	jmodData, err := ioutil.ReadFile("./jmods.json")
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("\"jmods.json\" not found. Starting with no JMODs initialized")
+	}
+
 	log.Info().Msg("Creating module manager...")
-	newModM, err := modmanager.NewModManager(sourceConf)
+	newModM, err := modmanager.NewModManager(jmodData)
 	if err != nil {
 		panic(err)
 	}
@@ -100,6 +111,7 @@ func (app *JablkoCoreApp) initRouter() {
 	router.HandleFunc("/logout", app.LogoutHandler).Methods("GET", "POST")
 	router.HandleFunc("/admin", app.AdminPageHandler).Methods("GET", "POST")
 	router.HandleFunc("/admin/{func}", app.AdminFuncHandler).Methods("GET", "POST")
+	router.HandleFunc("/service/{func}", app.ServiceHandler).Methods("GET", "POST")
 	router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
 	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
@@ -130,6 +142,14 @@ func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 
 		// Allow login requests to go through
 		if strings.HasPrefix(r.URL.String(), "/login") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Pass through to modmanager routes from jmods
+		// This route is what JMODs use to request functions
+		// from Jablko Core.
+		if strings.HasPrefix(r.URL.String(), "/service") {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -214,8 +234,11 @@ func (app *JablkoCoreApp) AdminPageHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	log.Printf("ADMIN PAGE HANDLER")
 	fmt.Fprintf(w, "%s", strings.Replace(string(b), "$JABLKO_TASKBAR", string(bTask), 1))
+}
+
+func (app *JablkoCoreApp) ServiceHandler(w http.ResponseWriter, r *http.Request) {
+	app.ModM.ServiceHandler(w, r)
 }
 
 func errHandlerDashboard(w http.ResponseWriter, r *http.Request) {
@@ -358,6 +381,15 @@ func (app *JablkoCoreApp) AssetsHandler(w http.ResponseWriter, r *http.Request) 
 		}
 
 		w.Header().Set("Content-Type", "text/css")
+		fmt.Fprintf(w, "%s", b)
+	case "admin.js":
+		b, err := ioutil.ReadFile("./html/admin.js")
+		if err != nil {
+			flagFail = true
+			break
+		}
+
+		w.Header().Set("Content-Type", "text/javascript")
 		fmt.Fprintf(w, "%s", b)
 	default:
 		flagFail = true

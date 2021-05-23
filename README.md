@@ -10,7 +10,7 @@ Jablko is a smart home system written in Go that is extendible by user created J
 
 Different architectures are currently being tested. The master branch represents a Go only version using go plugins that are dynamically loaded. This design has the downside that the plugins have be built using the exact same dev setup and forces the restart of the main Jablko process if a module needs to be reloaded. 
 
-An alternative, microservice-esque design is being developed to evaluate performance, scalability, and maintainability. The goal of this design is to decouple the actions of individual modules from the core Jablko process. In this design, Jablko acts more like a reverse-proxy layer that distributes instance, user, and request data to corresponding services. This design forces the design constraint that all module instances' state be stored as a JSON string/object. This is to prevent each service from maintaining some form of state associated with the module. 
+An alternative, microservice-esque design is being developed to evaluate performance, scalability, and maintainability. The goal of this design is to decouple the actions of individual modules from the core Jablko process. In this design, Jablko acts more like a reverse-proxy layer that handles user authentication and provides a common target for jablko mods. Having a Jablko as the common framework that modules can call interact with makes it easier to provide a front-end for each module.
 
 ## Installing
 

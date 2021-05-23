@@ -2,6 +2,9 @@ package jutil
 
 import (
 	"crypto/rand"
+	"encoding/json"
+	"io"
+	"io/ioutil"
 	"math/big"
 )
 
@@ -20,4 +23,14 @@ func RandomString(n int) (string, error) {
 	}
 
 	return string(res), nil
+}
+
+func ParseJSONBody(body io.ReadCloser, dataStruct interface{}) error {
+	b, err := ioutil.ReadAll(body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(b, dataStruct)
+	return err
 }

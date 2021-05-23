@@ -8,76 +8,95 @@
 package modmanager
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
-	"bytes"
+	"sync"
 
-	"github.com/rs/zerolog/log"
 	"github.com/buger/jsonparser"
+	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 
-	"github.com/ccoverstreet/Jablko/core/subprocess"
 	"github.com/ccoverstreet/Jablko/core/jutil"
+	"github.com/ccoverstreet/Jablko/core/subprocess"
 )
 
 type ModManager struct {
-	ConfigMap map[string][]byte
+	sync.RWMutex
 	ProcMap map[string]*subprocess.Subprocess
 }
 
-var curPort = 8081
+var curPort = 44100
 
 func NewModManager(conf []byte) (*ModManager, error) {
 	newMM := new(ModManager)
-	newMM.ConfigMap = make(map[string][]byte)
 	newMM.ProcMap = make(map[string]*subprocess.Subprocess)
 
+	// Creates subprocesses for all
 	parseConfObj := func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
-		newMM.ConfigMap[string(key)] = value
-		return nil
-	}
-
-	jsonparser.ObjectEach(conf, parseConfObj)
-
-	// Try to start all subprocesses
-	for key, conf := range newMM.ConfigMap {
-		// This will jmodKey generation will be moved to database
 		jmodKey, err := jutil.RandomString(32)
 		if err != nil {
 			log.Error().
 				Err(err).
 				Msg("Unable to generate random string for jmodKey")
 
-			continue
+			panic(err)
 		}
 
-		newSub, err := subprocess.CreateSubprocess(key, 8080, curPort, jmodKey, "./data", conf)
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Unable to create subprocess")
-			continue
-		}
+		newMM.ProcMap[string(key)] = subprocess.CreateSubprocess(string(key), 8080, curPort, jmodKey, "./data", value)
 		curPort += 1
-
-		err = newSub.Build()
-
-		err = newSub.Start()
-		if err != nil {
-			log.Error().
-				Err(err).
-				Str("subprocess", key).
-				Msg("Unable to start subprocess")
-
-			continue
-		}
-
-		newMM.ProcMap[key] = newSub
+		return nil
 	}
 
-	return newMM, nil;
+	jsonparser.ObjectEach(conf, parseConfObj)
+
+	// Try to start all subprocesses
+	for key, subProc := range newMM.ProcMap {
+		err := subProc.Build()
+		if err != nil {
+			log.Error().
+				Err(err).
+				Caller().
+				Str("JMOD", key).
+				Msg("Unable to build JMOD")
+
+			continue
+		}
+
+		go subProc.Start()
+	}
+
+	return newMM, nil
+}
+
+func (mm *ModManager) SaveConfigToFile() {
+	mm.Lock()
+	defer mm.Unlock()
+
+	log.Info().
+		Msg("Saving JMOD data to jmods.json")
+
+	configByte, err := json.MarshalIndent(mm.ProcMap, "", "    ")
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to marshal mod manager")
+	}
+
+	err = ioutil.WriteFile("./jmods.json", configByte, 0666)
+
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to save jmods.json")
+	}
 }
 
 func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
@@ -101,4 +120,111 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
 
 	proxy.ServeHTTP(w, r)
+}
+
+func (mm *ModManager) JMODData() ([]byte, error) {
+	mm.Lock()
+	defer mm.Unlock()
+
+	return json.Marshal(mm.ProcMap)
+}
+
+func (mm *ModManager) StartJMOD(jmodName string) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if subProc, ok := mm.ProcMap[jmodName]; ok {
+		if subProc.Cmd.ProcessState == nil {
+			return fmt.Errorf("JMOD still running")
+		}
+
+		subProc.GenerateCMD()
+		go subProc.Start()
+		return nil
+	}
+
+	return fmt.Errorf("JMOD not found")
+}
+
+func (mm *ModManager) StopJMOD(jmodName string) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if subProc, ok := mm.ProcMap[jmodName]; ok {
+		return subProc.Stop()
+	}
+
+	return fmt.Errorf("JMOD not found")
+}
+
+// ---------- Routes called by JMODs ----------
+
+func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
+	// Uses the JMOD-KEY and PORT-NUMBER assigned to each
+	// JMOD for authentication. JMODs can save their configs
+	// or retrieve information
+
+	// Check JMOD-KEY header value
+	keyValue := r.Header.Get("JMOD-KEY")
+	if keyValue == "" {
+		log.Error().
+			Msg("Empty JMOD-KEY")
+
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Empty JMOD-KEY")
+		return
+	}
+
+	portValueStr := r.Header.Get("JMOD-PORT")
+	portValue, err := strconv.Atoi(portValueStr)
+	if portValueStr == "" || err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid JMOD-PORT")
+		return
+	}
+
+	isValid, modName := mm.IsValidService(keyValue, portValue)
+	if !isValid {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Specified service doesn't exist")
+		return
+	}
+
+	vars := mux.Vars(r)
+
+	switch vars["func"] {
+	case "saveConfig":
+		mm.saveModConfig(w, r, modName)
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid function requested")
+	}
+}
+
+func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, string) {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	for key, jmod := range mm.ProcMap {
+		if jmod.Port == portNumber && jmod.Key == jmodKey {
+			return true, key
+		}
+	}
+
+	return false, ""
+}
+
+func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modName string) {
+	newConfigByte, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to read body")
+		return
+	}
+
+	fmt.Println("ASDJAJSSAJDSJ DMOD ASMDASD")
+
+	mm.ProcMap[modName].Config = newConfigByte
+
+	go mm.SaveConfigToFile()
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -33,9 +34,12 @@ type stateUDP struct {
 	Data string
 }
 
-// Global instances
+// Global data
 var curConfig testConfig
 var curStateUDP = stateUDP{sync.Mutex{}, "Startup Message"}
+var jablkoCorePort string
+var jablkoModPort string
+var jablkoModKey string
 
 func main() {
 	curConfig.Instances = make(map[string]testInstance)
@@ -48,10 +52,15 @@ func main() {
 	// Application Routes
 	router.HandleFunc("/jmod/socket", SocketHandler)        // Application route for WebSockets
 	router.HandleFunc("/jmod/getUDPState", UDPStateHandler) // Simple GET for UDP Server State
+	router.HandleFunc("/jmod/testConfigSave", TestConfigSave)
 
 	// Pull in port for running HTTP server that communicates with Jablko
 	port := os.Getenv("JABLKO_MOD_PORT")
 	log.Println(port)
+
+	jablkoCorePort = os.Getenv("JABLKO_CORE_PORT")
+	jablkoModPort = os.Getenv("JABLKO_MOD_PORT")
+	jablkoModKey = os.Getenv("JABLKO_MOD_KEY")
 
 	// Pull in config from environment variable and marshal into
 	// state struct
@@ -180,4 +189,33 @@ func UDPServer(port int) {
 
 		log.Println("From Client:", string(buf[0:n]))
 	}
+}
+
+// Marshals current state into JSON string and sends
+// to Jablko. Jablko then saves the updated data to the config
+// file
+func TestConfigSave(w http.ResponseWriter, r *http.Request) {
+	curConfig.Lock()
+	defer curConfig.Unlock()
+
+	b, err := json.Marshal(curConfig)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Couldn't marshal state to string")
+		return
+	}
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("POST", "http://localhost:"+jablkoCorePort+"/service/saveConfig", bytes.NewBuffer(b))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Couldn't create http request")
+		return
+	}
+
+	req.Header.Add("JMOD-KEY", jablkoModKey)
+	req.Header.Add("JMOD-PORT", jablkoModPort)
+
+	client.Do(req)
 }

@@ -3,10 +3,10 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 
+	"github.com/ccoverstreet/Jablko/core/jutil"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
@@ -32,10 +32,15 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	log.Printf("%d", permissionLevel)
 	vars := mux.Vars(r)
 
 	switch vars["func"] {
+	case "getJMODData":
+		app.getJMODData(w, r)
+	case "startJMOD":
+		app.startJMOD(w, r)
+	case "stopJMOD":
+		app.stopJMOD(w, r)
 	case "getUserList":
 		app.getUserList(w, r)
 	case "createUser":
@@ -46,6 +51,100 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Invalid admin function requested")
 	}
+}
+
+func (app *JablkoCoreApp) getJMODData(w http.ResponseWriter, r *http.Request) {
+	data, err := app.ModM.JMODData()
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to get JMOD data")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	log.Printf("%s", data)
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, "%s", data)
+}
+
+func (app *JablkoCoreApp) startJMOD(w http.ResponseWriter, r *http.Request) {
+	type startData struct {
+		JMODName string `json:"jmodName"`
+	}
+
+	var reqData startData
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	err = app.ModM.StartJMOD(reqData.JMODName)
+
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Str("source", reqData.JMODName).
+			Msg("Unable to start JMOD")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	log.Info().
+		Str("source", reqData.JMODName).
+		Msg("Started JMOD")
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Started jmod")
+}
+
+func (app *JablkoCoreApp) stopJMOD(w http.ResponseWriter, r *http.Request) {
+	type stopData struct {
+		JMODName string `json:"jmodName"`
+	}
+
+	var reqData stopData
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	err = app.ModM.StopJMOD(reqData.JMODName)
+
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Str("source", reqData.JMODName).
+			Msg("Unable to stop JMOD")
+
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	log.Info().
+		Str("source", reqData.JMODName).
+		Msg("Stopped JMOD")
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Stopped jmod")
 }
 
 func (app *JablkoCoreApp) getUserList(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +174,8 @@ func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
 
 	var data submittedData
 
-	reqBody, err := ioutil.ReadAll(r.Body)
+	err := jutil.ParseJSONBody(r.Body, &data)
+
 	if err != nil {
 		log.Error().
 			Caller().
@@ -83,24 +183,9 @@ func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
 			Msg("Unable to read request body")
 
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Bad request body")
+		fmt.Fprintf(w, "%v", err)
 		return
 	}
-
-	err = json.Unmarshal(reqBody, &data)
-	if err != nil {
-		log.Error().
-			Caller().
-			Err(err).
-			Msg("Unable to read request body")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid request body format")
-		return
-	}
-
-	log.Printf("%s", reqBody)
-	log.Printf("%v", data)
 
 	err = app.DBHandler.CreateUser(data.Username, data.Password, 0)
 
@@ -120,7 +205,14 @@ func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *JablkoCoreApp) deleteUser(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
+	type delUserBody struct {
+		Username string `json:"username"`
+	}
+
+	var reqData delUserBody
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -128,29 +220,11 @@ func (app *JablkoCoreApp) deleteUser(w http.ResponseWriter, r *http.Request) {
 			Msg("Unable to read body for admin/deleteUser")
 
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Unable to read body for admin/deleteUser")
+		fmt.Fprintf(w, "%v", err)
 		return
 	}
 
-	type delUserBody struct {
-		Username string `json:"username"`
-	}
-
-	var body delUserBody
-
-	err = json.Unmarshal(reqBody, &body)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Caller().
-			Msg("Unable to parse body for admin/deleteUser")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Unable to parse body for admin/deleteUser")
-		return
-	}
-
-	err = app.DBHandler.DeleteUser(body.Username)
+	err = app.DBHandler.DeleteUser(reqData.Username)
 
 	if err != nil {
 		log.Error().
