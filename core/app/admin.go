@@ -41,6 +41,8 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 		app.startJMOD(w, r)
 	case "stopJMOD":
 		app.stopJMOD(w, r)
+	case "applyJMODConfig":
+		app.applyJMODConfig(w, r)
 	case "getUserList":
 		app.getUserList(w, r)
 	case "createUser":
@@ -145,6 +147,77 @@ func (app *JablkoCoreApp) stopJMOD(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Stopped jmod")
+}
+
+func (app *JablkoCoreApp) applyJMODConfig(w http.ResponseWriter, r *http.Request) {
+	type jmodConfig struct {
+		JMODName  string `json:"jmodName"`
+		NewConfig string `json:"newConfig"`
+	}
+
+	var newConfig jmodConfig
+
+	err := jutil.ParseJSONBody(r.Body, &newConfig)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to parse JSON body for JMOD config")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to parse JSON body: %v", err)
+		return
+	}
+
+	if !json.Valid([]byte(newConfig.NewConfig)) {
+		log.Error().
+			Caller().
+			Msg("Invalid JSON string")
+
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid JSON")
+		return
+	}
+
+	err = app.ModM.SetJMODConfig(newConfig.JMODName, newConfig.NewConfig)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to set config")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to set JMOD config: %v", err)
+		return
+	}
+
+	// Restart the JMOD so that changes apply
+	err = app.ModM.StopJMOD(newConfig.JMODName)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to stop jmod")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to stop JMOD: %v", err)
+		return
+	}
+
+	err = app.ModM.StartJMOD(newConfig.JMODName)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Caller().
+			Msg("Unable to start JMOD")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to start JMOD: %v", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Applied new config")
 }
 
 func (app *JablkoCoreApp) getUserList(w http.ResponseWriter, r *http.Request) {

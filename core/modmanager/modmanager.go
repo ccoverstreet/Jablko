@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/buger/jsonparser"
 	"github.com/gorilla/mux"
@@ -134,8 +135,23 @@ func (mm *ModManager) StartJMOD(jmodName string) error {
 	defer mm.Unlock()
 
 	if subProc, ok := mm.ProcMap[jmodName]; ok {
+		subProc.Lock()
+		defer subProc.Unlock()
+
+		// Check for a three second period if process
+		// is still considered as running.
 		if subProc.Cmd.ProcessState == nil {
-			return fmt.Errorf("JMOD still running")
+			for i := 0; i < 3; i++ {
+				if subProc.Cmd.ProcessState != nil {
+					break
+				}
+
+				time.Sleep(1 * time.Second)
+			}
+
+			if subProc.Cmd.ProcessState == nil {
+				return fmt.Errorf("JMOD still running")
+			}
 		}
 
 		subProc.GenerateCMD()
@@ -152,6 +168,20 @@ func (mm *ModManager) StopJMOD(jmodName string) error {
 
 	if subProc, ok := mm.ProcMap[jmodName]; ok {
 		return subProc.Stop()
+	}
+
+	return fmt.Errorf("JMOD not found")
+}
+
+func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if proc, ok := mm.ProcMap[jmodName]; ok {
+		proc.Lock()
+		defer proc.Unlock()
+		proc.Config = []byte(newConfig)
+		return nil
 	}
 
 	return fmt.Errorf("JMOD not found")

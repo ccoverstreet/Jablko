@@ -20,12 +20,13 @@ import (
 
 type Subprocess struct {
 	sync.Mutex
-	Cmd    *exec.Cmd
-	Port   int
-	Key    string
-	Config []byte
-	Dir    string
-	Env    []string
+	Cmd      *exec.Cmd
+	Port     int
+	CorePort int
+	Key      string
+	Config   []byte
+	Dir      string
+	DataDir  string
 }
 
 func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey string, dataDir string, config []byte) *Subprocess {
@@ -38,16 +39,11 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey st
 
 	sub := new(Subprocess)
 	sub.Port = processPort
+	sub.CorePort = jablkoPort
 	sub.Key = jmodKey
 	sub.Config = config
 	sub.Dir = source
-	sub.Env = []string{
-		"JABLKO_CORE_PORT=" + strconv.Itoa(jablkoPort),
-		"JABLKO_MOD_PORT=" + strconv.Itoa(processPort),
-		"JABLKO_MOD_KEY=" + jmodKey,
-		"JABLKO_MOD_DATA_DIR=" + dataDir,
-		"JABLKO_MOD_CONFIG=" + string(config),
-	}
+	sub.DataDir = dataDir
 
 	sub.GenerateCMD()
 
@@ -63,7 +59,13 @@ func (sub *Subprocess) MarshalJSON() ([]byte, error) {
 func (sub *Subprocess) GenerateCMD() {
 	sub.Cmd = exec.Command("./jablkostart.sh")
 	sub.Cmd.Dir = sub.Dir
-	sub.Cmd.Env = sub.Env
+	sub.Cmd.Env = []string{
+		"JABLKO_CORE_PORT=" + strconv.Itoa(sub.CorePort),
+		"JABLKO_MOD_PORT=" + strconv.Itoa(sub.Port),
+		"JABLKO_MOD_KEY=" + sub.Key,
+		"JABLKO_MOD_DATA_DIR=" + sub.DataDir,
+		"JABLKO_MOD_CONFIG=" + string(sub.Config),
+	}
 	sub.Cmd.Stdout = ColoredWriter{os.Stdout}
 	sub.Cmd.Stderr = ColoredWriter{os.Stderr}
 }
@@ -74,14 +76,13 @@ func (sub *Subprocess) Start() {
 		Msg("Subprocess starting")
 
 	err := sub.Cmd.Run()
+	sub.Lock()
+	defer sub.Unlock()
 
 	log.Warn().
 		Err(err).
 		Int("exitCode", sub.Cmd.ProcessState.ExitCode()).
 		Msg("Process exited")
-
-	sub.Lock()
-	defer sub.Unlock()
 }
 
 func (sub *Subprocess) Stop() error {
