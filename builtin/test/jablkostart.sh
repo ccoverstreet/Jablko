@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec ./tester
+exec ./jablkomod
