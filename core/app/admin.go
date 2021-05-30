@@ -204,6 +204,13 @@ func (app *JablkoCoreApp) applyJMODConfig(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	err = app.ModM.SaveConfigToFile()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to save config: %v", err)
+		return
+	}
+
 	err = app.ModM.StartJMOD(newConfig.JMODName)
 	if err != nil {
 		log.Error().

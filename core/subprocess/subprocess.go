@@ -65,8 +65,8 @@ func (sub *Subprocess) generateCMD() {
 		"JABLKO_MOD_DATA_DIR=" + sub.DataDir,
 		"JABLKO_MOD_CONFIG=" + string(sub.Config),
 	}
-	sub.Cmd.Stdout = ColoredWriter{os.Stdout}
-	sub.Cmd.Stderr = ColoredWriter{os.Stderr}
+	sub.Cmd.Stdout = ColoredWriter{sub.Dir, os.Stdout}
+	sub.Cmd.Stderr = ColoredWriter{sub.Dir, os.Stderr}
 }
 
 func (sub *Subprocess) Start() error {

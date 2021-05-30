@@ -267,7 +267,6 @@ func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Reques
 	builderInstance := strings.Builder{}
 
 	for modSource, subProc := range app.ModM.ProcMap {
-		fmt.Printf("%s: %v\n", modSource, subProc)
 		b1, err := app.getWebComponent(subProc.ModPort)
 		if err != nil {
 			log.Warn().

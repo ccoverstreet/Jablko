@@ -75,7 +75,7 @@ func NewModManager(conf []byte) (*ModManager, error) {
 	return newMM, nil
 }
 
-func (mm *ModManager) SaveConfigToFile() {
+func (mm *ModManager) SaveConfigToFile() error {
 	mm.Lock()
 	defer mm.Unlock()
 
@@ -88,6 +88,8 @@ func (mm *ModManager) SaveConfigToFile() {
 			Err(err).
 			Caller().
 			Msg("Unable to marshal mod manager")
+
+		return err
 	}
 
 	err = ioutil.WriteFile("./jmods.json", configByte, 0666)
@@ -97,7 +99,11 @@ func (mm *ModManager) SaveConfigToFile() {
 			Err(err).
 			Caller().
 			Msg("Unable to save jmods.json")
+
+		return err
 	}
+
+	return nil
 }
 
 func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
@@ -140,17 +146,19 @@ func (mm *ModManager) StartJMOD(jmodName string) error {
 		// Check for a three second period if process
 		// is still considered as running. This is for
 		// handling restarts
-		if err.Error() == "Process is already started" {
-			for i := 0; i < 3; i++ {
-				log.Warn().
-					Str("jmodName", jmodName).
-					Msg("Retrying mod start")
+		if err != nil {
+			if err.Error() == "Process is already started" {
+				for i := 0; i < 3; i++ {
+					log.Warn().
+						Str("jmodName", jmodName).
+						Msg("Retrying mod start")
 
-				time.Sleep(1 * time.Second)
-				err = subProc.Start()
+					time.Sleep(1 * time.Second)
+					err = subProc.Start()
 
-				if err == nil {
-					break
+					if err == nil {
+						break
+					}
 				}
 			}
 		}
@@ -180,6 +188,7 @@ func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 		proc.Lock()
 		defer proc.Unlock()
 		proc.Config = []byte(newConfig)
+
 		return nil
 	}
 
