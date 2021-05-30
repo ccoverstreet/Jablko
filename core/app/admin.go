@@ -192,16 +192,20 @@ func (app *JablkoCoreApp) applyJMODConfig(w http.ResponseWriter, r *http.Request
 	}
 
 	// Restart the JMOD so that changes apply
-	err = app.ModM.StopJMOD(newConfig.JMODName)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Caller().
-			Msg("Unable to stop jmod")
+	// Check if JMOD is already stopped
+	isStopped := app.ModM.IsJMODStopped(newConfig.JMODName)
+	if !isStopped {
+		err = app.ModM.StopJMOD(newConfig.JMODName)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Caller().
+				Msg("Unable to stop jmod")
 
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Unable to stop JMOD: %v", err)
-		return
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Unable to stop JMOD: %v", err)
+			return
+		}
 	}
 
 	err = app.ModM.SaveConfigToFile()

@@ -136,6 +136,19 @@ func (mm *ModManager) JMODData() ([]byte, error) {
 	return json.Marshal(mm.ProcMap)
 }
 
+func (mm *ModManager) IsJMODStopped(jmodName string) bool {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if proc, ok := mm.ProcMap[jmodName]; ok {
+		if proc.Cmd.Process != nil && proc.Cmd.ProcessState != nil {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (mm *ModManager) StartJMOD(jmodName string) error {
 	mm.Lock()
 	defer mm.Unlock()
