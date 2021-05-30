@@ -25,10 +25,12 @@ class JMODEntry extends HTMLElement {
 
 #config-editor-panel {
 	display: flex;
+	flex-wrap: wrap;
 	width: 100%;
+	justify-content: flex-end;
 }
-#config-editor-panel > textarea {
-	flex: 1;
+#config-editor {
+	width:100%;
 	height: 7em;
 	background-color: var(--clr-surface-1);
 	color: var(--clr-font-high);
@@ -42,6 +44,8 @@ class JMODEntry extends HTMLElement {
 
 	<div id="config-editor-panel" style="display:none;">
 		<textarea id="config-editor"></textarea>
+		<button onclick="this.getRootNode().host.applyConfig();">Apply</button>
+		<button onclick="this.getRootNode().host.cancelConfigChange()" style="border-color: var(--clr-red)">Cancel</button>
 	</div>
 </div>
 		`
@@ -94,6 +98,33 @@ class JMODEntry extends HTMLElement {
 		} else {
 			editorPanel.style.display = "none";
 		}
+	}
+
+	applyConfig() {
+		const editor = this.shadowRoot.getElementById("config-editor");
+
+		fetch("/admin/applyJMODConfig", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				jmodName: this.jmodName,
+				newConfig: editor.value
+			})
+		})
+			.then(async data => {
+				console.log(await data.text());
+			})
+			.catch(err => {
+				console.error(err);
+				console.log(err);
+			});
+	}
+
+	cancelConfigChange() {
+		const editor = this.shadowRoot.getElementById("config-editor");
+		editor.value = JSON.stringify(this.config, null, "  ");
 	}
 }
 
