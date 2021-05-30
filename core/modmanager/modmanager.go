@@ -103,7 +103,7 @@ func (mm *ModManager) SaveConfigToFile() {
 func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 	source := r.FormValue("JMOD-Source")
 
-	modPort := mm.ProcMap[source].Port
+	modPort := mm.ProcMap[source].ModPort
 	url, _ := url.Parse("http://localhost:" + strconv.Itoa(modPort))
 	proxy := httputil.NewSingleHostReverseProxy(url)
 
@@ -135,28 +135,27 @@ func (mm *ModManager) StartJMOD(jmodName string) error {
 	defer mm.Unlock()
 
 	if subProc, ok := mm.ProcMap[jmodName]; ok {
-		subProc.Lock()
-		defer subProc.Unlock()
+		err := subProc.Start()
 
 		// Check for a three second period if process
-		// is still considered as running.
-		if subProc.Cmd.ProcessState == nil {
+		// is still considered as running. This is for
+		// handling restarts
+		if err.Error() == "Process is already started" {
 			for i := 0; i < 3; i++ {
-				if subProc.Cmd.ProcessState != nil {
-					break
-				}
+				log.Warn().
+					Str("jmodName", jmodName).
+					Msg("Retrying mod start")
 
 				time.Sleep(1 * time.Second)
-			}
+				err = subProc.Start()
 
-			if subProc.Cmd.ProcessState == nil {
-				return fmt.Errorf("JMOD still running")
+				if err == nil {
+					break
+				}
 			}
 		}
 
-		subProc.GenerateCMD()
-		go subProc.Start()
-		return nil
+		return err
 	}
 
 	return fmt.Errorf("JMOD not found")
@@ -189,10 +188,10 @@ func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 
 // ---------- Routes called by JMODs ----------
 
+// Uses the JMOD-KEY and PORT-NUMBER assigned to each
+// JMOD for authentication. JMODs can save their configs
+// or retrieve information
 func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
-	// Uses the JMOD-KEY and PORT-NUMBER assigned to each
-	// JMOD for authentication. JMODs can save their configs
-	// or retrieve information
 
 	// Check JMOD-KEY header value
 	keyValue := r.Header.Get("JMOD-KEY")
@@ -236,7 +235,7 @@ func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, stri
 	defer mm.RUnlock()
 
 	for key, jmod := range mm.ProcMap {
-		if jmod.Port == portNumber && jmod.Key == jmodKey {
+		if jmod.ModPort == portNumber && jmod.Key == jmodKey {
 			return true, key
 		}
 	}

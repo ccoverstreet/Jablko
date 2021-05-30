@@ -21,7 +21,7 @@ import (
 type Subprocess struct {
 	sync.Mutex
 	Cmd      *exec.Cmd
-	Port     int
+	ModPort  int
 	CorePort int
 	Key      string
 	Config   []byte
@@ -38,14 +38,12 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey st
 		Msg("Creating subprocess...")
 
 	sub := new(Subprocess)
-	sub.Port = processPort
+	sub.ModPort = processPort
 	sub.CorePort = jablkoPort
 	sub.Key = jmodKey
 	sub.Config = config
 	sub.Dir = source
 	sub.DataDir = dataDir
-
-	sub.GenerateCMD()
 
 	return sub
 }
@@ -56,12 +54,13 @@ func (sub *Subprocess) MarshalJSON() ([]byte, error) {
 
 // Copies parameters stored in the subprocess into a
 // new exec.Cmd and sets the environment
-func (sub *Subprocess) GenerateCMD() {
+// ONLY called when Subprocess.Start is called
+func (sub *Subprocess) generateCMD() {
 	sub.Cmd = exec.Command("./jablkostart.sh")
 	sub.Cmd.Dir = sub.Dir
 	sub.Cmd.Env = []string{
 		"JABLKO_CORE_PORT=" + strconv.Itoa(sub.CorePort),
-		"JABLKO_MOD_PORT=" + strconv.Itoa(sub.Port),
+		"JABLKO_MOD_PORT=" + strconv.Itoa(sub.ModPort),
 		"JABLKO_MOD_KEY=" + sub.Key,
 		"JABLKO_MOD_DATA_DIR=" + sub.DataDir,
 		"JABLKO_MOD_CONFIG=" + string(sub.Config),
@@ -70,14 +69,38 @@ func (sub *Subprocess) GenerateCMD() {
 	sub.Cmd.Stderr = ColoredWriter{os.Stderr}
 }
 
-func (sub *Subprocess) Start() {
+func (sub *Subprocess) Start() error {
+	sub.Lock()
+	defer sub.Unlock()
+
+	// Check if process is already started
+	// Safety check just in case sub.Cmd is nil
+	if sub.Cmd != nil {
+		if sub.Cmd.Process != nil && sub.Cmd.ProcessState == nil {
+			return fmt.Errorf("Process is already started")
+		}
+	}
+
+	// Generate the exec.Cmd used for the process
+	sub.generateCMD()
+
+	err := sub.Cmd.Start()
+
+	if err != nil {
+		return err
+	}
+
 	log.Info().
 		Str("source", sub.Dir).
 		Msg("Subprocess starting")
 
-	err := sub.Cmd.Run()
-	sub.Lock()
-	defer sub.Unlock()
+	go sub.wait()
+
+	return nil
+}
+
+func (sub *Subprocess) wait() {
+	err := sub.Cmd.Wait()
 
 	log.Warn().
 		Err(err).
@@ -98,7 +121,7 @@ func (sub *Subprocess) Stop() error {
 
 func (sub *Subprocess) Build() error {
 	buildProc := exec.Command("./jablkobuild.sh")
-	buildProc.Dir = sub.Cmd.Dir
+	buildProc.Dir = sub.Dir
 
 	out, err := buildProc.CombinedOutput()
 	log.Debug().
