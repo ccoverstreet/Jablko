@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Caller().Logger()
 	fmt.Printf("%s\b", startingStatement)
 
 	jablkoApp := new(app.JablkoCoreApp)
