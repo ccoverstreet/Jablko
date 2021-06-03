@@ -3,6 +3,8 @@ package subprocess
 import (
 	"fmt"
 	"os"
+	"strings"
+	"sync"
 )
 
 type ColoredWriter struct {
@@ -16,6 +18,18 @@ func (this ColoredWriter) Write(b []byte) (int, error) {
 }
 
 type SubprocessWriter struct {
+	sync.Mutex
 	JMODName string
-	out      *os.File
+	fileName string
+	logFile  os.File
+
+	curLength int
+}
+
+func CreateSubprocessWriter(JMODName string) *SubprocessWriter {
+	writer := new(SubprocessWriter)
+	writer.JMODName = JMODName
+	writer.fileName = strings.ReplaceAll(JMODName, "/", "_")
+
+	return writer
 }
