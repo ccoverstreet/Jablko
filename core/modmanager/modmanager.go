@@ -209,8 +209,18 @@ func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 }
 
 func (mm *ModManager) CleanProcesses() {
-	for _, proc := range mm.ProcMap {
-		proc.Stop()
+	for name, proc := range mm.ProcMap {
+		log.Info().
+			Str("jmodName", name).
+			Msg("Cleaning up JMOD process")
+
+		err := proc.Stop()
+		if err != nil {
+			log.Info().
+				Err(err).
+				Str("jmodName", name).
+				Msg("Unable to clean up JMOD")
+		}
 	}
 }
 

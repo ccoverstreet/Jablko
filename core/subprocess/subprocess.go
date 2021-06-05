@@ -128,7 +128,7 @@ func (sub *Subprocess) Stop() error {
 }
 
 func (sub *Subprocess) Build() error {
-	buildProc := exec.Command("./jablkobuild.sh")
+	buildProc := exec.Command("make", "build")
 	buildProc.Dir = sub.Dir
 
 	out, err := buildProc.CombinedOutput()
