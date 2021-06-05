@@ -208,6 +208,12 @@ func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 	return fmt.Errorf("JMOD not found")
 }
 
+func (mm *ModManager) CleanProcesses() {
+	for _, proc := range mm.ProcMap {
+		proc.Stop()
+	}
+}
+
 // ---------- Routes called by JMODs ----------
 
 // Uses the JMOD-KEY and PORT-NUMBER assigned to each

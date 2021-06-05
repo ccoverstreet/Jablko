@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"strconv"
 	"sync"
+	"syscall"
 
 	"github.com/rs/zerolog/log"
 )
@@ -56,7 +57,7 @@ func (sub *Subprocess) MarshalJSON() ([]byte, error) {
 // new exec.Cmd and sets the environment
 // ONLY called when Subprocess.Start is called
 func (sub *Subprocess) generateCMD() {
-	sub.Cmd = exec.Command("./jablkostart.sh")
+	sub.Cmd = exec.Command("make", "run")
 	sub.Cmd.Dir = sub.Dir
 	sub.Cmd.Env = []string{
 		"JABLKO_CORE_PORT=" + strconv.Itoa(sub.CorePort),
@@ -67,6 +68,8 @@ func (sub *Subprocess) generateCMD() {
 	}
 	sub.Cmd.Stdout = ColoredWriter{sub.Dir, os.Stdout}
 	sub.Cmd.Stderr = ColoredWriter{sub.Dir, os.Stderr}
+
+	sub.Cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
 
 func (sub *Subprocess) Start() error {
@@ -116,7 +119,12 @@ func (sub *Subprocess) Stop() error {
 		return fmt.Errorf("Process already stopped")
 	}
 
-	return sub.Cmd.Process.Kill()
+	pgid, err := syscall.Getpgid(sub.Cmd.Process.Pid)
+	if err == nil {
+		syscall.Kill(-pgid, 15)
+	}
+
+	return nil //sub.Cmd.Process.Kill()
 }
 
 func (sub *Subprocess) Build() error {
