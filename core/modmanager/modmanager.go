@@ -32,8 +32,6 @@ type ModManager struct {
 	ProcMap map[string]*subprocess.Subprocess
 }
 
-var curPort = 44100
-
 func NewModManager(conf []byte) (*ModManager, error) {
 	newMM := new(ModManager)
 	newMM.ProcMap = make(map[string]*subprocess.Subprocess)
@@ -49,8 +47,7 @@ func NewModManager(conf []byte) (*ModManager, error) {
 			panic(err)
 		}
 
-		newMM.ProcMap[string(key)] = subprocess.CreateSubprocess(string(key), 8080, curPort, jmodKey, "./data", value)
-		curPort += 1
+		newMM.ProcMap[string(key)] = subprocess.CreateSubprocess(string(key), 8080, jmodKey, "./data", value)
 		return nil
 	}
 

@@ -10,6 +10,7 @@ package subprocess
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"strconv"
@@ -30,7 +31,7 @@ type Subprocess struct {
 	DataDir  string
 }
 
-func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey string, dataDir string, config []byte) *Subprocess {
+func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir string, config []byte) *Subprocess {
 	// Creates a subprocess from the given parameters
 	// Does not start the process
 
@@ -39,7 +40,6 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey st
 		Msg("Creating subprocess...")
 
 	sub := new(Subprocess)
-	sub.ModPort = processPort
 	sub.CorePort = jablkoPort
 	sub.Key = jmodKey
 	sub.Config = config
@@ -84,10 +84,18 @@ func (sub *Subprocess) Start() error {
 		}
 	}
 
+	// Search for available port
+	portNumber, err := findAvailablePort(10000, 30000)
+	if err != nil {
+		return err
+	}
+
+	sub.ModPort = portNumber
+
 	// Generate the exec.Cmd used for the process
 	sub.generateCMD()
 
-	err := sub.Cmd.Start()
+	err = sub.Cmd.Start()
 
 	if err != nil {
 		return err
@@ -100,6 +108,18 @@ func (sub *Subprocess) Start() error {
 	go sub.wait()
 
 	return nil
+}
+
+func findAvailablePort(minPort int, maxPort int) (int, error) {
+	for i := minPort; i < maxPort; i++ {
+		conn, err := net.Listen("tcp", fmt.Sprintf(":%d", i))
+		if err == nil {
+			conn.Close()
+			return i, nil
+		}
+	}
+
+	return 0, fmt.Errorf("Unable to find available port in range")
 }
 
 func (sub *Subprocess) wait() {
