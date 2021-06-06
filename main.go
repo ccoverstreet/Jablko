@@ -24,8 +24,23 @@ func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Caller().Logger()
 	fmt.Printf("%s\b", startingStatement)
 
+	// Make Directories if don't exist
+	err := os.MkdirAll("./log", 0700)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to make log directory")
+	}
+
+	err = os.MkdirAll("./data", 0700)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to make log directory")
+	}
+
 	jablkoApp := new(app.JablkoCoreApp)
-	err := jablkoApp.Init()
+	err = jablkoApp.Init()
 	if err != nil {
 		log.Error().
 			Err(err).

@@ -47,7 +47,17 @@ func NewModManager(conf []byte) (*ModManager, error) {
 			panic(err)
 		}
 
-		newMM.ProcMap[string(key)] = subprocess.CreateSubprocess(string(key), 8080, jmodKey, "./data", value)
+		newProc, err := subprocess.CreateSubprocess(string(key), 8080, jmodKey, "./data", value)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Unable to create new JMOD process")
+
+			newMM.ProcMap[string(key)] = newProc
+			return nil
+		}
+
+		newMM.ProcMap[string(key)] = newProc
 		return nil
 	}
 
