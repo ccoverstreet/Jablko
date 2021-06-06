@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -20,7 +21,7 @@ import (
 )
 
 func main() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Caller().Logger()
 	fmt.Printf("%s\b", startingStatement)
 
 	jablkoApp := new(app.JablkoCoreApp)
@@ -32,7 +33,17 @@ func main() {
 			Msg("Error in initialization")
 	}
 
-	log.Printf("USER TABLE: %v", jablkoApp.DBHandler.Users)
+	// Setup process cleanup handler
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		<-c
+		log.Info().
+			Msg("Cleaning up child processes")
+
+		jablkoApp.ModM.CleanProcesses()
+		os.Exit(0)
+	}()
 
 	log.Info().Msg("Starting HTTP Server")
 	log.Fatal().Err(http.ListenAndServe(":8080", jablkoApp.Router))

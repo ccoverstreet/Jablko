@@ -23,6 +23,11 @@ class JMODEntry extends HTMLElement {
 	width: 100%;
 }
 
+#jmod-error-output {
+	width: 100%;
+	color: var(--clr-red);
+}
+
 #config-editor-panel {
 	display: flex;
 	flex-wrap: wrap;
@@ -47,6 +52,8 @@ class JMODEntry extends HTMLElement {
 		<button onclick="this.getRootNode().host.applyConfig();">Apply</button>
 		<button onclick="this.getRootNode().host.cancelConfigChange()" style="border-color: var(--clr-red)">Cancel</button>
 	</div>
+
+	<div id="jmod-error-output"></div>
 </div>
 		`
 	}
@@ -68,9 +75,18 @@ class JMODEntry extends HTMLElement {
 			body: JSON.stringify({"jmodName": this.jmodName})
 		})
 			.then(async data => {
+				if (data.status < 200 || data.status >= 400) {
+					throw new Error(await data.text());
+				}
+
+				const output = this.shadowRoot.getElementById("jmod-error-output");
+				output.textContent = "";
+
 				console.log(await data.text());
 			})
 			.catch(err => {
+				const output = this.shadowRoot.getElementById("jmod-error-output");
+				output.textContent = err.message;
 				console.error(err);
 			});
 	}
@@ -84,9 +100,18 @@ class JMODEntry extends HTMLElement {
 			body: JSON.stringify({jmodName: this.jmodName})
 		})
 			.then(async data => {
+				if (data.status < 200 || data.status >= 400) {
+					throw new Error(await data.text());
+				}
+
+				const output = this.shadowRoot.getElementById("jmod-error-output");
+				output.textContent = "";
+
 				console.log(await data.text());
 			})
 			.catch(err => {
+				const output = this.shadowRoot.getElementById("jmod-error-output");
+				output.textContent = err.message;
 				console.error(err);
 			});
 	}
@@ -114,9 +139,18 @@ class JMODEntry extends HTMLElement {
 			})
 		})
 			.then(async data => {
+				if (data.status < 200 || data.status >= 400) {
+					throw new Error(await data.text());
+				}
+
+				const output = this.shadowRoot.getElementById("jmod-error-output");
+				output.textContent = "";
+
 				console.log(await data.text());
 			})
 			.catch(err => {
+				const output = this.shadowRoot.getElementById("jmod-error-output");
+				output.textContent = err.message;
 				console.error(err);
 				console.log(err);
 			});
@@ -125,6 +159,8 @@ class JMODEntry extends HTMLElement {
 	cancelConfigChange() {
 		const editor = this.shadowRoot.getElementById("config-editor");
 		editor.value = JSON.stringify(this.config, null, "  ");
+
+		this.shadowRoot.getElementById("config-editor-panel").style.display = "none";
 	}
 }
 
