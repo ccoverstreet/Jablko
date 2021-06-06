@@ -46,7 +46,9 @@ func main() {
 	}()
 
 	log.Info().Msg("Starting HTTP Server")
-	log.Fatal().Err(http.ListenAndServe(":8080", jablkoApp.Router))
+	log.Error().
+		Err(http.ListenAndServe(":8080", jablkoApp.Router)).
+		Msg("Jablko stopping")
 }
 
 const startingStatement = `
