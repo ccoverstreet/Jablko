@@ -21,7 +21,7 @@ class extends HTMLElement {
 </style>
 <div class="jmod-wrapper">
 	<div class="jmod-header" style="display: flex; ">
-		<h1>My Module</h1>
+		<h1>Test Module</h1>
 		<svg viewBox="0 0 360 360">
 			<circle cx="180" 
 				cy="180" 
@@ -33,6 +33,9 @@ class extends HTMLElement {
 	</div>
 	<hr>
 	<div class="jmod-body">
+		<p>
+		Demo for differenent web technologies in Jablko
+		</p>
 		<div id="websocket">
 			<h2 style="width: 100%;">Web Socket</h2>
 			<input onkeypress="this.getRootNode().host.inputEventHandler(this, event)" style="flex-grow: 1;"></input>		
