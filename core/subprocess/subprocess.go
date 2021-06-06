@@ -172,6 +172,13 @@ func (sub *Subprocess) Build() error {
 	return err
 }
 
+func (sub *Subprocess) GetCurLogBytes() ([]byte, error) {
+	sub.Lock()
+	defer sub.Unlock()
+
+	return sub.Writer.GetCurLogBytes()
+}
+
 func (sub *Subprocess) Update() {
 	// Handles updating the source
 	// Will first look for precompiled options

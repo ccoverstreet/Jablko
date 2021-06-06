@@ -2,6 +2,7 @@ package subprocess
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
@@ -59,4 +60,16 @@ func (writer *SubprocessWriter) Write(b []byte) (int, error) {
 	writer.logFile.Write(b)
 
 	return len(b), nil
+}
+
+func (writer *SubprocessWriter) GetCurLogBytes() ([]byte, error) {
+	writer.Lock()
+	defer writer.Unlock()
+
+	b, err := ioutil.ReadFile(writer.fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }

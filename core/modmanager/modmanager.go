@@ -215,6 +215,17 @@ func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 	return fmt.Errorf("JMOD not found")
 }
 
+func (mm *ModManager) GetJMODLog(jmodName string) ([]byte, error) {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if proc, ok := mm.ProcMap[jmodName]; ok {
+		return proc.GetCurLogBytes()
+	}
+
+	return nil, fmt.Errorf("JMOD process does not exist")
+}
+
 func (mm *ModManager) CleanProcesses() {
 	for name, proc := range mm.ProcMap {
 		log.Info().

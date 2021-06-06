@@ -43,6 +43,8 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 		app.stopJMOD(w, r)
 	case "applyJMODConfig":
 		app.applyJMODConfig(w, r)
+	case "getJMODLog":
+		app.getJMODLog(w, r)
 	case "getUserList":
 		app.getUserList(w, r)
 	case "createUser":
@@ -67,8 +69,6 @@ func (app *JablkoCoreApp) getJMODData(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%v", err)
 		return
 	}
-
-	log.Printf("%s", data)
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
@@ -229,6 +229,39 @@ func (app *JablkoCoreApp) applyJMODConfig(w http.ResponseWriter, r *http.Request
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Applied new config")
+}
+
+func (app *JablkoCoreApp) getJMODLog(w http.ResponseWriter, r *http.Request) {
+	type reqDataStruct struct {
+		JMODName string `json:"jmodName"`
+	}
+
+	var reqData reqDataStruct
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to parse JSON body")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to get JMOD log: %v", err)
+		return
+	}
+
+	jmodLog, err := app.ModM.GetJMODLog(reqData.JMODName)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to retrieve JMOD log")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to get JMOD log: %v", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%s", jmodLog)
 }
 
 func (app *JablkoCoreApp) getUserList(w http.ResponseWriter, r *http.Request) {
