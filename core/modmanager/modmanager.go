@@ -16,6 +16,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -80,6 +81,14 @@ func NewModManager(conf []byte) (*ModManager, error) {
 	}
 
 	return newMM, nil
+}
+
+func (mm *ModManager) AddJMOD(jmodPath string) error {
+	if strings.HasPrefix(jmodPath, "github.com") {
+		log.Printf("github.com route called, need to check for download and @ syntax")
+	}
+
+	return nil
 }
 
 func (mm *ModManager) SaveConfigToFile() error {

@@ -35,6 +35,8 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 	vars := mux.Vars(r)
 
 	switch vars["func"] {
+	case "installJMOD":
+		app.installJMOD(w, r)
 	case "getJMODData":
 		app.getJMODData(w, r)
 	case "startJMOD":
@@ -54,6 +56,36 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Invalid admin function requested")
+	}
+}
+
+func (app *JablkoCoreApp) installJMOD(w http.ResponseWriter, r *http.Request) {
+	type installData struct {
+		JMODPath string `json:"jmodPath"`
+	}
+
+	var reqData installData
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to parse JSON body")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	err = app.ModM.AddJMOD(reqData.JMODPath)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to add JMOD")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", err)
+		return
 	}
 }
 

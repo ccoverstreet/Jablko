@@ -1,3 +1,24 @@
+function InstallJMOD() {
+	jmodPath = document.getElementById("install-jmod-input").value.trim();
+	console.log(jmodPath);
+
+	fetch("/installJMOD", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({jmodPath: jmodPath})
+	})
+		.then(async data => {
+			console.log(await data.text());
+		})
+		.catch(err => {
+			console.error(err);
+			console.log(err);
+		})
+	
+}
+
 class JMODEntry extends HTMLElement {
 	constructor() {
 		super();
