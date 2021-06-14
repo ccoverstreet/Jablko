@@ -16,34 +16,57 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const gDefaultConfig string = `
+{
+	"portUDP": 41111,
+	"instances": {
+		"inst0": {
+			"value": 32
+		},
+		"inst99": {
+			"value": 49
+		}
+	}
+}
+`
+
 // Frontend instances
 type testInstance struct {
 	Value int `json:"value"`
 }
 
-type testConfig struct {
+type testGlobalConfig struct {
 	sync.Mutex
 	PortUDP   int                     `json:"portUDP"`
 	Instances map[string]testInstance `json:"instances"`
 }
 
-//
 type stateUDP struct {
 	sync.Mutex
 	Data string
 }
 
 // Global data
-var curConfig testConfig
+var curConfig testGlobalConfig
 var curStateUDP = stateUDP{sync.Mutex{}, "Startup Message"}
 var jablkoCorePort string
 var jablkoModPort string
 var jablkoModKey string
 
 func main() {
-	curConfig.Instances = make(map[string]testInstance)
+	// Grabbing settings from environment variable
+	jablkoCorePort = os.Getenv("JABLKO_CORE_PORT")
+	jablkoModPort = os.Getenv("JABLKO_MOD_PORT")
+	jablkoModKey = os.Getenv("JABLKO_MOD_KEY")
+
+	// Pull in config from environment variable and marshal into
+	// state struct. Load default config and save if value is not
+	// present
+	configStr := os.Getenv("JABLKO_MOD_CONFIG")
+	loadConfig(configStr)
 
 	router := mux.NewRouter()
+
 	// Required Routes
 	router.HandleFunc("/webComponent", webComponentHandler) // Route called by Jablko
 	router.HandleFunc("/instanceData", instanceDataHandler) // Route called by Jablko
@@ -53,28 +76,39 @@ func main() {
 	router.HandleFunc("/jmod/getUDPState", UDPStateHandler) // Simple GET for UDP Server State
 	router.HandleFunc("/jmod/testConfigSave", TestConfigSave)
 
-	// Pull in port for running HTTP server that communicates with Jablko
-	port := os.Getenv("JABLKO_MOD_PORT")
-	log.Println(port)
-
-	jablkoCorePort = os.Getenv("JABLKO_CORE_PORT")
-	jablkoModPort = os.Getenv("JABLKO_MOD_PORT")
-	jablkoModKey = os.Getenv("JABLKO_MOD_KEY")
-
-	// Pull in config from environment variable and marshal into
-	// state struct
-	err := json.Unmarshal([]byte(os.Getenv("JABLKO_MOD_CONFIG")), &curConfig)
-	if err != nil {
-		panic(err)
-	}
-	log.Println(curConfig)
-
+	log.Println(curConfig.PortUDP)
 	// Start UDP server with in separate go routine
 	// This server just prints the output and echoes
 	go UDPServer(curConfig.PortUDP)
 
 	log.Println("Starting HTTP server...")
-	http.ListenAndServe(":"+port, router)
+	http.ListenAndServe(":"+jablkoModPort, router)
+}
+
+func loadConfig(config string) {
+	// If no config is provided
+	if len(config) < 3 {
+		err := json.Unmarshal([]byte(gDefaultConfig), &curConfig)
+
+		log.Println(curConfig)
+
+		if err != nil {
+			panic(err)
+		}
+
+		err = JablkoSaveConfig(jablkoCorePort, jablkoModPort, jablkoModKey, []byte(gDefaultConfig))
+		if err != nil {
+			panic(err)
+		}
+
+		return
+	}
+
+	err := json.Unmarshal([]byte(config), &curConfig)
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 // The webcomponent handler returns the javascript for a WebComponent
@@ -96,7 +130,10 @@ func instanceDataHandler(w http.ResponseWriter, r *http.Request) {
 	curConfig.Lock()
 	defer curConfig.Unlock()
 
+	log.Println(curConfig)
+	log.Println(curConfig.Instances)
 	data, err := json.Marshal(curConfig.Instances)
+	log.Println("ASD", data, err)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Unable to marshal config data")

@@ -25,6 +25,7 @@ class JMODEntry extends HTMLElement {
 
 		this.start = this.start.bind(this);
 		this.stop = this.stop.bind(this);
+		this.build = this.build.bind(this);
 		this.toggleEditor = this.toggleEditor.bind(this);
 		this.getJMODLog = this.getJMODLog.bind(this);
 
@@ -67,6 +68,8 @@ class JMODEntry extends HTMLElement {
 	<h3 id="jmod-name" style="word-break: break-all;"></h3>
 	<button onclick="this.getRootNode().host.start()">Start</button>
 	<button onclick="this.getRootNode().host.stop()" style="border-color: var(--clr-red)">Stop</button>
+	<button onclick="this.getRootNode().host.build()" style="border-color: var(--clr-yellow)">Build</button>
+
 	<button onclick="this.getRootNode().host.toggleEditor()" style="border-color: var(--clr-font-high)">Edit Config</button>
 	<button onclick="this.getRootNode().host.getJMODLog()" style="border-color: var(--clr-font-high)">View Log</button>
 
@@ -137,6 +140,23 @@ class JMODEntry extends HTMLElement {
 				output.textContent = err.message;
 				console.error(err);
 			});
+	}
+	
+	build() {
+		fetch("/admin/buildJMOD", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({jmodName: this.jmodName})
+		})
+			.then(async data => {
+				console.log(await data.text());
+			})
+			.catch(err => {
+				console.error(err);
+				console.log(err);
+			})
 	}
 
 	toggleEditor() {

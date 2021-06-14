@@ -43,6 +43,8 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 		app.startJMOD(w, r)
 	case "stopJMOD":
 		app.stopJMOD(w, r)
+	case "buildJMOD":
+		app.buildJMOD(w, r)
 	case "applyJMODConfig":
 		app.applyJMODConfig(w, r)
 	case "getJMODLog":
@@ -190,6 +192,36 @@ func (app *JablkoCoreApp) stopJMOD(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Stopped jmod")
+}
+
+func (app *JablkoCoreApp) buildJMOD(w http.ResponseWriter, r *http.Request) {
+	type buildData struct {
+		JMODName string `json:"jmodName"`
+	}
+
+	var reqData buildData
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to parse body")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	err = app.ModM.BuildJMOD(reqData.JMODName)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to parse body")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
 }
 
 func (app *JablkoCoreApp) applyJMODConfig(w http.ResponseWriter, r *http.Request) {
