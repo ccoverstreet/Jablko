@@ -77,11 +77,22 @@ func (app *JablkoCoreApp) installJMOD(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.ModM.AddJMOD(reqData.JMODPath)
+	err = app.ModM.AddJMOD(reqData.JMODPath, nil)
 	if err != nil {
 		log.Error().
 			Err(err).
 			Msg("Unable to add JMOD")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	err = app.ModM.StartJMOD(reqData.JMODPath)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to start JMOD")
 
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "%v", err)

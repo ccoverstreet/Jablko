@@ -2,7 +2,7 @@ function InstallJMOD() {
 	jmodPath = document.getElementById("install-jmod-input").value.trim();
 	console.log(jmodPath);
 
-	fetch("/installJMOD", {
+	fetch("/admin/installJMOD", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json"

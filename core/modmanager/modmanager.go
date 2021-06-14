@@ -39,26 +39,15 @@ func NewModManager(conf []byte) (*ModManager, error) {
 
 	// Creates subprocesses for all
 	parseConfObj := func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
-		jmodKey, err := jutil.RandomString(32)
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Unable to generate random string for jmodKey")
-
-			panic(err)
-		}
-
-		newProc, err := subprocess.CreateSubprocess(string(key), 8080, jmodKey, "./data", value)
+		err := newMM.AddJMOD(string(key), value)
 		if err != nil {
 			log.Error().
 				Err(err).
 				Msg("Unable to create new JMOD process")
 
-			newMM.ProcMap[string(key)] = newProc
 			return nil
 		}
 
-		newMM.ProcMap[string(key)] = newProc
 		return nil
 	}
 
@@ -83,12 +72,48 @@ func NewModManager(conf []byte) (*ModManager, error) {
 	return newMM, nil
 }
 
-func (mm *ModManager) AddJMOD(jmodPath string) error {
+func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	// Check if mod is already installed
+	if _, ok := mm.ProcMap[jmodPath]; ok {
+		return fmt.Errorf("Module is already registered")
+	}
+
 	if strings.HasPrefix(jmodPath, "github.com") {
 		log.Printf("github.com route called, need to check for download and @ syntax")
 	}
 
+	jmodKey, err := jutil.RandomString(32)
+	if err != nil {
+		return err
+	}
+
+	newProc, err := subprocess.CreateSubprocess(jmodPath, 8080, jmodKey, "./data", config)
+	if err != nil {
+		return err
+	}
+
+	mm.ProcMap[jmodPath] = newProc
+
+	err = mm.ProcMap[jmodPath].Build()
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (mm *ModManager) BuildJMOD(jmodPath string) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if proc, ok := mm.ProcMap[jmodPath]; ok {
+		return proc.Build()
+	}
+
+	return fmt.Errorf("JMOD does not exist")
 }
 
 func (mm *ModManager) SaveConfigToFile() error {
@@ -148,6 +173,8 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 func (mm *ModManager) JMODData() ([]byte, error) {
 	mm.Lock()
 	defer mm.Unlock()
+
+	log.Printf("%v\n", mm.ProcMap)
 
 	return json.Marshal(mm.ProcMap)
 }
@@ -257,6 +284,7 @@ func (mm *ModManager) CleanProcesses() {
 // JMOD for authentication. JMODs can save their configs
 // or retrieve information
 func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("BIG FART")
 
 	// Check JMOD-KEY header value
 	keyValue := r.Header.Get("JMOD-KEY")
@@ -272,6 +300,10 @@ func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	portValueStr := r.Header.Get("JMOD-PORT")
 	portValue, err := strconv.Atoi(portValueStr)
 	if portValueStr == "" || err != nil {
+		log.Error().
+			Err(err).
+			Msg("Value not set")
+
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Invalid JMOD-PORT")
 		return
@@ -279,6 +311,9 @@ func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 	isValid, modName := mm.IsValidService(keyValue, portValue)
 	if !isValid {
+		log.Error().
+			Msg("JMOD service does not exist")
+
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Specified service doesn't exist")
 		return
@@ -311,6 +346,10 @@ func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, stri
 func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modName string) {
 	newConfigByte, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to read request")
+
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Unable to read body")
 		return

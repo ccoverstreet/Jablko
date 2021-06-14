@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -205,17 +204,7 @@ func TestConfigSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &http.Client{}
+	err = JablkoSaveConfig(jablkoCorePort, jablkoModPort, jablkoModKey, b)
 
-	req, err := http.NewRequest("POST", "http://localhost:"+jablkoCorePort+"/service/saveConfig", bytes.NewBuffer(b))
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Couldn't create http request")
-		return
-	}
-
-	req.Header.Add("JMOD-KEY", jablkoModKey)
-	req.Header.Add("JMOD-PORT", jablkoModPort)
-
-	client.Do(req)
+	log.Println(err)
 }
