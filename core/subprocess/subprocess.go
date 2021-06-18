@@ -115,6 +115,7 @@ func (sub *Subprocess) Start() error {
 
 	log.Info().
 		Str("source", sub.Dir).
+		Int("port", sub.ModPort).
 		Msg("Subprocess starting")
 
 	go sub.wait()
