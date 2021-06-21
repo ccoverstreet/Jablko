@@ -39,6 +39,13 @@ func main() {
 			Msg("Unable to make log directory")
 	}
 
+	err = os.MkdirAll("./tmp", 0700)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to make tmp directory")
+	}
+
 	jablkoApp := new(app.JablkoCoreApp)
 	err = jablkoApp.Init()
 	if err != nil {
@@ -64,6 +71,8 @@ func main() {
 	log.Error().
 		Err(http.ListenAndServe(":8080", jablkoApp.Router)).
 		Msg("Jablko stopping")
+
+	jablkoApp.ModM.CleanProcesses()
 }
 
 const startingStatement = `

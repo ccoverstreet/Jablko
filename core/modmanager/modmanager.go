@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,6 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 
+	"github.com/ccoverstreet/Jablko/core/github"
 	"github.com/ccoverstreet/Jablko/core/jutil"
 	"github.com/ccoverstreet/Jablko/core/subprocess"
 )
@@ -82,7 +84,20 @@ func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
 	}
 
 	if strings.HasPrefix(jmodPath, "github.com") {
-		log.Printf("github.com route called, need to check for download and @ syntax")
+		// Check if mod is already installed
+		_, err := os.Stat(jmodPath)
+		if os.IsNotExist(err) {
+			log.Printf("github.com route called, need to check for download and @ syntax")
+			err = github.RetrieveSource(jmodPath) // Retrieves source
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		log.Error().
+			Msg("Non-github.com@latest packages supported yet")
+
+		return fmt.Errorf("Non-github.com@latest packages supported yet")
 	}
 
 	jmodKey, err := jutil.RandomString(32)
