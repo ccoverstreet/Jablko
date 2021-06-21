@@ -93,11 +93,6 @@ func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
 				return err
 			}
 		}
-	} else {
-		log.Error().
-			Msg("Non-github.com@latest packages supported yet")
-
-		return fmt.Errorf("Non-github.com@latest packages supported yet")
 	}
 
 	jmodKey, err := jutil.RandomString(32)

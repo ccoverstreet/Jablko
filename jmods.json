@@ -18,19 +18,5 @@
                 "value": 49
             }
         }
-    },
-    "github.com/ccoverstreet/Jarmuz-RGB-Light@latest": {
-        "instances": {
-            "inst1": {
-                "lightIPs": [
-                    "10.0.0.10"
-                ]
-            },
-            "inst2": {
-                "lightIPs": [
-                    "10.0.0.123"
-                ]
-            }
-        }
     }
 }
