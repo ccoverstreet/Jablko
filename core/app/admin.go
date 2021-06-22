@@ -45,6 +45,8 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 		app.stopJMOD(w, r)
 	case "buildJMOD":
 		app.buildJMOD(w, r)
+	case "deleteJMOD":
+		app.deleteJMOD(w, r)
 	case "applyJMODConfig":
 		app.applyJMODConfig(w, r)
 	case "getJMODLog":
@@ -222,6 +224,37 @@ func (app *JablkoCoreApp) buildJMOD(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%v", err)
 		return
 	}
+}
+
+func (app *JablkoCoreApp) deleteJMOD(w http.ResponseWriter, r *http.Request) {
+	type deleteJMODBody struct {
+		JMODName string `json:"jmodName"`
+	}
+
+	var reqBody deleteJMODBody
+
+	err := jutil.ParseJSONBody(r.Body, &reqBody)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to parse JSON body for delete JMOD")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to parse JSON body: %v", err)
+	}
+
+	err = app.ModM.DeleteJMOD(reqBody.JMODName)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to delete JMOD")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to delete JMOD: %v", err)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Deleted JMOD")
 }
 
 func (app *JablkoCoreApp) applyJMODConfig(w http.ResponseWriter, r *http.Request) {

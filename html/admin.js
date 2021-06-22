@@ -28,11 +28,12 @@ class JMODEntry extends HTMLElement {
 		this.build = this.build.bind(this);
 		this.toggleEditor = this.toggleEditor.bind(this);
 		this.getJMODLog = this.getJMODLog.bind(this);
+		this.deleteJMOD = this.deleteJMOD.bind(this);
 
 		this.attachShadow({mode: "open"});
 
 		this.shadowRoot.innerHTML = `
-<link rel="stylesheet" href="assets/standard.css"/>
+<link rel="stylesheet" href="/assets/standard.css"/>
 <style>
 .entry {
 	display: flex;
@@ -72,6 +73,7 @@ class JMODEntry extends HTMLElement {
 
 	<button onclick="this.getRootNode().host.toggleEditor()" style="border-color: var(--clr-font-high)">Edit Config</button>
 	<button onclick="this.getRootNode().host.getJMODLog()" style="border-color: var(--clr-font-high)">View Log</button>
+	<button onclick="this.getRootNode().host.deleteJMOD()" style="border-color: var(--clr-font-high)">Delete</button>
 
 	<div id="config-editor-panel" style="display:none;">
 		<textarea id="config-editor"></textarea>
@@ -223,6 +225,28 @@ class JMODEntry extends HTMLElement {
 				console.error(err);
 				console.log(err);
 			})
+	}
+
+	deleteJMOD() {
+		var yes = confirm("Yes?");
+
+		if (yes) {
+			fetch("/admin/deleteJMOD", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({jmodName: this.jmodName})
+			})
+				.then(async data => {
+					console.log(await data.text());
+					location.reload();
+				})
+				.catch(err => {
+					console.error(err);
+					console.log(err);
+				})
+		}
 	}
 }
 

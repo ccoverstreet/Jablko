@@ -126,6 +126,35 @@ func (mm *ModManager) BuildJMOD(jmodPath string) error {
 	return fmt.Errorf("JMOD does not exist")
 }
 
+func (mm *ModManager) DeleteJMOD(jmodPath string) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if proc, ok := mm.ProcMap[jmodPath]; ok {
+		err := proc.Stop()
+		if err != nil {
+			return err
+		}
+
+		delete(mm.ProcMap, jmodPath)
+
+		if strings.HasPrefix(jmodPath, "github.com") {
+			err := github.DeleteSource(jmodPath)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Msg("JMOD was deleted, but unable to remove source")
+			}
+		}
+
+		go mm.SaveConfigToFile()
+	} else {
+		return fmt.Errorf("JMOD not found.")
+	}
+
+	return nil
+}
+
 func (mm *ModManager) SaveConfigToFile() error {
 	mm.Lock()
 	defer mm.Unlock()

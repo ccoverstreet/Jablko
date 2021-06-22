@@ -160,3 +160,7 @@ func RetrieveSource(jmodPath string) error {
 
 	return nil
 }
+
+func DeleteSource(jmodPath string) error {
+	return os.RemoveAll(jmodPath)
+}
