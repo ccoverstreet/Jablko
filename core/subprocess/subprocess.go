@@ -10,7 +10,7 @@ package subprocess
 
 import (
 	"fmt"
-	"os"
+	"net"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -28,9 +28,10 @@ type Subprocess struct {
 	Config   []byte
 	Dir      string
 	DataDir  string
+	Writer   *SubprocessWriter
 }
 
-func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey string, dataDir string, config []byte) *Subprocess {
+func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir string, config []byte) (*Subprocess, error) {
 	// Creates a subprocess from the given parameters
 	// Does not start the process
 
@@ -39,14 +40,20 @@ func CreateSubprocess(source string, jablkoPort int, processPort int, jmodKey st
 		Msg("Creating subprocess...")
 
 	sub := new(Subprocess)
-	sub.ModPort = processPort
 	sub.CorePort = jablkoPort
 	sub.Key = jmodKey
 	sub.Config = config
 	sub.Dir = source
 	sub.DataDir = dataDir
 
-	return sub
+	newWriter, err := CreateSubprocessWriter(source)
+	if err != nil {
+		return nil, err
+	}
+
+	sub.Writer = newWriter
+
+	return sub, nil
 }
 
 func (sub *Subprocess) MarshalJSON() ([]byte, error) {
@@ -66,8 +73,13 @@ func (sub *Subprocess) generateCMD() {
 		"JABLKO_MOD_DATA_DIR=" + sub.DataDir,
 		"JABLKO_MOD_CONFIG=" + string(sub.Config),
 	}
-	sub.Cmd.Stdout = ColoredWriter{sub.Dir, os.Stdout}
-	sub.Cmd.Stderr = ColoredWriter{sub.Dir, os.Stderr}
+
+	sub.Cmd.Stdout = sub.Writer
+	sub.Cmd.Stderr = sub.Writer
+	/*
+		sub.Cmd.Stdout = ColoredWriter{sub.Dir, os.Stdout}
+		sub.Cmd.Stderr = ColoredWriter{sub.Dir, os.Stderr}
+	*/
 
 	sub.Cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
@@ -84,10 +96,18 @@ func (sub *Subprocess) Start() error {
 		}
 	}
 
+	// Search for available port
+	portNumber, err := findAvailablePort(10000, 30000)
+	if err != nil {
+		return err
+	}
+
+	sub.ModPort = portNumber
+
 	// Generate the exec.Cmd used for the process
 	sub.generateCMD()
 
-	err := sub.Cmd.Start()
+	err = sub.Cmd.Start()
 
 	if err != nil {
 		return err
@@ -95,11 +115,24 @@ func (sub *Subprocess) Start() error {
 
 	log.Info().
 		Str("source", sub.Dir).
+		Int("port", sub.ModPort).
 		Msg("Subprocess starting")
 
 	go sub.wait()
 
 	return nil
+}
+
+func findAvailablePort(minPort int, maxPort int) (int, error) {
+	for i := minPort; i < maxPort; i++ {
+		conn, err := net.Listen("tcp", fmt.Sprintf(":%d", i))
+		if err == nil {
+			conn.Close()
+			return i, nil
+		}
+	}
+
+	return 0, fmt.Errorf("Unable to find available port in range")
 }
 
 func (sub *Subprocess) wait() {
@@ -138,6 +171,13 @@ func (sub *Subprocess) Build() error {
 		Msg("Build finished")
 
 	return err
+}
+
+func (sub *Subprocess) GetCurLogBytes() ([]byte, error) {
+	sub.Lock()
+	defer sub.Unlock()
+
+	return sub.Writer.GetCurLogBytes()
 }
 
 func (sub *Subprocess) Update() {

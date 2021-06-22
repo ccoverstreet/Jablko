@@ -1,15 +1,39 @@
+function InstallJMOD() {
+	jmodPath = document.getElementById("install-jmod-input").value.trim();
+	console.log(jmodPath);
+
+	fetch("/admin/installJMOD", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({jmodPath: jmodPath})
+	})
+		.then(async data => {
+			console.log(await data.text());
+		})
+		.catch(err => {
+			console.error(err);
+			console.log(err);
+		})
+	
+}
+
 class JMODEntry extends HTMLElement {
 	constructor() {
 		super();
 
 		this.start = this.start.bind(this);
 		this.stop = this.stop.bind(this);
+		this.build = this.build.bind(this);
 		this.toggleEditor = this.toggleEditor.bind(this);
+		this.getJMODLog = this.getJMODLog.bind(this);
+		this.deleteJMOD = this.deleteJMOD.bind(this);
 
 		this.attachShadow({mode: "open"});
 
 		this.shadowRoot.innerHTML = `
-<link rel="stylesheet" href="assets/standard.css"/>
+<link rel="stylesheet" href="/assets/standard.css"/>
 <style>
 .entry {
 	display: flex;
@@ -45,7 +69,11 @@ class JMODEntry extends HTMLElement {
 	<h3 id="jmod-name" style="word-break: break-all;"></h3>
 	<button onclick="this.getRootNode().host.start()">Start</button>
 	<button onclick="this.getRootNode().host.stop()" style="border-color: var(--clr-red)">Stop</button>
+	<button onclick="this.getRootNode().host.build()" style="border-color: var(--clr-yellow)">Build</button>
+
 	<button onclick="this.getRootNode().host.toggleEditor()" style="border-color: var(--clr-font-high)">Edit Config</button>
+	<button onclick="this.getRootNode().host.getJMODLog()" style="border-color: var(--clr-font-high)">View Log</button>
+	<button onclick="this.getRootNode().host.deleteJMOD()" style="border-color: var(--clr-font-high)">Delete</button>
 
 	<div id="config-editor-panel" style="display:none;">
 		<textarea id="config-editor"></textarea>
@@ -115,6 +143,23 @@ class JMODEntry extends HTMLElement {
 				console.error(err);
 			});
 	}
+	
+	build() {
+		fetch("/admin/buildJMOD", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({jmodName: this.jmodName})
+		})
+			.then(async data => {
+				console.log(await data.text());
+			})
+			.catch(err => {
+				console.error(err);
+				console.log(err);
+			})
+	}
 
 	toggleEditor() {
 		const editorPanel = this.shadowRoot.getElementById("config-editor-panel")
@@ -162,9 +207,66 @@ class JMODEntry extends HTMLElement {
 
 		this.shadowRoot.getElementById("config-editor-panel").style.display = "none";
 	}
+
+	getJMODLog() {
+		fetch("/admin/getJMODLog", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({jmodName: this.jmodName})
+		})
+			.then(async data => {
+				var tab = window.open("about:blank", "_blank");
+				tab.document.write(`<p style="white-space: pre;">${await data.text()}</p>`)
+				tab.document.close();
+			})
+			.catch(err => {
+				console.error(err);
+				console.log(err);
+			})
+	}
+
+	deleteJMOD() {
+		var yes = confirm("Yes?");
+
+		if (yes) {
+			fetch("/admin/deleteJMOD", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({jmodName: this.jmodName})
+			})
+				.then(async data => {
+					console.log(await data.text());
+					location.reload();
+				})
+				.catch(err => {
+					console.error(err);
+					console.log(err);
+				})
+		}
+	}
 }
 
 customElements.define("jmod-entry", JMODEntry);
+
+function getJMODLog(jmodName) {
+	fetch("/admin/getJMODLog", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({jmodName: jmodName})
+	})
+		.then(async data => {
+			console.log(await data.text());
+		})
+		.catch(err => {
+			console.log(err);
+		})
+}
 
 
 function getJMODData() {

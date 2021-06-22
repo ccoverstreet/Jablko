@@ -3,19 +3,19 @@
         "instances": {
             "inst1": {
                 "lightIPs": [
-                    "10.0.0.42"
+                    "10.0.0.5"
                 ]
             }
         }
     },
     "builtin/test": {
-        "portUDP": 41000,
+        "portUDP": 41110,
         "instances": {
             "inst0": {
                 "value": 32
             },
-            "inst1": {
-                "value": 32
+            "inst99": {
+                "value": 49
             }
         }
     }

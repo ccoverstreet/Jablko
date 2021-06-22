@@ -10,15 +10,6 @@
 					"value": 32
 				}
 			}
-		},
-		"/home/coverstreet/Coding/Jablko_Home/My_Mods/Jarmuz-RGB-Light": {
-			"instances": {
-				"inst1": {
-					"lightIPs": [
-						"10.0.0.42"
-					]
-				}
-			}
 		}
 	}
 }

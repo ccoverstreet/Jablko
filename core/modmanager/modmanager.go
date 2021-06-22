@@ -15,7 +15,9 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,6 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 
+	"github.com/ccoverstreet/Jablko/core/github"
 	"github.com/ccoverstreet/Jablko/core/jutil"
 	"github.com/ccoverstreet/Jablko/core/subprocess"
 )
@@ -32,25 +35,21 @@ type ModManager struct {
 	ProcMap map[string]*subprocess.Subprocess
 }
 
-var curPort = 44100
-
 func NewModManager(conf []byte) (*ModManager, error) {
 	newMM := new(ModManager)
 	newMM.ProcMap = make(map[string]*subprocess.Subprocess)
 
 	// Creates subprocesses for all
 	parseConfObj := func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
-		jmodKey, err := jutil.RandomString(32)
+		err := newMM.AddJMOD(string(key), value)
 		if err != nil {
 			log.Error().
 				Err(err).
-				Msg("Unable to generate random string for jmodKey")
+				Msg("Unable to create new JMOD process")
 
-			panic(err)
+			return nil
 		}
 
-		newMM.ProcMap[string(key)] = subprocess.CreateSubprocess(string(key), 8080, curPort, jmodKey, "./data", value)
-		curPort += 1
 		return nil
 	}
 
@@ -73,6 +72,87 @@ func NewModManager(conf []byte) (*ModManager, error) {
 	}
 
 	return newMM, nil
+}
+
+func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	// Check if mod is already installed
+	if _, ok := mm.ProcMap[jmodPath]; ok {
+		return fmt.Errorf("Module is already registered")
+	}
+
+	if strings.HasPrefix(jmodPath, "github.com") {
+		// Check if mod is already installed
+		_, err := os.Stat(jmodPath)
+		if os.IsNotExist(err) {
+			log.Printf("github.com route called, need to check for download and @ syntax")
+			err = github.RetrieveSource(jmodPath) // Retrieves source
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	jmodKey, err := jutil.RandomString(32)
+	if err != nil {
+		return err
+	}
+
+	newProc, err := subprocess.CreateSubprocess(jmodPath, 8080, jmodKey, "./data", config)
+	if err != nil {
+		return err
+	}
+
+	mm.ProcMap[jmodPath] = newProc
+
+	err = mm.ProcMap[jmodPath].Build()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (mm *ModManager) BuildJMOD(jmodPath string) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if proc, ok := mm.ProcMap[jmodPath]; ok {
+		return proc.Build()
+	}
+
+	return fmt.Errorf("JMOD does not exist")
+}
+
+func (mm *ModManager) DeleteJMOD(jmodPath string) error {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if proc, ok := mm.ProcMap[jmodPath]; ok {
+		err := proc.Stop()
+		if err != nil {
+			return err
+		}
+
+		delete(mm.ProcMap, jmodPath)
+
+		if strings.HasPrefix(jmodPath, "github.com") {
+			err := github.DeleteSource(jmodPath)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Msg("JMOD was deleted, but unable to remove source")
+			}
+		}
+
+		go mm.SaveConfigToFile()
+	} else {
+		return fmt.Errorf("JMOD not found.")
+	}
+
+	return nil
 }
 
 func (mm *ModManager) SaveConfigToFile() error {
@@ -132,6 +212,8 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 func (mm *ModManager) JMODData() ([]byte, error) {
 	mm.Lock()
 	defer mm.Unlock()
+
+	log.Printf("%v\n", mm.ProcMap)
 
 	return json.Marshal(mm.ProcMap)
 }
@@ -208,6 +290,17 @@ func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 	return fmt.Errorf("JMOD not found")
 }
 
+func (mm *ModManager) GetJMODLog(jmodName string) ([]byte, error) {
+	mm.Lock()
+	defer mm.Unlock()
+
+	if proc, ok := mm.ProcMap[jmodName]; ok {
+		return proc.GetCurLogBytes()
+	}
+
+	return nil, fmt.Errorf("JMOD process does not exist")
+}
+
 func (mm *ModManager) CleanProcesses() {
 	for name, proc := range mm.ProcMap {
 		log.Info().
@@ -230,6 +323,7 @@ func (mm *ModManager) CleanProcesses() {
 // JMOD for authentication. JMODs can save their configs
 // or retrieve information
 func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("BIG FART")
 
 	// Check JMOD-KEY header value
 	keyValue := r.Header.Get("JMOD-KEY")
@@ -245,6 +339,10 @@ func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	portValueStr := r.Header.Get("JMOD-PORT")
 	portValue, err := strconv.Atoi(portValueStr)
 	if portValueStr == "" || err != nil {
+		log.Error().
+			Err(err).
+			Msg("Value not set")
+
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Invalid JMOD-PORT")
 		return
@@ -252,6 +350,9 @@ func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 	isValid, modName := mm.IsValidService(keyValue, portValue)
 	if !isValid {
+		log.Error().
+			Msg("JMOD service does not exist")
+
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Specified service doesn't exist")
 		return
@@ -284,6 +385,10 @@ func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, stri
 func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modName string) {
 	newConfigByte, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to read request")
+
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Unable to read body")
 		return

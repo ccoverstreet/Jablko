@@ -31,7 +31,7 @@
 				var mod_holder = document.getElementById("mod-holder");
 				for (var source in jablkoWebCompMap) {
 					console.log(source);
-					compname = source;
+					compname = source.split("@")[0];
 					if (source[0] === "/") {
 						compname = source.slice(1);
 					}
