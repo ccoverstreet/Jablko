@@ -81,10 +81,6 @@ func (sub *Subprocess) generateCMD() {
 
 	sub.Cmd.Stdout = sub.Writer
 	sub.Cmd.Stderr = sub.Writer
-	/*
-		sub.Cmd.Stdout = ColoredWriter{sub.Dir, os.Stdout}
-		sub.Cmd.Stderr = ColoredWriter{sub.Dir, os.Stderr}
-	*/
 
 	sub.Cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
@@ -201,10 +197,4 @@ func (sub *Subprocess) GetCurLogBytes() ([]byte, error) {
 	defer sub.Unlock()
 
 	return sub.Writer.GetCurLogBytes()
-}
-
-func (sub *Subprocess) Update() {
-	// Handles updating the source
-	// Will first look for precompiled options
-	// and then resort to a build from source
 }

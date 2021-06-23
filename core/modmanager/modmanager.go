@@ -57,19 +57,6 @@ func NewModManager(conf []byte) (*ModManager, error) {
 
 	// Try to start all subprocesses
 	for _, subProc := range newMM.ProcMap {
-		/*
-			err := subProc.Build()
-			if err != nil {
-				log.Error().
-					Err(err).
-					Caller().
-					Str("JMOD", key).
-					Msg("Unable to build JMOD")
-
-				continue
-			}
-		*/
-
 		go subProc.Start()
 	}
 
@@ -184,6 +171,9 @@ func (mm *ModManager) SaveConfigToFile() error {
 }
 
 func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
+	mm.RLock()
+	defer mm.RUnlock()
+
 	source := r.FormValue("JMOD-Source")
 
 	modPort := mm.ProcMap[source].ModPort
@@ -207,17 +197,15 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (mm *ModManager) JMODData() ([]byte, error) {
-	mm.Lock()
-	defer mm.Unlock()
-
-	log.Printf("%v\n", mm.ProcMap)
+	mm.RLock()
+	defer mm.RUnlock()
 
 	return json.Marshal(mm.ProcMap)
 }
 
 func (mm *ModManager) IsJMODStopped(jmodName string) bool {
-	mm.Lock()
-	defer mm.Unlock()
+	mm.RLock()
+	defer mm.RUnlock()
 
 	if proc, ok := mm.ProcMap[jmodName]; ok {
 		if proc.Cmd.Process != nil && proc.Cmd.ProcessState != nil {
@@ -288,8 +276,8 @@ func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 }
 
 func (mm *ModManager) GetJMODLog(jmodName string) ([]byte, error) {
-	mm.Lock()
-	defer mm.Unlock()
+	mm.RLock()
+	defer mm.RUnlock()
 
 	if proc, ok := mm.ProcMap[jmodName]; ok {
 		return proc.GetCurLogBytes()
@@ -380,6 +368,10 @@ func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, stri
 }
 
 func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modName string) {
+	log.Info().
+		Str("jmodName", modName).
+		Msg("JMOD requested config save")
+
 	newConfigByte, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error().
@@ -390,8 +382,6 @@ func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modN
 		fmt.Fprintf(w, "Unable to read body")
 		return
 	}
-
-	fmt.Println("ASDJAJSSAJDSJ DMOD ASMDASD")
 
 	mm.ProcMap[modName].Config = newConfigByte
 
