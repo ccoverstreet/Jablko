@@ -56,17 +56,19 @@ func NewModManager(conf []byte) (*ModManager, error) {
 	jsonparser.ObjectEach(conf, parseConfObj)
 
 	// Try to start all subprocesses
-	for key, subProc := range newMM.ProcMap {
-		err := subProc.Build()
-		if err != nil {
-			log.Error().
-				Err(err).
-				Caller().
-				Str("JMOD", key).
-				Msg("Unable to build JMOD")
+	for _, subProc := range newMM.ProcMap {
+		/*
+			err := subProc.Build()
+			if err != nil {
+				log.Error().
+					Err(err).
+					Caller().
+					Str("JMOD", key).
+					Msg("Unable to build JMOD")
 
-			continue
-		}
+				continue
+			}
+		*/
 
 		go subProc.Start()
 	}
@@ -106,11 +108,6 @@ func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
 	}
 
 	mm.ProcMap[jmodPath] = newProc
-
-	err = mm.ProcMap[jmodPath].Build()
-	if err != nil {
-		return err
-	}
 
 	return nil
 }

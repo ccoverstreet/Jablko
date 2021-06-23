@@ -82,7 +82,7 @@ func main() {
 	go UDPServer(curConfig.PortUDP)
 
 	log.Println("Starting HTTP server...")
-	http.ListenAndServe(":"+jablkoModPort, router)
+	log.Println(http.ListenAndServe(":"+jablkoModPort, router))
 }
 
 func loadConfig(config string) {

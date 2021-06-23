@@ -11,6 +11,7 @@ package subprocess
 import (
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -66,13 +67,17 @@ func (sub *Subprocess) MarshalJSON() ([]byte, error) {
 func (sub *Subprocess) generateCMD() {
 	sub.Cmd = exec.Command("make", "run")
 	sub.Cmd.Dir = sub.Dir
-	sub.Cmd.Env = []string{
+
+	hostEnv := os.Environ()
+	jablkoEnv := []string{
 		"JABLKO_CORE_PORT=" + strconv.Itoa(sub.CorePort),
 		"JABLKO_MOD_PORT=" + strconv.Itoa(sub.ModPort),
 		"JABLKO_MOD_KEY=" + sub.Key,
 		"JABLKO_MOD_DATA_DIR=" + sub.DataDir,
 		"JABLKO_MOD_CONFIG=" + string(sub.Config),
 	}
+
+	sub.Cmd.Env = append(hostEnv, jablkoEnv...)
 
 	sub.Cmd.Stdout = sub.Writer
 	sub.Cmd.Stderr = sub.Writer
@@ -97,7 +102,7 @@ func (sub *Subprocess) Start() error {
 	}
 
 	// Search for available port
-	portNumber, err := findAvailablePort(10000, 30000)
+	portNumber, err := GetAvailablePort(10000, 30000)
 	if err != nil {
 		return err
 	}
@@ -123,11 +128,28 @@ func (sub *Subprocess) Start() error {
 	return nil
 }
 
-func findAvailablePort(minPort int, maxPort int) (int, error) {
+type ReservedPortMap struct {
+	sync.Mutex
+	Ports map[int]bool
+}
+
+var ReservedPorts = &ReservedPortMap{sync.Mutex{}, make(map[int]bool)}
+
+func GetAvailablePort(minPort int, maxPort int) (int, error) {
+	ReservedPorts.Lock()
+	defer ReservedPorts.Unlock()
+
 	for i := minPort; i < maxPort; i++ {
+		// If port was already reserved by Jablko Process
+		if ReservedPorts.Ports[i] {
+			continue
+		}
+
 		conn, err := net.Listen("tcp", fmt.Sprintf(":%d", i))
 		if err == nil {
 			conn.Close()
+			ReservedPorts.Ports[i] = true
+			fmt.Println(ReservedPorts)
 			return i, nil
 		}
 	}
@@ -140,6 +162,7 @@ func (sub *Subprocess) wait() {
 
 	log.Warn().
 		Err(err).
+		Str("jmodName", sub.Dir).
 		Int("exitCode", sub.Cmd.ProcessState.ExitCode()).
 		Msg("Process exited")
 }

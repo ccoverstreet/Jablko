@@ -34,25 +34,6 @@ func (app *JablkoCoreApp) Init() error {
 	// config data.
 	app.initRouter()
 
-	// Read jablkoconfig.json
-	/*
-		confByte, err := ioutil.ReadFile("./jablkoconfig.json")
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Unable to read jablkoconfig.json")
-
-			return err
-		}
-	*/
-
-	/* not used right now
-	sourceConf, _, _, err := jsonparser.Get(confByte, "sources")
-	if err != nil {
-		panic(err)
-	}
-	*/
-
 	// Create data folder
 	// Is a fatal error if this fails
 	err := os.MkdirAll("./data", 0755)
