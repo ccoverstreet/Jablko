@@ -78,7 +78,7 @@ func (db *DatabaseHandler) InitEmptyDatabase() {
 		if err != nil {
 			fmt.Printf("Error reading input: %v\n", err)
 		}
-		fmt.Printf("\033[0m")
+		fmt.Printf("\033[0m") // Removes no echo formatting
 
 		// Break if password passes
 		if len(password) >= 12 {

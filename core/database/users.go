@@ -53,6 +53,7 @@ func (ut *UserTable) GetUserList() []string {
 	return arr
 }
 
+/// Adds user to UserTable with a permission level. The levels are 0 (normal) or 1 (admin)
 func (ut *UserTable) CreateUser(username string, password string, permissionLevel int) error {
 	ut.Lock()
 	defer ut.Unlock()

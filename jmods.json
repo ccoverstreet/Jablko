@@ -9,13 +9,22 @@
         }
     },
     "builtin/test": {
-        "portUDP": 41110,
+        "portUDP": 41111,
         "instances": {
             "inst0": {
                 "value": 32
             },
             "inst99": {
                 "value": 49
+            }
+        }
+    },
+    "github.com/ccoverstreet/Jarmuz-RGB-Light@latest": {
+        "instances": {
+            "inst1": {
+                "lightIPs": [
+                    "10.0.0.5"
+                ]
             }
         }
     }
