@@ -14,14 +14,17 @@ import (
 type SubprocessWriter struct {
 	sync.Mutex
 	JMODName string
-	fileName string
+	tag      string // Short name used for prefix writes
+	fileName string // Used for naming log files
 	logFile  *os.File
-	curDay   int
+	curDay   int // Used to tell when log file should be rotated
 }
 
 func CreateSubprocessWriter(JMODName string) (*SubprocessWriter, error) {
 	writer := new(SubprocessWriter)
 	writer.JMODName = JMODName
+	splitJMODName := strings.Split(JMODName, "/")
+	writer.tag = splitJMODName[len(splitJMODName)-1]
 	writer.fileName = fmt.Sprintf("./log/%s_%s.log", strings.ReplaceAll(writer.JMODName, "/", "_"), time.Now().Format("2006-01-02"))
 
 	logFile, err := os.OpenFile(writer.fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -56,7 +59,7 @@ func (writer *SubprocessWriter) Write(b []byte) (int, error) {
 		writer.logFile = newLogFile
 	}
 
-	fmt.Printf("\033[0;34m%s\033[0m", b)
+	fmt.Printf("\033[0;34m%s: %s\033[0m", writer.tag, b)
 	writer.logFile.Write(b)
 
 	return len(b), nil
