@@ -40,10 +40,19 @@ func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir str
 		Str("subprocess", source).
 		Msg("Creating subprocess...")
 
+	// Make data directory
+	err := os.MkdirAll(dataDir, 0755)
+	if err != nil {
+		return nil, err
+	}
+
 	sub := new(Subprocess)
 	sub.CorePort = jablkoPort
 	sub.Key = jmodKey
 	sub.Config = config
+	if sub.Config == nil {
+		sub.Config = []byte("{}")
+	}
 	sub.Dir = source
 	sub.DataDir = dataDir
 

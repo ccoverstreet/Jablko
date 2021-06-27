@@ -89,7 +89,10 @@ func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
 		return err
 	}
 
-	newProc, err := subprocess.CreateSubprocess(jmodPath, 8080, jmodKey, "./data", config)
+	splitJMODPath := strings.Split(jmodPath, "/")
+	shortName := splitJMODPath[len(splitJMODPath)-1]
+
+	newProc, err := subprocess.CreateSubprocess(jmodPath, 8080, jmodKey, "./data/"+shortName, config)
 	if err != nil {
 		return err
 	}
