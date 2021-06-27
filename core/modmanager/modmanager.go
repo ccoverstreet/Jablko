@@ -67,7 +67,7 @@ func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
 	mm.Lock()
 	defer mm.Unlock()
 
-	// Check if mod is already installed
+	// Check if mod is already instantiated
 	if _, ok := mm.ProcMap[jmodPath]; ok {
 		return fmt.Errorf("Module is already registered")
 	}
@@ -103,42 +103,42 @@ func (mm *ModManager) BuildJMOD(jmodPath string) error {
 	mm.Lock()
 	defer mm.Unlock()
 
-	if proc, ok := mm.ProcMap[jmodPath]; ok {
-		return proc.Build()
+	proc, ok := mm.ProcMap[jmodPath]
+	if !ok {
+		return fmt.Errorf("JMOD does not exist")
 	}
 
-	return fmt.Errorf("JMOD does not exist")
+	return proc.Build()
 }
 
 func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 	mm.Lock()
 	defer mm.Unlock()
 
-	if proc, ok := mm.ProcMap[jmodPath]; ok {
-		err := proc.Stop()
-		if err != nil {
-			return err
-		}
-
-		delete(mm.ProcMap, jmodPath)
-
-		if strings.HasPrefix(jmodPath, "github.com") {
-			err := github.DeleteSource(jmodPath)
-			if err != nil {
-				log.Error().
-					Err(err).
-					Msg("JMOD was deleted, but unable to remove source")
-			}
-		}
-
-		go mm.SaveConfigToFile()
-	} else {
+	proc, ok := mm.ProcMap[jmodPath]
+	if !ok {
 		return fmt.Errorf("JMOD not found.")
 	}
+
+	err := proc.Stop()
+	if err != nil {
+		return err
+	}
+
+	delete(mm.ProcMap, jmodPath)
+
+	if strings.HasPrefix(jmodPath, "github.com") {
+		err := github.DeleteSource(jmodPath)
+		return fmt.Errorf("Unable to remove JMOD source - %v", err.Error())
+	}
+
+	go mm.SaveConfigToFile()
 
 	return nil
 }
 
+// Does this need to be locked?
+// It is only called when the manager is already locked
 func (mm *ModManager) SaveConfigToFile() error {
 	mm.Lock()
 	defer mm.Unlock()
@@ -150,7 +150,6 @@ func (mm *ModManager) SaveConfigToFile() error {
 	if err != nil {
 		log.Error().
 			Err(err).
-			Caller().
 			Msg("Unable to marshal mod manager")
 
 		return err
@@ -220,70 +219,75 @@ func (mm *ModManager) StartJMOD(jmodName string) error {
 	mm.Lock()
 	defer mm.Unlock()
 
-	if subProc, ok := mm.ProcMap[jmodName]; ok {
-		err := subProc.Start()
+	proc, ok := mm.ProcMap[jmodName]
+	if !ok {
+		return fmt.Errorf("JMOD not found")
+	}
 
-		// Check for a three second period if process
-		// is still considered as running. This is for
-		// handling restarts
-		if err != nil {
-			if err.Error() == "Process is already started" {
-				for i := 0; i < 3; i++ {
-					log.Warn().
-						Str("jmodName", jmodName).
-						Msg("Retrying mod start")
+	err := proc.Start()
+	if err != nil {
+		// Retry starting for three seconds
+		// only if the error is that the process is already started
 
-					time.Sleep(1 * time.Second)
-					err = subProc.Start()
+		if err.Error() == "Process is already started" {
+			for i := 0; i < 3; i++ {
+				log.Warn().
+					Str("jmodName", jmodName).
+					Msg("Retrying mod start")
 
-					if err == nil {
-						break
-					}
+				time.Sleep(1 * time.Second)
+				err = proc.Start()
+
+				if err == nil {
+					break
 				}
 			}
 		}
-
-		return err
 	}
 
-	return fmt.Errorf("JMOD not found")
+	return err
 }
 
 func (mm *ModManager) StopJMOD(jmodName string) error {
 	mm.Lock()
 	defer mm.Unlock()
 
-	if subProc, ok := mm.ProcMap[jmodName]; ok {
-		return subProc.Stop()
+	proc, ok := mm.ProcMap[jmodName]
+	if !ok {
+		return fmt.Errorf("JMOD not found")
 	}
 
-	return fmt.Errorf("JMOD not found")
+	return proc.Stop()
 }
 
+// Should the proc struct handle this
+// Feels weird locking the process outside of process struct
 func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 	mm.Lock()
 	defer mm.Unlock()
 
-	if proc, ok := mm.ProcMap[jmodName]; ok {
-		proc.Lock()
-		defer proc.Unlock()
-		proc.Config = []byte(newConfig)
-
-		return nil
+	proc, ok := mm.ProcMap[jmodName]
+	if !ok {
+		return fmt.Errorf("JMOD not found")
 	}
 
-	return fmt.Errorf("JMOD not found")
+	proc.Lock()
+	defer proc.Unlock()
+	proc.Config = []byte(newConfig)
+
+	return nil
 }
 
 func (mm *ModManager) GetJMODLog(jmodName string) ([]byte, error) {
 	mm.RLock()
 	defer mm.RUnlock()
 
-	if proc, ok := mm.ProcMap[jmodName]; ok {
-		return proc.GetCurLogBytes()
+	proc, ok := mm.ProcMap[jmodName]
+	if !ok {
+		return nil, fmt.Errorf("JMOD process does not exist")
 	}
 
-	return nil, fmt.Errorf("JMOD process does not exist")
+	return proc.GetCurLogBytes()
 }
 
 func (mm *ModManager) CleanProcesses() {
@@ -368,6 +372,9 @@ func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, stri
 }
 
 func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modName string) {
+	mm.Lock()
+	defer mm.Unlock()
+
 	log.Info().
 		Str("jmodName", modName).
 		Msg("JMOD requested config save")
