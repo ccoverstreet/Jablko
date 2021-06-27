@@ -1,3 +1,7 @@
+// Webcomponent for Jablko Demo mod
+// Cale Overstreet
+// May 15, 2021
+
 class extends HTMLElement {
 	constructor() {
 		super();

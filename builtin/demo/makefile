@@ -1,9 +1,10 @@
+build_instruction = go build -o demomod .
+file_dependencies = demomod.go jablkohelpers.go webcomponent.js
+
 run: demomod
 	./demomod
 
-demomod: demomod.go jablkohelpers.go
-	echo "ASDASDASDASDASDASDASDASDASDS"
-	go build -o demomod .
+build: demomod
 
-build:
-	go build -o demomod .
+demomod: $(file_dependencies)
+	$(build_instruction)

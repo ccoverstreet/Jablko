@@ -1,9 +1,9 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -22,9 +22,6 @@ const gDefaultConfig string = `
 	"instances": {
 		"inst0": {
 			"value": 32
-		},
-		"inst99": {
-			"value": 49
 		}
 	}
 }
@@ -52,6 +49,9 @@ var curStateUDP = stateUDP{sync.Mutex{}, "Startup Message"}
 var jablkoCorePort string
 var jablkoModPort string
 var jablkoModKey string
+
+//go:embed webcomponent.js
+var webcomponentFile []byte
 
 func main() {
 	// Grabbing settings from environment variable
@@ -115,12 +115,16 @@ func loadConfig(config string) {
 // javascript class. In production, the file should be cached so that
 // disk reads are kept to a minimum
 func webComponentHandler(w http.ResponseWriter, r *http.Request) {
-	b, err := ioutil.ReadFile("./webcomponent.js")
-	if err != nil {
-		fmt.Fprintf(w, "Unable to read WebComponent file")
-	}
+	// Example for debugging, reads file on every request
+	// Leave this commented out
+	/*
+		b, err := ioutil.ReadFile("./webcomponent.js")
+		if err != nil {
+			fmt.Fprintf(w, "Unable to read WebComponent file")
+		}
+	*/
 
-	fmt.Fprintf(w, "%s", b)
+	fmt.Fprintf(w, "%s", webcomponentFile)
 }
 
 // Instance data returns a javascript object string with
