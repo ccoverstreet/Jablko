@@ -16,6 +16,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -92,7 +93,17 @@ func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
 	splitJMODPath := strings.Split(jmodPath, "/")
 	shortName := splitJMODPath[len(splitJMODPath)-1]
 
-	newProc, err := subprocess.CreateSubprocess(jmodPath, 8080, jmodKey, "./data/"+shortName, config)
+	dataDir, err := filepath.Abs("./data/" + shortName)
+	if err != nil {
+		return err
+	}
+
+	newProc, err := subprocess.CreateSubprocess(jmodPath,
+		8080,
+		jmodKey,
+		dataDir,
+		config)
+
 	if err != nil {
 		return err
 	}
