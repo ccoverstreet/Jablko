@@ -90,3 +90,9 @@ textarea {
     background-color: var(--clr-background);
     color: var(--clr-font-high);
 }
+
+
+select {
+	background-color: var(--clr-background);
+	color: var(--clr-font-high);
+}
