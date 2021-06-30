@@ -9,6 +9,7 @@
 package app
 
 import (
+	_ "embed"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -222,129 +223,39 @@ func (app *JablkoCoreApp) ServiceHandler(w http.ResponseWriter, r *http.Request)
 	app.ModM.ServiceHandler(w, r)
 }
 
-func errHandlerDashboard(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusInternalServerError)
-	fmt.Fprintf(w, "Error generating dashboard. Check logs.")
-}
+//go:embed template.html
+var dashboardTemplate string
 
+/// Creates the dashboard from the HTML template "index.html"
 func (app *JablkoCoreApp) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	// This should probably be moved into modmanager
-
-	bIndex, err := ioutil.ReadFile("./html/index.html")
-	if err != nil {
-		errHandlerDashboard(w, r)
-		return
-	}
-
-	template := string(bIndex)
-
 	bTaskbar, err := ioutil.ReadFile("./html/taskbar.html")
 	if err != nil {
-		errHandlerDashboard(w, r)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", err)
 		return
 	}
 
-	builderWC := strings.Builder{}
-	builderInstance := strings.Builder{}
-
-	for modSource, subProc := range app.ModM.ProcMap {
-		b1, err := app.getWebComponent(subProc.ModPort)
-		if err != nil {
-			log.Warn().
-				Err(err).
-				Msg("Unable to get WebComponent")
-			continue
-		}
-		builderWC.WriteString("\njablkoWebCompMap[\"" + modSource + "\"] = ")
-		builderWC.Write(b1)
-
-		b2, err := app.getInstanceData(subProc.ModPort)
-		if err != nil {
-			log.Warn().
-				Err(err).
-				Msg("Unable to get JMOD instance data")
-			continue
-		}
-		builderInstance.WriteString("\njablkoInstanceConfMap[\"" + modSource + "\"] = ")
-		builderInstance.Write(b2)
-	}
+	WebCompStr, InstConfStr := app.ModM.GenerateJMODDashComponents()
 
 	dashboardReplacer := strings.NewReplacer(
 		"$JABLKO_TASKBAR", string(bTaskbar),
-		"$JABLKO_WEB_COMPONENT_MAP_DEF", builderWC.String(),
-		"$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF", builderInstance.String(),
+		"$JABLKO_WEB_COMPONENT_MAP_DEF", WebCompStr,
+		"$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF", InstConfStr,
 	)
 
-	fmt.Fprintf(w, "%s", dashboardReplacer.Replace(template))
+	fmt.Fprintf(w, "%s", dashboardReplacer.Replace(dashboardTemplate))
 
 	return
 }
 
 func (app *JablkoCoreApp) PassToJMOD(w http.ResponseWriter, r *http.Request) {
-	// Checks for JMOD_Source URL parameter
-	// Returns 404
-	source := r.FormValue("JMOD-Source")
-	log.Info().
-		Str("JMOD", source).
-		Str("URI", r.URL.RequestURI()).
-		Msg("Passing request to JMOD")
+	err := app.ModM.PassRequest(w, r)
 
-	// Check if no JMOD-Source header value found
-	if len(source) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Empty JMOD-Source parameter")
-		log.Warn().
-			Str("JMOD-Source", source).
-			Msg("Empty JMOD-Source parameter")
-		return
-	}
-
-	// Check if JMOD-Source is a valid option
-	if _, ok := app.ModM.ProcMap[source]; !ok {
-		w.WriteHeader(http.StatusNotImplemented)
-		fmt.Fprintf(w, "JMOD not found")
-		return
-	}
-
-	app.ModM.PassRequest(w, r)
-	return
-
-}
-
-func (app *JablkoCoreApp) getWebComponent(modPort int) ([]byte, error) {
-	resp, err := http.Get("http://localhost:" + strconv.Itoa(modPort) + "/webComponent")
 	if err != nil {
-		return nil, err
+		log.Error().
+			Err(err).
+			Msg("Unable to pass request")
 	}
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("Bad status code: %d", resp.StatusCode)
-	}
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
-}
-
-func (app *JablkoCoreApp) getInstanceData(modPort int) ([]byte, error) {
-	resp, err := http.Get("http://localhost:" + strconv.Itoa(modPort) + "/instanceData")
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("Bad status code: %d", resp.StatusCode)
-	}
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
 }
 
 func (app *JablkoCoreApp) AssetsHandler(w http.ResponseWriter, r *http.Request) {

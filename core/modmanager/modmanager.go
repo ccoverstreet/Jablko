@@ -37,8 +37,7 @@ type ModManager struct {
 }
 
 func NewModManager(conf []byte) (*ModManager, error) {
-	newMM := new(ModManager)
-	newMM.ProcMap = make(map[string]*subprocess.Subprocess)
+	newMM := &ModManager{sync.RWMutex{}, make(map[string]*subprocess.Subprocess)}
 
 	// Creates subprocesses for all
 	parseConfObj := func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
@@ -130,6 +129,7 @@ func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 	defer mm.Unlock()
 
 	proc, ok := mm.ProcMap[jmodPath]
+	fmt.Println("DELETE", proc, ok)
 	if !ok {
 		return fmt.Errorf("JMOD not found.")
 	}
@@ -139,24 +139,21 @@ func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 		return err
 	}
 
-	delete(mm.ProcMap, jmodPath)
-
 	if strings.HasPrefix(jmodPath, "github.com") {
 		err := github.DeleteSource(jmodPath)
-		return fmt.Errorf("Unable to remove JMOD source - %v", err.Error())
+		if err != nil {
+			return fmt.Errorf("Unable to remove JMOD source - %v", err.Error())
+		}
 	}
 
-	go mm.SaveConfigToFile()
+	delete(mm.ProcMap, jmodPath)
 
-	return nil
+	return mm.SaveConfigToFile()
 }
 
 // Does this need to be locked?
 // It is only called when the manager is already locked
 func (mm *ModManager) SaveConfigToFile() error {
-	mm.Lock()
-	defer mm.Unlock()
-
 	log.Info().
 		Msg("Saving JMOD data to jmods.json")
 
@@ -174,7 +171,6 @@ func (mm *ModManager) SaveConfigToFile() error {
 	if err != nil {
 		log.Error().
 			Err(err).
-			Caller().
 			Msg("Unable to save jmods.json")
 
 		return err
@@ -183,21 +179,24 @@ func (mm *ModManager) SaveConfigToFile() error {
 	return nil
 }
 
-func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
+func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) error {
 	mm.RLock()
 	defer mm.RUnlock()
 
 	source := r.FormValue("JMOD-Source")
 
-	modPort := mm.ProcMap[source].ModPort
+	proc, ok := mm.ProcMap[source]
+	if !ok {
+		return fmt.Errorf("JMOD does not exist")
+	}
+
+	modPort := proc.ModPort
 	url, _ := url.Parse("http://localhost:" + strconv.Itoa(modPort))
 	proxy := httputil.NewSingleHostReverseProxy(url)
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to read incoming proxy request body")
+		return fmt.Errorf("Unable to read incoming request body - %v", err)
 	}
 
 	r.Host = url.Host
@@ -207,6 +206,56 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) {
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
 
 	proxy.ServeHTTP(w, r)
+
+	return nil
+}
+
+func (mm *ModManager) GenerateJMODDashComponents() (string, string) {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	builderWC := strings.Builder{}
+	builderInstance := strings.Builder{}
+
+	for jmodName, proc := range mm.ProcMap {
+		baseURL := "http://localhost:" + strconv.Itoa(proc.ModPort)
+		bWC, err := queryJMOD(baseURL + "/webComponent")
+		if err != nil {
+			log.Error().
+				Str("jmodName", jmodName).
+				Err(err).
+				Msg("Unable to get webcomponent")
+			continue
+		}
+		builderWC.WriteString("\njablkoWebCompMap[\"" + jmodName + "\"] = ")
+		builderWC.Write(bWC)
+
+		bID, err := queryJMOD(baseURL + "/instanceData")
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Unable to get JMOD instance data")
+			continue
+		}
+		builderInstance.WriteString("\njablkoInstanceConfMap[\"" + jmodName + "\"] = ")
+		builderInstance.Write(bID)
+	}
+
+	return builderWC.String(), builderInstance.String()
+}
+
+func queryJMOD(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("Bad status code: %d", resp.StatusCode)
+	}
+
+	return ioutil.ReadAll(resp.Body)
 }
 
 func (mm *ModManager) JMODData() ([]byte, error) {
@@ -406,5 +455,15 @@ func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modN
 
 	mm.ProcMap[modName].Config = newConfigByte
 
-	go mm.SaveConfigToFile()
+	err = mm.SaveConfigToFile()
+
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to save config file")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
 }
