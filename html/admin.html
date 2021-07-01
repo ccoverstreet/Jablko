@@ -16,12 +16,12 @@
 				for (var i = 0; i < buttons.length; i++) {
 					if (panels[i].id == panelId) {
 						panels[i].style.display = "flex";
-						buttons[i].style.borderColor = "var(--clr-green)";
+						buttons[i].style.backgroundColor = "var(--clr-green)";
 						continue
 					}
 
 					panels[i].style.display = "none";
-					buttons[i].style.borderColor = "var(--clr-font-high)";
+					buttons[i].style.backgroundColor = "var(--clr-gray)";
 				}
 			}	
 		</script>
@@ -39,9 +39,8 @@
 		#panel-switcher-header > button {
 			flex: 1;
 			margin: 0px;
-			border: solid;
-			border-width: 0.2em;
-			border-radius: 0px;
+			margin-right: 0.2em;
+			border-radius: 2px;
 		}
 
 		#panel-switcher-content {
@@ -106,18 +105,16 @@
 		$JABLKO_TASKBAR
 		<div id="panel-switcher">
 			<div id="panel-switcher-header">
-				<button onclick="switchPanel('jmod-settings-panel')" style="border-color: var(--clr-green); font-weight: bold;">JMODS</button>
-				<button onclick="switchPanel('user-settings-panel')" style="font-weight: bold;">Users</button>
+				<button onclick="switchPanel('jmod-settings-panel')" style="background-color: var(--clr-green); font-weight: bold;">JMODS</button>
+				<button onclick="switchPanel('user-settings-panel')" style="background-color: var(--clr-gray); font-weight: bold;">Users</button>
 			</div>
-
-			<hr style="border-color: var(--clr-font-high)">
 
 			<div id="panel-switcher-content">
 				
 				<div id="jmod-settings-panel">
-					<div>
-						<input id="install-jmod-input"></input>
-						<button onclick="InstallJMOD()">Add JMOD</button>
+					<div style="display: flex; flex: 1 1; max-width: 30em; width: 100%;">
+						<input id="install-jmod-input" style="width: 100%; margin: auto 1em;"></input>
+						<button onclick="InstallJMOD()" style="background-color: var(--clr-green)">Add JMOD</button>
 					</div>
 
 					<div id="jmod-entry-holder"></div>

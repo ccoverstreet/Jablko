@@ -11,8 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// Dispatches admin functions based on incoming HTTP requests
-//
+/// Dispatches admin functions based on incoming HTTP requests
 func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Request) {
 	// First check if user has correct privileges
 	permissionLevel, err := strconv.Atoi(r.Header.Get("Jablko-User-Permissions"))
@@ -54,7 +53,7 @@ func (app *JablkoCoreApp) AdminFuncHandler(w http.ResponseWriter, r *http.Reques
 	case "getUserList":
 		app.getUserList(w, r)
 	case "createUser":
-		app.addUser(w, r)
+		app.createUser(w, r)
 	case "deleteUser":
 		app.deleteUser(w, r)
 	default:
@@ -391,7 +390,7 @@ func (app *JablkoCoreApp) getUserList(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", body)
 }
 
-func (app *JablkoCoreApp) addUser(w http.ResponseWriter, r *http.Request) {
+func (app *JablkoCoreApp) createUser(w http.ResponseWriter, r *http.Request) {
 	type submittedData struct {
 		Username string `json:"username"`
 		Password string `json:"password"`

@@ -11,8 +11,11 @@ function InstallJMOD() {
 	})
 		.then(async data => {
 			console.log(await data.text());
+			alert("Reloading page");
+			location.reload();
 		})
 		.catch(err => {
+			alert(err);
 			console.error(err);
 			console.log(err);
 		})
@@ -47,6 +50,15 @@ class JMODEntry extends HTMLElement {
 	width: 100%;
 }
 
+#jmod-controls {
+	display: flex;
+	flex-wrap: wrap;
+}
+#jmod-controls > button {
+	margin: 0.2em;
+	flex: 1 1;
+}
+
 #jmod-error-output {
 	width: 100%;
 	color: var(--clr-red);
@@ -67,13 +79,15 @@ class JMODEntry extends HTMLElement {
 </style>
 <div class="entry">
 	<h3 id="jmod-name" style="word-break: break-all;"></h3>
-	<button onclick="this.getRootNode().host.start()">Start</button>
-	<button onclick="this.getRootNode().host.stop()" style="border-color: var(--clr-red)">Stop</button>
-	<button onclick="this.getRootNode().host.build()" style="border-color: var(--clr-yellow)">Build</button>
+	<div id="jmod-controls">
+		<button onclick="this.getRootNode().host.start()" style="background-color: var(--clr-green)">Start</button>
+		<button onclick="this.getRootNode().host.stop()" style="background-color: var(--clr-red)">Stop</button>
+		<button onclick="this.getRootNode().host.build()" style="background-color: var(--clr-blue)">Build</button>
 
-	<button onclick="this.getRootNode().host.toggleEditor()" style="border-color: var(--clr-font-high)">Edit Config</button>
-	<button onclick="this.getRootNode().host.getJMODLog()" style="border-color: var(--clr-font-high)">View Log</button>
-	<button onclick="this.getRootNode().host.deleteJMOD()" style="border-color: var(--clr-font-high)">Delete</button>
+		<button onclick="this.getRootNode().host.toggleEditor()" style="background-color: var(--clr-green)">Config</button>
+		<button onclick="this.getRootNode().host.getJMODLog()" style="background-color: var(--clr-purple)">Log</button>
+		<button onclick="this.getRootNode().host.deleteJMOD()" style="background-color: var(--clr-red)">Delete</button>
+	</div>
 
 	<div id="config-editor-panel" style="display:none;">
 		<textarea id="config-editor"></textarea>
@@ -228,7 +242,7 @@ class JMODEntry extends HTMLElement {
 	}
 
 	deleteJMOD() {
-		var yes = confirm("Yes?");
+		var yes = confirm(`Are you sure you want to delete ${this.jmodName}`);
 
 		if (yes) {
 			fetch("/admin/deleteJMOD", {

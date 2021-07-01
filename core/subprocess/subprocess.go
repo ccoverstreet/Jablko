@@ -11,6 +11,7 @@ package subprocess
 import (
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -39,10 +40,19 @@ func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir str
 		Str("subprocess", source).
 		Msg("Creating subprocess...")
 
+	// Make data directory
+	err := os.MkdirAll(dataDir, 0755)
+	if err != nil {
+		return nil, err
+	}
+
 	sub := new(Subprocess)
 	sub.CorePort = jablkoPort
 	sub.Key = jmodKey
 	sub.Config = config
+	if sub.Config == nil {
+		sub.Config = []byte("{}")
+	}
 	sub.Dir = source
 	sub.DataDir = dataDir
 
@@ -66,7 +76,9 @@ func (sub *Subprocess) MarshalJSON() ([]byte, error) {
 func (sub *Subprocess) generateCMD() {
 	sub.Cmd = exec.Command("make", "run")
 	sub.Cmd.Dir = sub.Dir
-	sub.Cmd.Env = []string{
+
+	hostEnv := os.Environ()
+	jablkoEnv := []string{
 		"JABLKO_CORE_PORT=" + strconv.Itoa(sub.CorePort),
 		"JABLKO_MOD_PORT=" + strconv.Itoa(sub.ModPort),
 		"JABLKO_MOD_KEY=" + sub.Key,
@@ -74,12 +86,10 @@ func (sub *Subprocess) generateCMD() {
 		"JABLKO_MOD_CONFIG=" + string(sub.Config),
 	}
 
+	sub.Cmd.Env = append(hostEnv, jablkoEnv...)
+
 	sub.Cmd.Stdout = sub.Writer
 	sub.Cmd.Stderr = sub.Writer
-	/*
-		sub.Cmd.Stdout = ColoredWriter{sub.Dir, os.Stdout}
-		sub.Cmd.Stderr = ColoredWriter{sub.Dir, os.Stderr}
-	*/
 
 	sub.Cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
@@ -97,7 +107,7 @@ func (sub *Subprocess) Start() error {
 	}
 
 	// Search for available port
-	portNumber, err := findAvailablePort(10000, 30000)
+	portNumber, err := GetAvailablePort(10000, 30000)
 	if err != nil {
 		return err
 	}
@@ -123,11 +133,28 @@ func (sub *Subprocess) Start() error {
 	return nil
 }
 
-func findAvailablePort(minPort int, maxPort int) (int, error) {
+type ReservedPortMap struct {
+	sync.Mutex
+	Ports map[int]bool
+}
+
+var ReservedPorts = &ReservedPortMap{sync.Mutex{}, make(map[int]bool)}
+
+func GetAvailablePort(minPort int, maxPort int) (int, error) {
+	ReservedPorts.Lock()
+	defer ReservedPorts.Unlock()
+
 	for i := minPort; i < maxPort; i++ {
+		// If port was already reserved by Jablko Process
+		if ReservedPorts.Ports[i] {
+			continue
+		}
+
 		conn, err := net.Listen("tcp", fmt.Sprintf(":%d", i))
 		if err == nil {
 			conn.Close()
+			ReservedPorts.Ports[i] = true
+			fmt.Println(ReservedPorts)
 			return i, nil
 		}
 	}
@@ -140,6 +167,7 @@ func (sub *Subprocess) wait() {
 
 	log.Warn().
 		Err(err).
+		Str("jmodName", sub.Dir).
 		Int("exitCode", sub.Cmd.ProcessState.ExitCode()).
 		Msg("Process exited")
 }
@@ -178,10 +206,4 @@ func (sub *Subprocess) GetCurLogBytes() ([]byte, error) {
 	defer sub.Unlock()
 
 	return sub.Writer.GetCurLogBytes()
-}
-
-func (sub *Subprocess) Update() {
-	// Handles updating the source
-	// Will first look for precompiled options
-	// and then resort to a build from source
 }

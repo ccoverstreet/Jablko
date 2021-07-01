@@ -1,21 +1,26 @@
 {
+    "/home/coverstreet/Coding/Jablko_Home/My_Mods/Jarmuz-Cookbook": {
+        "instances": {
+            "inst0": {
+                "title": "Recipes"
+            }
+        }
+    },
     "/home/coverstreet/Coding/Jablko_Home/My_Mods/Jarmuz-RGB-Light": {
         "instances": {
             "inst1": {
                 "lightIPs": [
-                    "10.0.0.5"
+                    "10.0.0.53",
+                    "localhost"
                 ]
             }
         }
     },
-    "builtin/test": {
-        "portUDP": 41110,
+    "builtin/demo": {
+        "portUDP": 41111,
         "instances": {
             "inst0": {
                 "value": 32
-            },
-            "inst99": {
-                "value": 49
             }
         }
     }
