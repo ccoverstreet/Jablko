@@ -136,7 +136,10 @@ func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 
 	err := proc.Stop()
 	if err != nil {
-		return err
+		log.Info().
+			Err(err).
+			Str("jmodName", jmodPath).
+			Msg("Process is already stopped")
 	}
 
 	if strings.HasPrefix(jmodPath, "github.com") {
