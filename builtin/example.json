@@ -1,0 +1,10 @@
+{
+    "builtin/demo": {
+        "portUDP": 41111,
+        "instances": [
+            {
+                "value": 32
+            }
+        ]
+    }
+}
