@@ -28,7 +28,9 @@
 				dashboardButton.style.backgroundColor = "var(--clr-green)";
 
 				var mod_holder = document.getElementById("mod-holder");
-				for (var source in jablkoWebCompMap) {
+
+				let sortedMods = Object.keys(jablkoInstanceConfMap).sort()
+				for (var source of sortedMods) {
 					console.log(source);
 					compname = source.split("@")[0];
 					if (source[0] === "/") {

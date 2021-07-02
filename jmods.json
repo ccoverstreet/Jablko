@@ -10,7 +10,7 @@
         "instances": [
             {
                 "lightIPs": [
-                    "10.0.0.5"
+                    "10.0.0.53"
                 ]
             }
         ]
@@ -20,6 +20,13 @@
         "instances": [
             {
                 "value": 32
+            }
+        ]
+    },
+    "github.com/ccoverstreet/Jarmuz-Cookbook@latest": {
+        "instances": [
+            {
+                "title": "Cookbook"
             }
         ]
     }
