@@ -20,11 +20,11 @@ import (
 const gDefaultConfig string = `
 {
 	"portUDP": 41111,
-	"instances": {
-		"inst0": {
+	"instances": [
+		{
 			"value": 32
 		}
-	}
+	]
 }
 `
 
