@@ -59,7 +59,11 @@ class extends HTMLElement {
 		`
 	}
 
-	init(source, instName, config) {
+	log(message) {
+		console.log(this.logPrefix + message);
+	}
+
+	init(source, config) {
 		// Setup WebSocket
 		try {
 			this.webSocket = new WebSocket(`ws://${document.location.host}/jmod/socket?JMOD-Source=${source}`);
@@ -70,7 +74,7 @@ class extends HTMLElement {
 		}
 
 		this.source = source;
-		this.instName = instName;
+		this.logPrefix = source.split("/")[-1] + " ";
 	}
 
 	webSocketResHandler(event) {

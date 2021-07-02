@@ -4,7 +4,7 @@
 		<title>Jablko</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="/assets/standard.css"></link>
-<style>
+		<style>
 #mod-holder {
 	columns: 3 20em;
 	column-gap: 0px;
@@ -14,7 +14,7 @@
 	width: calc(100% - 6px);
 	padding: 3px;
 }
-</style>
+		</style>
 		<script> 
 			var jablkoWebCompMap = {} // Stores WebComponent source for each module
 			var jablkoInstanceConfMap = {} // Holds configs for each module used for init
@@ -36,11 +36,11 @@
 					}
 					var name = compname.replaceAll("/", "-").replaceAll("_", "-").toLowerCase();
 					customElements.define(name, jablkoWebCompMap[source]);
-					
+
 					for (const instName in jablkoInstanceConfMap[source]) {
 						var elem = document.createElement(name);
 						try {
-							elem.init(source, instName, jablkoInstanceConfMap[source][instName]);
+							elem.init(source, jablkoInstanceConfMap[source][instName]);
 							mod_holder.appendChild(elem);
 							jablkoInstanceMap[String(window.performance.now())] = elem;
 						} catch(err) {
@@ -55,7 +55,7 @@
 	$JABLKO_TASKBAR
 	<body>
 		<div id="mod-holder">
-	
+
 		</div>
 	</body>
 </html>
