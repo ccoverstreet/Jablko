@@ -378,8 +378,6 @@ func (mm *ModManager) CleanProcesses() {
 // JMOD for authentication. JMODs can save their configs
 // or retrieve information
 func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("BIG FART")
-
 	// Check JMOD-KEY header value
 	keyValue := r.Header.Get("JMOD-KEY")
 	if keyValue == "" {
