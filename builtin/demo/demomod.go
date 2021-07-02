@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -34,8 +35,8 @@ type testInstance struct {
 
 type testGlobalConfig struct {
 	sync.Mutex
-	PortUDP   int                     `json:"portUDP"`
-	Instances map[string]testInstance `json:"instances"`
+	PortUDP   int            `json:"portUDP"`
+	Instances []testInstance `json:"instances"`
 }
 
 type stateUDP struct {
@@ -117,14 +118,13 @@ func loadConfig(config string) {
 func webComponentHandler(w http.ResponseWriter, r *http.Request) {
 	// Example for debugging, reads file on every request
 	// Leave this commented out
-	/*
-		b, err := ioutil.ReadFile("./webcomponent.js")
-		if err != nil {
-			fmt.Fprintf(w, "Unable to read WebComponent file")
-		}
-	*/
+	b, err := ioutil.ReadFile("./webcomponent.js")
+	if err != nil {
+		fmt.Fprintf(w, "Unable to read WebComponent file")
+	}
+	fmt.Fprintf(w, "%s", b)
 
-	fmt.Fprintf(w, "%s", webcomponentFile)
+	//fmt.Fprintf(w, "%s", webcomponentFile)
 }
 
 // Instance data returns a javascript object string with

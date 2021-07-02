@@ -2,7 +2,7 @@
     "/home/coverstreet/Coding/Jablko_Home/My_Mods/Jarmuz-Cookbook": {
         "instances": {
             "inst0": {
-                "title": "Recipes"
+                "title": "Cookbook"
             }
         }
     },
@@ -10,18 +10,17 @@
         "instances": {
             "inst1": {
                 "lightIPs": [
-                    "10.0.0.53",
-                    "localhost"
+                    "10.0.0.53"
                 ]
             }
         }
     },
     "builtin/demo": {
         "portUDP": 41111,
-        "instances": {
-            "inst0": {
+        "instances": [
+            {
                 "value": 32
             }
-        }
+        ]
     }
 }
