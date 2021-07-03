@@ -16,6 +16,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -102,12 +103,14 @@ func (app *JablkoCoreApp) initRouter() {
 
 func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+
 		log.Info().
 			Str("reqIPAddress", r.RemoteAddr).
 			Str("URI", r.URL.String()).
+			Int64("timeForReq", time.Since(start).Microseconds()).
 			Msg("Logging Middleware")
-
-		next.ServeHTTP(w, r)
 	})
 }
 
