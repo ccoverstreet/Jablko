@@ -409,6 +409,8 @@ func (mm *ModManager) CleanProcesses() {
 // Uses the JMOD-KEY and PORT-NUMBER assigned to each
 // JMOD for authentication. JMODs can save their configs
 // or retrieve information
+
+// THIS SHOULD BE MOVED INTO core/app
 func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	// Check JMOD-KEY header value
 	keyValue := r.Header.Get("JMOD-KEY")
