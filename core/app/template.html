@@ -36,6 +36,7 @@
 			
 			async function loadInstance(elementName, sourceName, conf) {
 				let elem = document.createElement(elementName);
+
 				try {
 					elem.init(sourceName, conf)
 					return elem;
@@ -47,7 +48,6 @@
 			document.addEventListener("DOMContentLoaded", async function() {
 				const dashboardButton = document.getElementById("button-goto-dashboard");
 				dashboardButton.style.backgroundColor = "var(--clr-green)";
-
 
 				let sortedMods = Object.keys(jablkoInstanceConfMap).sort()
 				let instancePromises = []
