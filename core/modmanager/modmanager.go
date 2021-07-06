@@ -211,44 +211,76 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) error 
 	proxy.ServeHTTP(w, r)
 
 	return nil
+
+}
+
+type DashComponent struct {
+	Err      error
+	JMODName string
+	WebComp  []byte
+	InstConf []byte
 }
 
 func (mm *ModManager) GenerateJMODDashComponents() (string, string) {
 	mm.RLock()
 	defer mm.RUnlock()
 
+	// Create channel and spawn goroutines to query JMODs
+	outChan := make(chan DashComponent, 2)
+	for jmodName, proc := range mm.ProcMap {
+		baseURL := "http://localhost:" + strconv.Itoa(proc.ModPort)
+		go getDashComponent(jmodName, baseURL, outChan)
+	}
+
 	builderWC := strings.Builder{}
 	builderInstance := strings.Builder{}
 
-	for jmodName, proc := range mm.ProcMap {
-		baseURL := "http://localhost:" + strconv.Itoa(proc.ModPort)
-		bWC, err := queryJMOD(baseURL + "/webComponent")
-		if err != nil {
-			log.Error().
-				Str("jmodName", jmodName).
-				Err(err).
-				Msg("Unable to get webcomponent")
-			continue
-		}
-		builderWC.WriteString("\njablkoWebCompMap[\"" + jmodName + "\"] = ")
-		builderWC.Write(bWC)
+	// Read from channel the same number of times as
+	// the number of JMODs. This is guaranteed to not deadlock as
+	// the number of processes (therefore channel reads) is known
+	for i := 0; i < len(mm.ProcMap); i++ {
+		comp := <-outChan
 
-		bID, err := queryJMOD(baseURL + "/instanceData")
-		if err != nil {
+		if comp.Err != nil {
 			log.Error().
-				Err(err).
-				Msg("Unable to get JMOD instance data")
+				Err(comp.Err).
+				Str("jmodName", comp.JMODName).
+				Msg("Unable to get dashboard component")
+
 			continue
 		}
-		builderInstance.WriteString("\njablkoInstanceConfMap[\"" + jmodName + "\"] = ")
-		builderInstance.Write(bID)
+
+		builderWC.WriteString("\njablkoWebCompMap[\"" + comp.JMODName + "\"] = ")
+		builderWC.Write(comp.WebComp)
+
+		builderInstance.WriteString("\njablkoInstanceConfMap[\"" + comp.JMODName + "\"] = ")
+		builderInstance.Write(comp.InstConf)
 	}
 
 	return builderWC.String(), builderInstance.String()
 }
 
+func getDashComponent(jmodName string, baseURL string, out chan<- DashComponent) {
+	bWC, err := queryJMOD(baseURL + "/webComponent")
+	if err != nil {
+		out <- DashComponent{err, jmodName, nil, nil}
+		return
+	}
+
+	bID, err := queryJMOD(baseURL + "/instanceData")
+	if err != nil {
+		out <- DashComponent{err, jmodName, nil, nil}
+		return
+	}
+
+	out <- DashComponent{nil, jmodName, bWC, bID}
+}
+
 func queryJMOD(url string) ([]byte, error) {
-	resp, err := http.Get(url)
+	client := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	resp, err := client.Get(url)
 
 	if err != nil {
 		return nil, err

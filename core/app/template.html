@@ -23,33 +23,59 @@
 			$JABLKO_WEB_COMPONENT_MAP_DEF
 			$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF
 
-			document.addEventListener("DOMContentLoaded", function() {
+			function sanitizeModName(sourceName) {
+				let stripped = sourceName.split("@")[0];
+				if (stripped[0] == "/") {
+					stripped = stripped.slice(1);
+				}
+
+				return stripped.replaceAll("/", "-")
+					.replaceAll("_", "-")
+					.toLowerCase();
+			}
+			
+			async function loadInstance(elementName, sourceName, conf) {
+				let elem = document.createElement(elementName);
+
+				try {
+					elem.init(sourceName, conf)
+					return elem;
+				} catch(err) {
+					return err;
+				}
+			}
+
+			document.addEventListener("DOMContentLoaded", async function() {
 				const dashboardButton = document.getElementById("button-goto-dashboard");
 				dashboardButton.style.backgroundColor = "var(--clr-green)";
 
-				var mod_holder = document.getElementById("mod-holder");
-
 				let sortedMods = Object.keys(jablkoInstanceConfMap).sort()
+				let instancePromises = []
+			
 				for (var source of sortedMods) {
 					console.log(source);
-					compname = source.split("@")[0];
-					if (source[0] === "/") {
-						compname = source.slice(1);
-					}
-					var name = compname.replaceAll("/", "-").replaceAll("_", "-").toLowerCase();
-					customElements.define(name, jablkoWebCompMap[source]);
+
+					elemName = sanitizeModName(source)
+					customElements.define(elemName, jablkoWebCompMap[source]);
 
 					for (const instName in jablkoInstanceConfMap[source]) {
-						var elem = document.createElement(name);
-						try {
-							elem.init(source, jablkoInstanceConfMap[source][instName]);
-							mod_holder.appendChild(elem);
-							jablkoInstanceMap[String(window.performance.now())] = elem;
-						} catch(err) {
-							console.error(err);
-						}
-
+						instancePromises.push(loadInstance(elemName, source, jablkoInstanceConfMap[source][instName]));
 					}
+				}
+
+				// After letting all elements initialize in async functions
+				// await for them all and append them into modholder
+				let elems = await Promise.all(instancePromises)
+				var mod_holder = document.getElementById("mod-holder");
+				for (elem of elems) {
+					if (elem instanceof Error) {
+						console.error(err);
+						console.log(err);
+						continue;
+					}
+
+					console.log(elem);
+					mod_holder.appendChild(elem);
 				}
 			})
 		</script>
