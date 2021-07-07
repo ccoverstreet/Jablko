@@ -38,29 +38,6 @@ type ModManager struct {
 func NewModManager() *ModManager {
 	newMM := &ModManager{sync.RWMutex{}, make(map[string]*subprocess.Subprocess)}
 
-	/*
-		// Creates subprocesses for all
-		parseConfObj := func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
-			err := newMM.AddJMOD(string(key), value)
-			if err != nil {
-				log.Error().
-					Err(err).
-					Msg("Unable to create new JMOD process")
-
-				return nil
-			}
-
-			return nil
-		}
-
-		jsonparser.ObjectEach(conf, parseConfObj)
-
-		// Try to start all subprocesses
-		for _, subProc := range newMM.ProcMap {
-			go subProc.Start()
-		}
-	*/
-
 	return newMM
 }
 
@@ -76,14 +53,11 @@ func (mm *ModManager) UnmarshalJSON(data []byte) error {
 	}
 
 	for name, rawMessage := range intermediateMap {
-		fmt.Println(name, string(*rawMessage))
 		err := mm.AddJMOD(name, *rawMessage)
 		if err != nil {
 			return err
 		}
 	}
-
-	fmt.Println("intermediate")
 
 	return nil
 }

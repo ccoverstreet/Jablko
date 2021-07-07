@@ -176,6 +176,11 @@ func (sub *Subprocess) Stop() error {
 	sub.Lock()
 	defer sub.Unlock()
 
+	// If process was never succesfully created
+	if sub.Cmd.Process == nil {
+		return fmt.Errorf("Process doesn't exist")
+	}
+
 	if sub.Cmd.ProcessState != nil {
 		return fmt.Errorf("Process already stopped")
 	}
