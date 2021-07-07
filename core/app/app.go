@@ -10,6 +10,7 @@ package app
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -72,12 +73,21 @@ func (app *JablkoCoreApp) Init() error {
 	}
 
 	log.Info().Msg("Creating module manager...")
-	newModM, err := modmanager.NewModManager(jmodData)
+	app.ModM = modmanager.NewModManager()
+
+	err = json.Unmarshal(jmodData, &app.ModM)
 	if err != nil {
 		panic(err)
 	}
-	app.ModM = newModM
+
 	log.Info().Msg("Created module manager")
+
+	err = app.ModM.StartAllJMODs()
+	if err != nil {
+		panic(err)
+	}
+
+	log.Info().Msg("Started all JMODs")
 
 	return nil
 }
