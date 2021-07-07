@@ -22,7 +22,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/buger/jsonparser"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 
@@ -36,31 +35,31 @@ type ModManager struct {
 	ProcMap map[string]*subprocess.Subprocess
 }
 
-func NewModManager(conf []byte) (*ModManager, error) {
+func NewModManager() *ModManager {
 	newMM := &ModManager{sync.RWMutex{}, make(map[string]*subprocess.Subprocess)}
 
-	// Creates subprocesses for all
-	parseConfObj := func(key []byte, value []byte, _ jsonparser.ValueType, _ int) error {
-		err := newMM.AddJMOD(string(key), value)
+	return newMM
+}
+
+func (mm *ModManager) UnmarshalJSON(data []byte) error {
+	// Use a map of json.RawMessage as an intermediate
+	// This method
+
+	intermediateMap := make(map[string]*json.RawMessage)
+
+	err := json.Unmarshal(data, &intermediateMap)
+	if err != nil {
+		return err
+	}
+
+	for name, rawMessage := range intermediateMap {
+		err := mm.AddJMOD(name, *rawMessage)
 		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Unable to create new JMOD process")
-
-			return nil
+			return err
 		}
-
-		return nil
 	}
 
-	jsonparser.ObjectEach(conf, parseConfObj)
-
-	// Try to start all subprocesses
-	for _, subProc := range newMM.ProcMap {
-		go subProc.Start()
-	}
-
-	return newMM, nil
+	return nil
 }
 
 func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
@@ -346,6 +345,17 @@ func (mm *ModManager) StartJMOD(jmodName string) error {
 	return err
 }
 
+func (mm *ModManager) StartAllJMODs() error {
+	for name, _ := range mm.ProcMap {
+		err := mm.StartJMOD(name)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (mm *ModManager) StopJMOD(jmodName string) error {
 	mm.Lock()
 	defer mm.Unlock()
@@ -409,6 +419,8 @@ func (mm *ModManager) CleanProcesses() {
 // Uses the JMOD-KEY and PORT-NUMBER assigned to each
 // JMOD for authentication. JMODs can save their configs
 // or retrieve information
+
+// THIS SHOULD BE MOVED INTO core/app
 func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	// Check JMOD-KEY header value
 	keyValue := r.Header.Get("JMOD-KEY")
