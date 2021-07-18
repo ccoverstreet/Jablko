@@ -75,6 +75,10 @@ func (app *JablkoCoreApp) Init() error {
 	log.Info().Msg("Creating module manager...")
 	app.ModM = modmanager.NewModManager()
 
+	if len(jmodData) == 0 {
+		return nil
+	}
+
 	err = json.Unmarshal(jmodData, &app.ModM)
 	if err != nil {
 		panic(err)
@@ -125,6 +129,7 @@ func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
 }
 
 // Checks for jablko-session cookie
+// Handles which route
 func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jablkoSession, err := r.Cookie("jablko-session")
@@ -230,10 +235,6 @@ func (app *JablkoCoreApp) AdminPageHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	fmt.Fprintf(w, "%s", strings.Replace(string(b), "$JABLKO_TASKBAR", string(bTask), 1))
-}
-
-func (app *JablkoCoreApp) ServiceHandler(w http.ResponseWriter, r *http.Request) {
-	app.ModM.ServiceHandler(w, r)
 }
 
 //go:embed template.html

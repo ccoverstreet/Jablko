@@ -22,7 +22,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 
 	"github.com/ccoverstreet/Jablko/core/github"
@@ -414,59 +413,7 @@ func (mm *ModManager) CleanProcesses() {
 	}
 }
 
-// ---------- Routes called by JMODs ----------
-
-// Uses the JMOD-KEY and PORT-NUMBER assigned to each
-// JMOD for authentication. JMODs can save their configs
-// or retrieve information
-
-// THIS SHOULD BE MOVED INTO core/app
-func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
-	// Check JMOD-KEY header value
-	keyValue := r.Header.Get("JMOD-KEY")
-	if keyValue == "" {
-		log.Error().
-			Msg("Empty JMOD-KEY")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Empty JMOD-KEY")
-		return
-	}
-
-	portValueStr := r.Header.Get("JMOD-PORT")
-	portValue, err := strconv.Atoi(portValueStr)
-	if portValueStr == "" || err != nil {
-		log.Error().
-			Err(err).
-			Msg("Value not set")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid JMOD-PORT")
-		return
-	}
-
-	isValid, modName := mm.IsValidService(keyValue, portValue)
-	if !isValid {
-		log.Error().
-			Msg("JMOD service does not exist")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Specified service doesn't exist")
-		return
-	}
-
-	vars := mux.Vars(r)
-
-	switch vars["func"] {
-	case "saveConfig":
-		mm.saveModConfig(w, r, modName)
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid function requested")
-	}
-}
-
-func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, string) {
+func (mm *ModManager) IsValidService(portNumber int, jmodKey string) (bool, string) {
 	mm.RLock()
 	defer mm.RUnlock()
 
@@ -477,38 +424,4 @@ func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, stri
 	}
 
 	return false, ""
-}
-
-func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modName string) {
-	mm.Lock()
-	defer mm.Unlock()
-
-	log.Info().
-		Str("jmodName", modName).
-		Msg("JMOD requested config save")
-
-	newConfigByte, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to read request")
-
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Unable to read body")
-		return
-	}
-
-	mm.ProcMap[modName].Config = newConfigByte
-
-	err = mm.SaveConfigToFile()
-
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to save config file")
-
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "%v", err)
-		return
-	}
 }
