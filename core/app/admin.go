@@ -252,6 +252,16 @@ func (app *JablkoCoreApp) deleteJMOD(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Unable to delete JMOD: %v", err)
 	}
 
+	err = app.ModM.SaveConfigToFile()
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable save config")
+
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to save config: %v", err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Deleted JMOD")
 }

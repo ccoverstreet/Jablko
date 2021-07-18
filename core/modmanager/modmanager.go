@@ -149,7 +149,7 @@ func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 
 	delete(mm.ProcMap, jmodPath)
 
-	return mm.SaveConfigToFile()
+	return nil
 }
 
 // Does this need to be locked?
@@ -209,7 +209,6 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) error 
 	proxy.ServeHTTP(w, r)
 
 	return nil
-
 }
 
 type DashComponent struct {
