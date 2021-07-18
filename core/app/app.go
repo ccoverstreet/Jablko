@@ -27,9 +27,9 @@ import (
 )
 
 type JablkoCoreApp struct {
-	Router    *mux.Router
+	Router    *mux.Router `json:"-"`
 	ModM      *modmanager.ModManager
-	DBHandler *database.DatabaseHandler
+	DBHandler *database.DatabaseHandler `json:"-"`
 }
 
 func (app *JablkoCoreApp) Init() error {

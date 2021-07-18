@@ -61,6 +61,13 @@ func (mm *ModManager) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (mm *ModManager) MarshalJSON() ([]byte, error) {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	return json.Marshal(mm.ProcMap)
+}
+
 func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
 	mm.Lock()
 	defer mm.Unlock()
