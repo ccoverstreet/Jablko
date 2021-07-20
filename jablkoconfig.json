@@ -1,16 +1,21 @@
 {
-	"sources": {
-		"builtin/test": {
-			"portUDP": 41000,
-			"instances": {
-				"inst0": {
-					"value": 32
-				},
-				"inst1": {
-					"value": 32
-				}
-			}
-		}
-	}
+  "httpPort": 8080,
+  "jmods": {
+    "/home/coverstreet/Coding/Jablko_Home/My_Mods/Jarmuz-Cookbook": {
+      "instances": [
+        {
+          "title": "Cookbook"
+        }
+      ]
+    },
+    "/home/coverstreet/Coding/Jablko_Home/My_Mods/Jarmuz-RGB-Light": {
+      "instances": [
+        {
+          "lightIPs": [
+            "10.0.0.5"
+          ]
+        }
+      ]
+    }
+  }
 }
-

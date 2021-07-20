@@ -83,7 +83,7 @@ func (app *JablkoCoreApp) saveModConfig(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	err = app.ModM.SaveConfigToFile()
+	err = app.SaveConfig()
 	if err != nil {
 		log.Error().
 			Err(err).
