@@ -52,6 +52,8 @@ func main() {
 			Err(err).
 			Caller().
 			Msg("Error in initialization")
+
+		panic(err)
 	}
 
 	// Setup process cleanup handler

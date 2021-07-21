@@ -27,8 +27,9 @@ import (
 )
 
 type JablkoCoreApp struct {
-	Router    *mux.Router               `json:"-"`
-	HTTPPort  int                       `json:"httpPort"`
+	Router   *mux.Router `json:"-"`
+	HTTPPort int         `json:"httpPort"`
+
 	ModM      *modmanager.ModManager    `json:"jmods"`
 	DBHandler *database.DatabaseHandler `json:"-"`
 }
@@ -65,7 +66,8 @@ func (app *JablkoCoreApp) Init() error {
 		log.Error().
 			Err(err).
 			Msg("Unable to create data directory")
-		panic(err)
+
+		return err
 	}
 
 	log.Info().Msg("Loading Database...")
@@ -79,25 +81,28 @@ func (app *JablkoCoreApp) Init() error {
 			// Initialize Empty Database
 			app.DBHandler.InitEmptyDatabase()
 		} else {
-			panic(err)
+			return err
 		}
 	}
 	log.Info().Msg("Loaded Database")
 
 	jablkoConfig, err := os.ReadFile("./jablkoconfig.json")
 	if err != nil {
-		log.Printf("%v\n", err)
-		panic(err)
+		// If jablkoconfig.json does not exist
+		if os.IsNotExist(err) {
+			return app.SaveConfig()
+		}
+
+		// If error is anything other than not exist
+		// Jablko should panic
+		return err
 	}
 
 	err = json.Unmarshal(jablkoConfig, app)
 	if err != nil {
-		log.Printf("%v\n", err)
-		panic(err)
+		return err
 	}
 
-	log.Printf("%v\n", app.ModM)
-	log.Printf("%v\n", app)
 	return app.ModM.StartAllJMODs()
 }
 
@@ -110,8 +115,6 @@ func (app *JablkoCoreApp) SaveConfig() error {
 	}
 
 	err = os.WriteFile("./jablkoconfig.json", config, 0666)
-
-	log.Printf("%s\b", config)
 
 	return nil
 }

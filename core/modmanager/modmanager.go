@@ -134,7 +134,6 @@ func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 	defer mm.Unlock()
 
 	proc, ok := mm.ProcMap[jmodPath]
-	fmt.Println("DELETE", proc, ok)
 	if !ok {
 		return fmt.Errorf("JMOD not found.")
 	}
@@ -155,34 +154,6 @@ func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 	}
 
 	delete(mm.ProcMap, jmodPath)
-
-	return nil
-}
-
-// Does this need to be locked?
-// It is only called when the manager is already locked
-func (mm *ModManager) SaveConfigToFile() error {
-	log.Info().
-		Msg("Saving JMOD data to jmods.json")
-
-	configByte, err := json.MarshalIndent(mm.ProcMap, "", "    ")
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to marshal mod manager")
-
-		return err
-	}
-
-	err = ioutil.WriteFile("./jmods.json", configByte, 0666)
-
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to save jmods.json")
-
-		return err
-	}
 
 	return nil
 }
