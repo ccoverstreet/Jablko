@@ -119,8 +119,6 @@ func (db *DatabaseHandler) LoadDatabase(file string) error {
 		return err
 	}
 
-	log.Printf("%v", db)
-
 	return nil
 }
 

@@ -9,4 +9,5 @@ require (
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/rs/zerolog v1.21.0 // indirect
 	golang.org/x/crypto v0.0.0-20210506145944-38f3c27a63bf // indirect
+	golang.org/x/tools v0.1.5 // indirect
 )

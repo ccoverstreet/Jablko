@@ -27,15 +27,37 @@ import (
 )
 
 type JablkoCoreApp struct {
-	Router    *mux.Router
-	ModM      *modmanager.ModManager
-	DBHandler *database.DatabaseHandler
+	Router        *mux.Router               `json:"-"`
+	HTTPPort      int                       `json:"httpPort"`
+	MessagingMods []string                  `json:"messagingMods"`
+	ModM          *modmanager.ModManager    `json:"jmods"`
+	DBHandler     *database.DatabaseHandler `json:"-"`
+}
+
+func CreateJablkoCoreApp() *JablkoCoreApp {
+	app := new(JablkoCoreApp)
+	app.Router = mux.NewRouter()
+	app.HTTPPort = 8080
+	app.ModM = modmanager.NewModManager()
+	app.DBHandler = database.CreateDatabaseHandler()
+
+	app.Router.Use(app.LoggingMiddleware)
+	app.Router.Use(app.AuthMiddleware)
+	app.Router.HandleFunc("/", app.DashboardHandler).Methods("GET")
+	app.Router.HandleFunc("/login", app.LoginHandler).Methods("POST")
+	app.Router.HandleFunc("/logout", app.LogoutHandler).Methods("GET", "POST")
+	app.Router.HandleFunc("/admin", app.AdminPageHandler).Methods("GET", "POST")
+	app.Router.HandleFunc("/admin/{func}", app.AdminFuncHandler).Methods("GET", "POST")
+	app.Router.HandleFunc("/service/{func}", app.ServiceHandler).Methods("GET", "POST")
+	app.Router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
+	app.Router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
+
+	return app
 }
 
 func (app *JablkoCoreApp) Init() error {
 	// Runs through procedures to instantiate
 	// config data.
-	app.initRouter()
 
 	// Create data folder
 	// Is a fatal error if this fails
@@ -44,11 +66,11 @@ func (app *JablkoCoreApp) Init() error {
 		log.Error().
 			Err(err).
 			Msg("Unable to create data directory")
-		panic(err)
+
+		return err
 	}
 
-	log.Info().Msg("Creating database handler...")
-	app.DBHandler = database.CreateDatabaseHandler()
+	log.Info().Msg("Loading Database...")
 	err = app.DBHandler.LoadDatabase("./data/database.json")
 	if err != nil {
 		if err.Error() == "File does not exist" {
@@ -59,56 +81,42 @@ func (app *JablkoCoreApp) Init() error {
 			// Initialize Empty Database
 			app.DBHandler.InitEmptyDatabase()
 		} else {
-			panic(err)
+			return err
 		}
 	}
-	log.Info().Msg("Created database handler")
+	log.Info().Msg("Loaded Database")
 
-	// Load jmods.json for JMOD data
-	jmodData, err := ioutil.ReadFile("./jmods.json")
+	jablkoConfig, err := os.ReadFile("./jablkoconfig.json")
 	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("\"jmods.json\" not found. Starting with no JMODs initialized")
+		// If jablkoconfig.json does not exist
+		if os.IsNotExist(err) {
+			return app.SaveConfig()
+		}
+
+		// If error is anything other than not exist
+		// Jablko should panic
+		return err
 	}
 
-	log.Info().Msg("Creating module manager...")
-	app.ModM = modmanager.NewModManager()
-
-	err = json.Unmarshal(jmodData, &app.ModM)
+	err = json.Unmarshal(jablkoConfig, app)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	log.Info().Msg("Created module manager")
-
-	err = app.ModM.StartAllJMODs()
-	if err != nil {
-		panic(err)
-	}
-
-	log.Info().Msg("Started all JMODs")
-
-	return nil
+	return app.ModM.StartAllJMODs()
 }
 
-func (app *JablkoCoreApp) initRouter() {
-	// Creates the gorilla/mux router passed to
-	// http.ListenAndServe
+func (app *JablkoCoreApp) SaveConfig() error {
+	log.Info().Msg("Saving Jablko Config...")
 
-	router := mux.NewRouter()
-	router.Use(app.LoggingMiddleware)
-	router.Use(app.AuthMiddleware)
-	router.HandleFunc("/", app.DashboardHandler).Methods("GET")
-	router.HandleFunc("/login", app.LoginHandler).Methods("POST")
-	router.HandleFunc("/logout", app.LogoutHandler).Methods("GET", "POST")
-	router.HandleFunc("/admin", app.AdminPageHandler).Methods("GET", "POST")
-	router.HandleFunc("/admin/{func}", app.AdminFuncHandler).Methods("GET", "POST")
-	router.HandleFunc("/service/{func}", app.ServiceHandler).Methods("GET", "POST")
-	router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
-	router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
+	config, err := json.MarshalIndent(app, "", "  ")
+	if err != nil {
+		return err
+	}
 
-	app.Router = router
+	err = os.WriteFile("./jablkoconfig.json", config, 0666)
+
+	return nil
 }
 
 func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
@@ -125,6 +133,7 @@ func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
 }
 
 // Checks for jablko-session cookie
+// Handles which route
 func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jablkoSession, err := r.Cookie("jablko-session")
@@ -230,10 +239,6 @@ func (app *JablkoCoreApp) AdminPageHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	fmt.Fprintf(w, "%s", strings.Replace(string(b), "$JABLKO_TASKBAR", string(bTask), 1))
-}
-
-func (app *JablkoCoreApp) ServiceHandler(w http.ResponseWriter, r *http.Request) {
-	app.ModM.ServiceHandler(w, r)
 }
 
 //go:embed template.html

@@ -22,7 +22,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 
 	"github.com/ccoverstreet/Jablko/core/github"
@@ -60,6 +59,13 @@ func (mm *ModManager) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+func (mm *ModManager) MarshalJSON() ([]byte, error) {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	return json.Marshal(mm.ProcMap)
 }
 
 func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
@@ -128,7 +134,6 @@ func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 	defer mm.Unlock()
 
 	proc, ok := mm.ProcMap[jmodPath]
-	fmt.Println("DELETE", proc, ok)
 	if !ok {
 		return fmt.Errorf("JMOD not found.")
 	}
@@ -149,34 +154,6 @@ func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 	}
 
 	delete(mm.ProcMap, jmodPath)
-
-	return mm.SaveConfigToFile()
-}
-
-// Does this need to be locked?
-// It is only called when the manager is already locked
-func (mm *ModManager) SaveConfigToFile() error {
-	log.Info().
-		Msg("Saving JMOD data to jmods.json")
-
-	configByte, err := json.MarshalIndent(mm.ProcMap, "", "    ")
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to marshal mod manager")
-
-		return err
-	}
-
-	err = ioutil.WriteFile("./jmods.json", configByte, 0666)
-
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to save jmods.json")
-
-		return err
-	}
 
 	return nil
 }
@@ -210,7 +187,25 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) error 
 	proxy.ServeHTTP(w, r)
 
 	return nil
+}
 
+func (mm *ModManager) GetJMODHostname(jmodName string) (string, error) {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	proc, ok := mm.ProcMap[jmodName]
+	if !ok {
+		return "", fmt.Errorf("JMOD not found")
+	}
+
+	return "localhost:" + strconv.Itoa(proc.ModPort), nil
+}
+
+// Requests to JMODs should be sent through this function as
+// requests may need authentication in the future.
+func (mm *ModManager) SendRequest(jmodName string, r *http.Request) (*http.Response, error) {
+	client := http.Client{}
+	return client.Do(r)
 }
 
 type DashComponent struct {
@@ -260,13 +255,13 @@ func (mm *ModManager) GenerateJMODDashComponents() (string, string) {
 }
 
 func getDashComponent(jmodName string, baseURL string, out chan<- DashComponent) {
-	bWC, err := queryJMOD(baseURL + "/webComponent")
+	bWC, err := QueryJMOD(baseURL + "/webComponent")
 	if err != nil {
 		out <- DashComponent{err, jmodName, nil, nil}
 		return
 	}
 
-	bID, err := queryJMOD(baseURL + "/instanceData")
+	bID, err := QueryJMOD(baseURL + "/instanceData")
 	if err != nil {
 		out <- DashComponent{err, jmodName, nil, nil}
 		return
@@ -275,7 +270,7 @@ func getDashComponent(jmodName string, baseURL string, out chan<- DashComponent)
 	out <- DashComponent{nil, jmodName, bWC, bID}
 }
 
-func queryJMOD(url string) ([]byte, error) {
+func QueryJMOD(url string) ([]byte, error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -414,59 +409,7 @@ func (mm *ModManager) CleanProcesses() {
 	}
 }
 
-// ---------- Routes called by JMODs ----------
-
-// Uses the JMOD-KEY and PORT-NUMBER assigned to each
-// JMOD for authentication. JMODs can save their configs
-// or retrieve information
-
-// THIS SHOULD BE MOVED INTO core/app
-func (mm *ModManager) ServiceHandler(w http.ResponseWriter, r *http.Request) {
-	// Check JMOD-KEY header value
-	keyValue := r.Header.Get("JMOD-KEY")
-	if keyValue == "" {
-		log.Error().
-			Msg("Empty JMOD-KEY")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Empty JMOD-KEY")
-		return
-	}
-
-	portValueStr := r.Header.Get("JMOD-PORT")
-	portValue, err := strconv.Atoi(portValueStr)
-	if portValueStr == "" || err != nil {
-		log.Error().
-			Err(err).
-			Msg("Value not set")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid JMOD-PORT")
-		return
-	}
-
-	isValid, modName := mm.IsValidService(keyValue, portValue)
-	if !isValid {
-		log.Error().
-			Msg("JMOD service does not exist")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Specified service doesn't exist")
-		return
-	}
-
-	vars := mux.Vars(r)
-
-	switch vars["func"] {
-	case "saveConfig":
-		mm.saveModConfig(w, r, modName)
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid function requested")
-	}
-}
-
-func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, string) {
+func (mm *ModManager) IsValidService(portNumber int, jmodKey string) (bool, string) {
 	mm.RLock()
 	defer mm.RUnlock()
 
@@ -477,38 +420,4 @@ func (mm *ModManager) IsValidService(jmodKey string, portNumber int) (bool, stri
 	}
 
 	return false, ""
-}
-
-func (mm *ModManager) saveModConfig(w http.ResponseWriter, r *http.Request, modName string) {
-	mm.Lock()
-	defer mm.Unlock()
-
-	log.Info().
-		Str("jmodName", modName).
-		Msg("JMOD requested config save")
-
-	newConfigByte, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to read request")
-
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Unable to read body")
-		return
-	}
-
-	mm.ProcMap[modName].Config = newConfigByte
-
-	err = mm.SaveConfigToFile()
-
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Unable to save config file")
-
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "%v", err)
-		return
-	}
 }

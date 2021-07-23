@@ -14,10 +14,9 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/ccoverstreet/Jablko/core/app"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
-	"github.com/ccoverstreet/Jablko/core/app"
 )
 
 func main() {
@@ -46,16 +45,21 @@ func main() {
 			Msg("Unable to make tmp directory")
 	}
 
-	jablkoApp := new(app.JablkoCoreApp)
+	jablkoApp := app.CreateJablkoCoreApp()
 	err = jablkoApp.Init()
 	if err != nil {
 		log.Error().
 			Err(err).
 			Caller().
 			Msg("Error in initialization")
+
+		panic(err)
 	}
 
+	fmt.Println(jablkoApp)
+
 	// Setup process cleanup handler
+	// Triggered on interrupt
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
 	go func() {
