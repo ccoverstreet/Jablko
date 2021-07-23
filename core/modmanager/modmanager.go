@@ -189,6 +189,25 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) error 
 	return nil
 }
 
+func (mm *ModManager) GetJMODHostname(jmodName string) (string, error) {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	proc, ok := mm.ProcMap[jmodName]
+	if !ok {
+		return "", fmt.Errorf("JMOD not found")
+	}
+
+	return "localhost:" + strconv.Itoa(proc.ModPort), nil
+}
+
+// Requests to JMODs should be sent through this function as
+// requests may need authentication in the future.
+func (mm *ModManager) SendRequest(jmodName string, r *http.Request) (*http.Response, error) {
+	client := http.Client{}
+	return client.Do(r)
+}
+
 type DashComponent struct {
 	Err      error
 	JMODName string
@@ -236,13 +255,13 @@ func (mm *ModManager) GenerateJMODDashComponents() (string, string) {
 }
 
 func getDashComponent(jmodName string, baseURL string, out chan<- DashComponent) {
-	bWC, err := queryJMOD(baseURL + "/webComponent")
+	bWC, err := QueryJMOD(baseURL + "/webComponent")
 	if err != nil {
 		out <- DashComponent{err, jmodName, nil, nil}
 		return
 	}
 
-	bID, err := queryJMOD(baseURL + "/instanceData")
+	bID, err := QueryJMOD(baseURL + "/instanceData")
 	if err != nil {
 		out <- DashComponent{err, jmodName, nil, nil}
 		return
@@ -251,7 +270,7 @@ func getDashComponent(jmodName string, baseURL string, out chan<- DashComponent)
 	out <- DashComponent{nil, jmodName, bWC, bID}
 }
 
-func queryJMOD(url string) ([]byte, error) {
+func QueryJMOD(url string) ([]byte, error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}

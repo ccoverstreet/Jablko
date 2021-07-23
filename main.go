@@ -56,6 +56,8 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Println(jablkoApp)
+
 	// Setup process cleanup handler
 	// Triggered on interrupt
 	c := make(chan os.Signal)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -76,6 +77,7 @@ func main() {
 	router.HandleFunc("/jmod/socket", SocketHandler)        // Application route for WebSockets
 	router.HandleFunc("/jmod/getUDPState", UDPStateHandler) // Simple GET for UDP Server State
 	router.HandleFunc("/jmod/testConfigSave", TestConfigSave)
+	router.HandleFunc("/service/sendMessage", SendMessageHandler)
 
 	log.Println(curConfig.PortUDP)
 	// Start UDP server with in separate go routine
@@ -110,6 +112,15 @@ func loadConfig(config string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func SendMessageHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("ERROR: Unable to read body - %v\n", err)
+		return
+	}
+	log.Println("Message received to be sent somewhere else:", string(body))
 }
 
 // The webcomponent handler returns the javascript for a WebComponent
@@ -171,6 +182,7 @@ func SocketHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 	defer conn.Close()
+	httpClient := http.Client{}
 
 	for {
 		messageType, message, err := conn.ReadMessage()
@@ -178,6 +190,16 @@ func SocketHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			return
 		}
+
+		// send request to service/sendMessage
+		req, err := http.NewRequest("POST", "http://localhost:"+jablkoCorePort+"/service/sendMessage", bytes.NewReader(message))
+		if err != nil {
+			continue
+		}
+
+		req.Header.Add("JMOD-KEY", jablkoModKey)
+		req.Header.Add("JMOD-PORT", jablkoModPort)
+		httpClient.Do(req)
 
 		log.Printf("Received: %s\n", message)
 		response := append(message, []byte(" received by server")...)

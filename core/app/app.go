@@ -27,11 +27,11 @@ import (
 )
 
 type JablkoCoreApp struct {
-	Router   *mux.Router `json:"-"`
-	HTTPPort int         `json:"httpPort"`
-
-	ModM      *modmanager.ModManager    `json:"jmods"`
-	DBHandler *database.DatabaseHandler `json:"-"`
+	Router        *mux.Router               `json:"-"`
+	HTTPPort      int                       `json:"httpPort"`
+	MessagingMods []string                  `json:"messagingMods"`
+	ModM          *modmanager.ModManager    `json:"jmods"`
+	DBHandler     *database.DatabaseHandler `json:"-"`
 }
 
 func CreateJablkoCoreApp() *JablkoCoreApp {

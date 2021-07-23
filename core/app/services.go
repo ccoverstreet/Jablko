@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -54,6 +55,8 @@ func (app *JablkoCoreApp) ServiceHandler(w http.ResponseWriter, r *http.Request)
 	switch vars["func"] {
 	case "saveConfig":
 		app.saveModConfig(w, r, modName)
+	case "sendMessage":
+		app.sendMessage(w, r, modName)
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Invalid service function requested")
@@ -96,4 +99,44 @@ func (app *JablkoCoreApp) saveModConfig(w http.ResponseWriter, r *http.Request, 
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Saved config")
+}
+
+func (app *JablkoCoreApp) sendMessage(w http.ResponseWriter, r *http.Request, modName string) {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to read body")
+		return
+	}
+
+	bodyReader := bytes.NewReader(reqBody)
+
+	for _, messagingMod := range app.MessagingMods {
+		bodyReader.Seek(0, 0)
+		hostname, err := app.ModM.GetJMODHostname(messagingMod)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Unable to read body")
+
+			continue
+		}
+
+		newReq, err := http.NewRequest("POST", "http://"+hostname+"/service/sendMessage", bodyReader)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Unable to create HTTP request")
+		}
+
+		_, err = app.ModM.SendRequest(messagingMod, newReq)
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Unable to send request to service")
+
+			continue
+		}
+	}
 }
