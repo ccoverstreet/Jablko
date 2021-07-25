@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -18,37 +17,7 @@ import (
 // or retrieve information
 
 func (app *JablkoCoreApp) ServiceHandler(w http.ResponseWriter, r *http.Request) {
-	// Verify that request has correct JMOD-KEY and JMOD-PORT
-	keyValue := r.Header.Get("JMOD-KEY")
-	if keyValue == "" {
-		log.Error().
-			Msg("Empty JMOD-KEY")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Empty JMOD-KEY header")
-		return
-	}
-
-	portValue, err := strconv.Atoi(r.Header.Get("JMOD-PORT"))
-	if err != nil {
-		log.Error().
-			Err(err).
-			Msg("Invalid JMOD-PORT header value")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid JMOD-PORT header value")
-		return
-	}
-
-	isValid, modName := app.ModM.IsValidService(portValue, keyValue)
-	if !isValid {
-		log.Error().
-			Msg("No JMOD exists with specified JMOD-PORT and JMOD-KEY header")
-
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "No JMOD exists with specified JMOD-PORT and JMOD-KEY header")
-		return
-	}
+	modName := r.Header.Get("JMOD-NAME")
 
 	vars := mux.Vars(r)
 
