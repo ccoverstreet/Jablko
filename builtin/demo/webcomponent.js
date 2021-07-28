@@ -54,6 +54,7 @@ class extends HTMLElement {
 
 		<button onclick="this.getRootNode().host.talk()" style="border-color: var(--clr-red);">Talk</button>
 		<button onclick="this.getRootNode().host.testSave()">Test Save</button>
+		<button onclick="this.getRootNode().host.test()">Test</button>
 	</div>
 </div>
 		`
@@ -88,6 +89,10 @@ class extends HTMLElement {
 			this.webSocket.send(elem.value);
 			elem.value = "";
 		}
+	}
+
+	test() {
+		fetch(`/jmod/test?JMOD-Source=${this.source}`);
 	}
 
 	getUDPState() {

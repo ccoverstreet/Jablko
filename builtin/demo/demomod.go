@@ -74,7 +74,8 @@ func main() {
 	router.HandleFunc("/instanceData", instanceDataHandler) // Route called by Jablko
 
 	// Application Routes
-	router.HandleFunc("/jmod/socket", SocketHandler)        // Application route for WebSockets
+	router.HandleFunc("/jmod/socket", SocketHandler) // Application route for WebSockets
+	router.HandleFunc("/jmod/test", TestHandler)
 	router.HandleFunc("/jmod/getUDPState", UDPStateHandler) // Simple GET for UDP Server State
 	router.HandleFunc("/jmod/testConfigSave", TestConfigSave)
 	router.HandleFunc("/service/sendMessage", SendMessageHandler)
@@ -155,6 +156,21 @@ func instanceDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "%s", data)
+}
+
+func TestHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Test Handler")
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", "http://localhost:8080/jmod/getRecipe?JMOD-Source=/home/coverstreet/Coding/Jablko_Home/My_Mods/Jarmuz-Cookbook", nil)
+	if err != nil {
+		return
+	}
+	req.Header.Set("JMOD-KEY", jablkoModKey)
+	req.Header.Set("JMOD-PORT", jablkoModPort)
+
+	client.Do(req)
 }
 
 // Returns the most recent UDP message received by the UDP Server
