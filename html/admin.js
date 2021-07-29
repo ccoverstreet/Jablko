@@ -11,7 +11,6 @@ function InstallJMOD() {
 	})
 		.then(async data => {
 			console.log(await data.text());
-			alert("Reloading page");
 			getJMODData();
 		})
 		.catch(err => {
