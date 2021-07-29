@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/signal"
 
 	"github.com/ccoverstreet/Jablko/core/app"
 	"github.com/rs/zerolog"
@@ -58,25 +57,10 @@ func main() {
 
 	fmt.Println(jablkoApp)
 
-	// Setup process cleanup handler
-	// Triggered on interrupt
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		<-c
-		log.Info().
-			Msg("Cleaning up child processes")
-
-		jablkoApp.ModM.CleanProcesses()
-		os.Exit(0)
-	}()
-
 	log.Info().Msg("Starting HTTP Server")
 	log.Error().
 		Err(http.ListenAndServe(":8080", jablkoApp.Router)).
 		Msg("Jablko stopping")
-
-	jablkoApp.ModM.CleanProcesses()
 }
 
 const startingStatement = `

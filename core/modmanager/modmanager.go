@@ -393,22 +393,6 @@ func (mm *ModManager) GetJMODLog(jmodName string) ([]byte, error) {
 	return proc.GetCurLogBytes()
 }
 
-func (mm *ModManager) CleanProcesses() {
-	for name, proc := range mm.ProcMap {
-		log.Info().
-			Str("jmodName", name).
-			Msg("Cleaning up JMOD process")
-
-		err := proc.Stop()
-		if err != nil {
-			log.Info().
-				Err(err).
-				Str("jmodName", name).
-				Msg("Unable to clean up JMOD")
-		}
-	}
-}
-
 func (mm *ModManager) IsValidService(portNumber int, jmodKey string) (bool, string) {
 	mm.RLock()
 	defer mm.RUnlock()

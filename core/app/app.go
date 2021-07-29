@@ -49,7 +49,7 @@ func CreateJablkoCoreApp() *JablkoCoreApp {
 	app.Router.HandleFunc("/admin", app.AdminPageHandler).Methods("GET", "POST")
 	app.Router.HandleFunc("/admin/{func}", app.AdminFuncHandler).Methods("GET", "POST")
 	app.Router.HandleFunc("/service/{func}", app.ServiceHandler).Methods("GET", "POST")
-	app.Router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
+	app.Router.PathPrefix("/jmod/").Handler(http.HandlerFunc(app.PassToJMOD)).Methods("GET", "POST")
 	app.Router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
 	return app
@@ -136,8 +136,13 @@ func (app *JablkoCoreApp) LoggingMiddleware(next http.Handler) http.Handler {
 // Handles which route
 func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		jablkoSession, err := r.Cookie("jablko-session")
+		// Possible authentication clients are:
+		// - Users
+		// - JMODs
+		// Which means that we should check for JMOD-KEY, JMOD-PORT headers or
+		// jablko-session cookies
 
+		// ---------- Allow safe routes through without auth ---------
 		// Allow assets to be obtained without authentication
 		if strings.HasPrefix(r.URL.String(), "/assets") {
 			next.ServeHTTP(w, r)
@@ -149,41 +154,21 @@ func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
+		// --------- END safe routes ---------
 
-		// Pass through to modmanager routes from jmods
-		// This route is what JMODs use to request functions
-		// from Jablko Core.
-		if strings.HasPrefix(r.URL.String(), "/service") {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		// Unable to get cookie
-		if err != nil {
+		// Check if JMOD-KEY header is set
+		// If so, treat inbound request as being from JMOD
+		// Permission level is 0
+		jmodKeyVal := r.Header.Get("JMOD-KEY")
+		jmodPortVal, portValErr := strconv.Atoi(r.Header.Get("JMOD-PORT"))
+		jablkoSessionCookie, cookieErr := r.Cookie("jablko-session")
+		if jmodKeyVal == "" && cookieErr != nil {
 			log.Warn().
-				Err(err).
-				Msg("Session cookie not found")
+				Msg("Unauthenticated request")
 
 			if r.Method != "GET" {
 				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintf(w, "Not logged in")
-				return
-			}
-
-			app.LoginPageHandler(w, r)
-
-			return
-		}
-
-		isValid, permissionLevel := app.DBHandler.ValidateSession(jablkoSession.Value)
-
-		if !isValid {
-			log.Warn().
-				Msg("Session cookie not valid")
-
-			if r.Method != "GET" {
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintf(w, "Session invalid")
+				fmt.Fprintf(w, "Not authenticated")
 				return
 			}
 
@@ -191,7 +176,44 @@ func (app *JablkoCoreApp) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		r.Header.Set("Jablko-User-Permissions", strconv.Itoa(permissionLevel))
+		// TODO: Refactor this shit
+		if jmodKeyVal != "" {
+			if portValErr != nil {
+				log.Warn().
+					Err(portValErr).
+					Msg("Invalid port value")
+				return
+			}
+			isValid, jmodName := app.ModM.IsValidService(jmodPortVal, jmodKeyVal)
+			if !isValid {
+				log.Warn().
+					Msg("Unauthenticated request")
+
+				fmt.Fprintf(w, "Not authenticated")
+				return
+			}
+
+			r.Header.Set("JMOD-NAME", jmodName)
+			r.Header.Set("Jablko-User-Permissions", strconv.Itoa(0))
+		} else {
+			isValid, permissionLevel := app.DBHandler.ValidateSession(jablkoSessionCookie.Value)
+			if !isValid {
+				log.Warn().
+					Msg("Session cookie not valid")
+
+				if r.Method != "GET" {
+					w.WriteHeader(http.StatusBadRequest)
+					fmt.Fprintf(w, "Session invalid")
+					return
+				}
+
+				app.LoginPageHandler(w, r)
+				return
+			}
+
+			r.Header.Set("Jablko-User-Permissions", strconv.Itoa(permissionLevel))
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }
