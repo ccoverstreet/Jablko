@@ -42,7 +42,6 @@ func NewModManager() *ModManager {
 
 func (mm *ModManager) UnmarshalJSON(data []byte) error {
 	// Use a map of json.RawMessage as an intermediate
-	// This method
 
 	intermediateMap := make(map[string]*json.RawMessage)
 
@@ -340,15 +339,19 @@ func (mm *ModManager) StartJMOD(jmodName string) error {
 	return err
 }
 
-func (mm *ModManager) StartAllJMODs() error {
+func (mm *ModManager) StartAllJMODs() []error {
+	var errs []error
 	for name, _ := range mm.ProcMap {
 		err := mm.StartJMOD(name)
 		if err != nil {
-			return err
+			log.Error().
+				Err(err).
+				Msg("Unable to start JMOD")
+			errs = append(errs, err)
 		}
 	}
 
-	return nil
+	return errs
 }
 
 func (mm *ModManager) StopJMOD(jmodName string) error {

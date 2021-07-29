@@ -45,14 +45,20 @@ func main() {
 	}
 
 	jablkoApp := app.CreateJablkoCoreApp()
-	err = jablkoApp.Init()
+	err = jablkoApp.LoadConfig()
 	if err != nil {
 		log.Error().
 			Err(err).
 			Caller().
-			Msg("Error in initialization")
+			Msg("Error in loading config")
 
 		panic(err)
+	}
+
+	// Start JMODs
+	errs := jablkoApp.StartJMODs()
+	if len(errs) != 0 {
+		log.Error().Msg("Error when starting JMODs. See prior logs.")
 	}
 
 	fmt.Println(jablkoApp)

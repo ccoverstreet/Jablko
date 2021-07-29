@@ -12,14 +12,13 @@ function InstallJMOD() {
 		.then(async data => {
 			console.log(await data.text());
 			alert("Reloading page");
-			location.reload();
+			getJMODData();
 		})
 		.catch(err => {
 			alert(err);
 			console.error(err);
 			console.log(err);
 		})
-	
 }
 
 class JMODEntry extends HTMLElement {
@@ -254,7 +253,7 @@ class JMODEntry extends HTMLElement {
 			})
 				.then(async data => {
 					console.log(await data.text());
-					location.reload();
+					getJMODData();
 				})
 				.catch(err => {
 					console.error(err);

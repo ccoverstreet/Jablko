@@ -55,7 +55,7 @@ func CreateJablkoCoreApp() *JablkoCoreApp {
 	return app
 }
 
-func (app *JablkoCoreApp) Init() error {
+func (app *JablkoCoreApp) LoadConfig() error {
 	// Runs through procedures to instantiate
 	// config data.
 
@@ -103,6 +103,10 @@ func (app *JablkoCoreApp) Init() error {
 		return err
 	}
 
+	return nil
+}
+
+func (app *JablkoCoreApp) StartJMODs() []error {
 	return app.ModM.StartAllJMODs()
 }
 
