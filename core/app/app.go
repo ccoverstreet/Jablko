@@ -49,7 +49,7 @@ func CreateJablkoCoreApp() *JablkoCoreApp {
 	app.Router.HandleFunc("/admin", app.AdminPageHandler).Methods("GET", "POST")
 	app.Router.HandleFunc("/admin/{func}", app.AdminFuncHandler).Methods("GET", "POST")
 	app.Router.HandleFunc("/service/{func}", app.ServiceHandler).Methods("GET", "POST")
-	app.Router.HandleFunc("/jmod/{func}", app.PassToJMOD).Methods("GET", "POST")
+	app.Router.PathPrefix("/jmod/").Handler(http.HandlerFunc(app.PassToJMOD)).Methods("GET", "POST")
 	app.Router.HandleFunc("/assets/{file}", app.AssetsHandler).Methods("GET")
 
 	return app
