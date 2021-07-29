@@ -282,11 +282,8 @@ function getJMODLog(jmodName) {
 		})
 }
 
-
 function getJMODData() {
-	fetch("/admin/getJMODData", {
-
-	})	
+	fetch("/admin/getJMODData", {})	
 		.then(async data => {
 			const mods = await data.json();
 
