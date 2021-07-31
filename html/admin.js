@@ -24,6 +24,7 @@ class JMODEntry extends HTMLElement {
 	constructor() {
 		super();
 
+		this.attachShadow({mode: "open"});
 		this.start = this.start.bind(this);
 		this.stop = this.stop.bind(this);
 		this.build = this.build.bind(this);
@@ -31,10 +32,8 @@ class JMODEntry extends HTMLElement {
 		this.getJMODLog = this.getJMODLog.bind(this);
 		this.deleteJMOD = this.deleteJMOD.bind(this);
 
-		this.attachShadow({mode: "open"});
-
 		this.shadowRoot.innerHTML = `
-<link rel="stylesheet" href="/assets/standard.css"></link>
+<link rel="stylesheet" href="assets/standard.css"></link>
 <style>
 .entry {
 	display: flex;
@@ -264,22 +263,6 @@ class JMODEntry extends HTMLElement {
 
 customElements.define("jmod-entry", JMODEntry);
 
-function getJMODLog(jmodName) {
-	fetch("/admin/getJMODLog", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({jmodName: jmodName})
-	})
-		.then(async data => {
-			console.log(await data.text());
-		})
-		.catch(err => {
-			console.log(err);
-		})
-}
-
 function getJMODData() {
 	fetch("/admin/getJMODData", {})	
 		.then(async data => {
@@ -327,22 +310,23 @@ function getUserList() {
 		});
 }
 
-function createUser(event) {
+function createUser(event, formNode) {
 	if (event.key != "Enter") {
 		return;
 	}
 
-	const username = document.getElementById("create-user-username").value;
-	const password1 = document.getElementById("create-user-password1").value;
-	const password2 = document.getElementById("create-user-password2").value;
+	event.preventDefault();
+
+	//console.log(formNode.getElementById("create-user-username"))
+	const username = formNode.querySelector("#create-user-username").value;
+	const password1 = formNode.querySelector("#create-user-password1").value;
+	const password2 = formNode.querySelector("#create-user-password2").value;
 
 	if (password1 !== password2) {
 		console.error(new Error("Passwords do not match"));
 		alert("Passwords do not match");
 		return
 	}
-
-	event.preventDefault();
 
 	fetch("/admin/createUser", {
 		method: "POST",

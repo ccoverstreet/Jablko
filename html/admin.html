@@ -24,6 +24,7 @@
 					buttons[i].style.backgroundColor = "var(--clr-gray)";
 				}
 			}	
+
 		</script>
 		<script src="/assets/admin.js"></script>
 	</head>
@@ -134,24 +135,18 @@
 
 					<div>
 						<h2>Create User</h2>
-						<form>
-							<div class="label_input_pair">
-								<p>Username:</p>
-								<input id="create-user-username" type="username" onkeypress="createUser(event)"></input>
-							</div>
+						<form style="display: grid; grid-template-columns: auto auto">
+							<p>Username:</p>
+							<input id="create-user-username" type="username" onkeypress="createUser(event, this.parentNode)"></input>
 
-							<div class="label_input_pair" style="flex: 1 1 20em">
-								<p>Password:</p>
-								<input id="create-user-password1" type="password" onkeypress="createUser(event)"></input>
-							</div>
+							<p>Password:</p>
+							<input id="create-user-password1" type="password" onkeypress="createUser(event, this.parentNode)"></input>
 
-							<div class="label_input_pair" style="flex: 1 1 20em">
-								<p>Confirm Password:</p>
-								<input id="create-user-password2" type="password" onkeypress="createUser(event)"></input>
-							</div>
+							<p>Confirm Password:</p>
+							<input id="create-user-password2" type="password" onkeypress="createUser(event, this.parentNode)"></input>
 						</form>
 
-						<button onclick="event.key = 'Enter'; createUser(event);">Create</button>
+						<button onclick="event.key = 'Enter'; createUser(event, this.parentNode);" style="background-color: var(--clr-green)">Create</button>
 					</div>
 
 					<div>
