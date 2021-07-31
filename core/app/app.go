@@ -316,6 +316,7 @@ func (app *JablkoCoreApp) AssetsHandler(w http.ResponseWriter, r *http.Request) 
 		}
 
 		w.Header().Set("Content-Type", "text/css")
+		w.Header().Set("Cache-Control", "public")
 		fmt.Fprintf(w, "%s", b)
 	case "admin.js":
 		b, err := ioutil.ReadFile("./html/admin.js")

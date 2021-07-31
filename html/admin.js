@@ -34,7 +34,7 @@ class JMODEntry extends HTMLElement {
 		this.attachShadow({mode: "open"});
 
 		this.shadowRoot.innerHTML = `
-<link rel="stylesheet" href="/assets/standard.css"/>
+<link rel="stylesheet" href="/assets/standard.css"></link>
 <style>
 .entry {
 	display: flex;
