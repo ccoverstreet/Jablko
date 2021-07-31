@@ -271,12 +271,12 @@ function getJMODData() {
 			const holder = document.getElementById("jmod-entry-holder");
 			holder.innerHTML = "";
 
-			for (mod in mods) {
-				console.log(mod);
+			Object.entries(mods).forEach((entry) => {
+				console.log(entry[0]);
 				const newEntry = document.createElement("jmod-entry");
-				newEntry.init(mod, mods[mod]);
+				newEntry.init(entry[0], entry[1]);
 				holder.appendChild(newEntry);
-			}
+			})
 		})
 		.catch(err => {
 			console.error(err);
