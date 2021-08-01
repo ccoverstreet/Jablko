@@ -68,15 +68,19 @@ func CreateJablkoApp(config []byte) (*JablkoApp, error) {
 
 	log.Info().Msg("Loaded Database")
 	app.router = mux.NewRouter()
+
 	app.router.Use(WrapMiddleware(authMiddleware, app))
 	app.router.Use(WrapMiddleware(loggingMiddleware, app))
+
 	app.router.HandleFunc("/", WrapRoute(dashboardHandler, app))
 	app.router.HandleFunc("/login", WrapRoute(userLoginHandler, app)).Methods("POST")
 	app.router.HandleFunc("/admin", WrapRoute(adminPageHandler, app))
+	app.router.HandleFunc("/admin/{func}", WrapRoute(AdminFuncHandler, app))
 	app.router.HandleFunc("/assets/{file}", assetsHandler)
 	app.router.PathPrefix("/jmod/").
 		Handler(http.HandlerFunc(WrapRoute(passReqToJMOD, app))).
 		Methods("GET", "POST")
+	app.router.HandleFunc("/service/{func}", WrapRoute(ServiceFuncHandler, app))
 
 	app.server = &http.Server{
 		Addr:    "localhost:" + strconv.Itoa(app.HTTPPort),
@@ -86,19 +90,24 @@ func CreateJablkoApp(config []byte) (*JablkoApp, error) {
 	return app, nil
 }
 
+// Starts all JMODs that are loaded in JablkoApp.ModM
 func (app *JablkoApp) StartJMODs() {
 	app.ModM.StartAllJMODs()
 }
 
+// Starts JablkoApp HTTP server on port from loaded config
 func (app *JablkoApp) Listen() {
 	app.server.ListenAndServe()
 }
 
+// General HTTP error handler that makes handling code more concise
 func handleHTTPError(err error, w http.ResponseWriter) {
 	w.WriteHeader(http.StatusInternalServerError)
 	fmt.Fprintf(w, "%v", err)
 }
 
+// Logs request remote address, URI, and time taken to process.
+// Time output is in microseconds
 func loggingMiddleware(next http.Handler, app *JablkoApp) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -195,6 +204,7 @@ func authMiddleware(next http.Handler, app *JablkoApp) http.Handler {
 	})
 }
 
+// Loads login page from file and sends it to client
 func loginPageHandler(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadFile("./html/login.html")
 	if err != nil {
@@ -214,6 +224,7 @@ func userLoginHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 	app.DB.LoginUserHandler(w, r)
 }
 
+// Generates dashboard HTML from all JMODs
 func dashboardHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 	bTaskbar, err := ioutil.ReadFile("./html/taskbar.html")
 	if err != nil {
@@ -240,6 +251,7 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 	return
 }
 
+// Sends admin HTML page to client
 func adminPageHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 	pageBytes, err := ioutil.ReadFile("./html/admin.html")
 	if err != nil {
@@ -258,6 +270,7 @@ func adminPageHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 	fmt.Fprintf(w, "%s", strings.Replace(string(pageBytes), "$JABLKO_TASKBAR", string(bTask), 1))
 }
 
+// Acts as a reverse proxy to JMODs if the "/jmod" prefix is used on the route
 func passReqToJMOD(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 	err := app.ModM.PassRequest(w, r)
 

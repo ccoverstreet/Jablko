@@ -188,7 +188,7 @@ func (sub *Subprocess) Stop() error {
 		return fmt.Errorf("Process already stopped")
 	}
 
-	return sub.Cmd.Process.Kill()
+	return sub.Cmd.Process.Kill() //Signal(signal.Interrupt)
 }
 
 func (sub *Subprocess) Build() error {
