@@ -55,7 +55,7 @@ func CreateJablkoCoreApp() *JablkoCoreApp {
 	return app
 }
 
-func (app *JablkoCoreApp) Init() error {
+func (app *JablkoCoreApp) LoadConfig() error {
 	// Runs through procedures to instantiate
 	// config data.
 
@@ -103,6 +103,10 @@ func (app *JablkoCoreApp) Init() error {
 		return err
 	}
 
+	return nil
+}
+
+func (app *JablkoCoreApp) StartJMODs() []error {
 	return app.ModM.StartAllJMODs()
 }
 
@@ -312,6 +316,7 @@ func (app *JablkoCoreApp) AssetsHandler(w http.ResponseWriter, r *http.Request) 
 		}
 
 		w.Header().Set("Content-Type", "text/css")
+		w.Header().Set("Cache-Control", "public")
 		fmt.Fprintf(w, "%s", b)
 	case "admin.js":
 		b, err := ioutil.ReadFile("./html/admin.js")
