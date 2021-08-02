@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/ccoverstreet/Jablko/core/database"
@@ -18,6 +21,7 @@ import (
 type JablkoApp struct {
 	server        *http.Server
 	router        *mux.Router
+	interruptChan chan os.Signal
 	HTTPPort      int                       `json:"httpPort"`
 	MessagingMods []string                  `json:"messagingMods"`
 	ModM          *modmanager.ModManager    `json:"jmods"`
@@ -41,6 +45,7 @@ func CreateJablkoApp(config []byte) (*JablkoApp, error) {
 	app := &JablkoApp{
 		nil,
 		nil,
+		make(chan os.Signal, 2),
 		80,
 		[]string{},
 		modmanager.NewModManager(),
@@ -96,8 +101,28 @@ func (app *JablkoApp) StartJMODs() {
 }
 
 // Starts JablkoApp HTTP server on port from loaded config
-func (app *JablkoApp) Listen() {
+func (app *JablkoApp) Run() {
+	go app.cleanup()
+	signal.Notify(app.interruptChan, syscall.SIGINT, syscall.SIGTERM)
 	app.server.ListenAndServe()
+	app.interruptChan <- syscall.SIGINT
+}
+
+func (app *JablkoApp) cleanup() {
+	<-app.interruptChan
+	log.Info().
+		Msg("Running cleanup code")
+	log.Printf("%v\n", app.ModM.ProcMap)
+
+	for jmodName, proc := range app.ModM.ProcMap {
+		log.Info().
+			Str("jmodName", jmodName).
+			Msg("Stopping JMOD")
+
+		proc.Stop()
+	}
+
+	app.server.Close()
 }
 
 // General HTTP error handler that makes handling code more concise

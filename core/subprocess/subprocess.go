@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"strconv"
 	"sync"
+	"syscall"
 
 	"github.com/rs/zerolog/log"
 )
@@ -73,7 +74,7 @@ func (sub *Subprocess) MarshalJSON() ([]byte, error) {
 // new exec.Cmd and sets the environment
 // ONLY called when Subprocess.Start is called
 func (sub *Subprocess) generateCMD() {
-	sub.Cmd = exec.Command("make", "-j1", "run")
+	sub.Cmd = exec.Command("make", "run")
 	sub.Cmd.Dir = sub.Dir
 
 	hostEnv := os.Environ()
@@ -90,7 +91,7 @@ func (sub *Subprocess) generateCMD() {
 	sub.Cmd.Stdout = sub.Writer
 	sub.Cmd.Stderr = sub.Writer
 
-	//sub.Cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	sub.Cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
 
 func (sub *Subprocess) Start() error {
@@ -188,7 +189,7 @@ func (sub *Subprocess) Stop() error {
 		return fmt.Errorf("Process already stopped")
 	}
 
-	return sub.Cmd.Process.Kill() //Signal(signal.Interrupt)
+	return syscall.Kill(-sub.Cmd.Process.Pid, syscall.SIGKILL)
 }
 
 func (sub *Subprocess) Build() error {

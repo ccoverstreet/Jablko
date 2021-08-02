@@ -34,7 +34,7 @@ func main() {
 	log.Printf("%v\n", jablkoApp2)
 
 	jablkoApp2.StartJMODs()
-	jablkoApp2.Listen()
+	jablkoApp2.Run()
 
 	/*
 		// Make Directories if don't exist
