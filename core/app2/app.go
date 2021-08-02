@@ -88,7 +88,7 @@ func CreateJablkoApp(config []byte) (*JablkoApp, error) {
 	app.router.HandleFunc("/service/{func}", WrapRoute(ServiceFuncHandler, app))
 
 	app.server = &http.Server{
-		Addr:    "localhost:" + strconv.Itoa(app.HTTPPort),
+		Addr:    ":" + strconv.Itoa(app.HTTPPort),
 		Handler: app.router,
 	}
 
@@ -123,6 +123,19 @@ func (app *JablkoApp) cleanup() {
 	}
 
 	app.server.Close()
+}
+
+func (app *JablkoApp) SaveConfig() error {
+	log.Info().Msg("Saving Jablko Config...")
+
+	config, err := json.MarshalIndent(app, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile("./jablkoconfig.json", config, 0666)
+
+	return err
 }
 
 // General HTTP error handler that makes handling code more concise

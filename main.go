@@ -33,31 +33,12 @@ func main() {
 	}
 	log.Printf("%v\n", jablkoApp2)
 
+	CreateDirectories()
 	jablkoApp2.StartJMODs()
 	jablkoApp2.Run()
 
 	/*
-		// Make Directories if don't exist
-		err := os.MkdirAll("./log", 0700)
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Unable to make log directory")
-		}
 
-		err = os.MkdirAll("./data", 0700)
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Unable to make log directory")
-		}
-
-		err = os.MkdirAll("./tmp", 0700)
-		if err != nil {
-			log.Error().
-				Err(err).
-				Msg("Unable to make tmp directory")
-		}
 
 		jablkoApp := app.CreateJablkoCoreApp()
 		err = jablkoApp.LoadConfig()
@@ -83,6 +64,30 @@ func main() {
 			Err(http.ListenAndServe(":8080", jablkoApp.Router)).
 			Msg("Jablko stopping")
 	*/
+}
+
+func CreateDirectories() {
+	// Make Directories if don't exist
+	err := os.MkdirAll("./log", 0700)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to make log directory")
+	}
+
+	err = os.MkdirAll("./data", 0700)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to make log directory")
+	}
+
+	err = os.MkdirAll("./tmp", 0700)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Unable to make tmp directory")
+	}
 }
 
 const startingStatement = `

@@ -1,8 +1,10 @@
 package app2
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/ccoverstreet/Jablko/core/jutil"
 	"github.com/gorilla/mux"
@@ -10,12 +12,17 @@ import (
 )
 
 var adminFuncMap = map[string]func(*http.Request, *JablkoApp) ([]byte, error){
-	"installJMOD": installJMOD,
-	"getJMODData": getJMODData,
-	"startJMOD":   startJMOD,
-	"stopJMOD":    stopJMOD,
-	"buildJMOD":   buildJMOD,
-	"deleteJMOD":  deleteJMOD,
+	"installJMOD":     installJMOD,
+	"getJMODData":     getJMODData,
+	"startJMOD":       startJMOD,
+	"stopJMOD":        stopJMOD,
+	"buildJMOD":       buildJMOD,
+	"deleteJMOD":      deleteJMOD,
+	"applyJMODConfig": applyJMODConfig,
+	"getJMODLog":      getJMODLog,
+	"getUserList":     getUserList,
+	"createUser":      createUser,
+	"deleteUser":      deleteUser,
 }
 
 func AdminFuncHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
@@ -156,4 +163,124 @@ func deleteJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 	}
 
 	return []byte("Deleted JMOD"), nil
+}
+
+func applyJMODConfig(r *http.Request, app *JablkoApp) ([]byte, error) {
+	type reqFormat struct {
+		JMODName  string `json:"jmodName"`
+		NewConfig string `json:"newConfig"`
+	}
+
+	reqData := reqFormat{}
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	if !json.Valid([]byte(reqData.NewConfig)) {
+		return nil, fmt.Errorf("Invalid JSON provided for config")
+	}
+
+	err = app.ModM.SetJMODConfig(reqData.JMODName, reqData.NewConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.SaveConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.ModM.StopJMOD(reqData.JMODName)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < 3; i++ {
+		if app.ModM.IsJMODStopped(reqData.JMODName) {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	err = app.ModM.StartJMOD(reqData.JMODName)
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte("Applied new config to JMOD"), nil
+}
+
+func getJMODLog(r *http.Request, app *JablkoApp) ([]byte, error) {
+	type reqFormat struct {
+		JMODName string `json:"jmodName"`
+	}
+
+	reqData := reqFormat{}
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	jmodLog, err := app.ModM.GetJMODLog(reqData.JMODName)
+	if err != nil {
+		return nil, err
+	}
+
+	return jmodLog, nil
+}
+
+func getUserList(r *http.Request, app *JablkoApp) ([]byte, error) {
+	userList := app.DB.GetUserList()
+
+	body, err := json.Marshal(userList)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, err
+}
+
+func createUser(r *http.Request, app *JablkoApp) ([]byte, error) {
+	type reqFormat struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	reqData := reqFormat{}
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.DB.CreateUser(reqData.Username, reqData.Password, 0)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte("Created user"), err
+}
+
+func deleteUser(r *http.Request, app *JablkoApp) ([]byte, error) {
+	type reqFormat struct {
+		Username string `json:"username"`
+	}
+
+	reqData := reqFormat{}
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.DB.DeleteUser(reqData.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte("Deleted user"), nil
 }
