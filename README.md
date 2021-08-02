@@ -4,12 +4,6 @@
 
 Jablko is a smart home system written in Go that is extendible by user created Jablko Mods. The system is designed to be very simple, but offer flexibility to suit whatever needs you may come up with. The main server can communicate through network requests to any physical modules you may have, or you can use a custom communication protocol to communicate with smart home devices. User-written Jablko Mods provide an interface between your smart home dashboard and the rest of the world.
 
-## News
-
-0.3.0 is the current development goal. Issues and suggested features should go in issues. 
-
-An alternative, microservice-esque design is being developed to evaluate performance, scalability, and maintainability. The goal of this design is to decouple the actions of individual modules from the core Jablko process. In this design, Jablko acts more like a reverse-proxy layer that handles user authentication and provides a common target for jablko mods. Having a Jablko as the common framework that modules can call interact with makes it easier to provide a front-end for each module.
-
 ## Installing
 
 ### Prerequisites
