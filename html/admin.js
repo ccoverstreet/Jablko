@@ -266,7 +266,9 @@ customElements.define("jmod-entry", JMODEntry);
 function getJMODData() {
 	fetch("/admin/getJMODData", {})	
 		.then(async data => {
-			const mods = await data.json();
+			req = await data.text();
+			console.log(req);
+			const mods = JSON.parse(req);
 
 			const holder = document.getElementById("jmod-entry-holder");
 			holder.innerHTML = "";
