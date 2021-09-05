@@ -19,7 +19,7 @@ Jablko is a smart home system written in Go that is extendible by user created J
 
 ## Jablko Mods
 
-In Progress
+[Documentation](/docs/JMODs.md)
 
 ## Future work
 
