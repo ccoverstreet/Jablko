@@ -21,8 +21,6 @@ Jablko is a smart home system written in Go that is extendible by user created J
 
 In Progress
 
-Mods must comply with the interfaces descrived in types/types.go
-
 ## Future work
 
 - Messaging functionality (likely groupme, possible email) 
