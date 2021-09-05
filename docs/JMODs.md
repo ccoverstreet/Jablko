@@ -32,4 +32,32 @@ WebComponents are used as a way of encapsulating all javascript used by a JMOD i
 <link rel="stylesheet" href="/assets/standard.css"></link>
 ```
 
-An example implementation of a JMOD WebComponent can be found in [builtin/demo/webcomponent.js](https://github.com/ccoverstreet/Jablko/builtin/demo/webcomponent.js). It is critical that all functionality for a JMOD front-end is implemented inside of the WebComponent class. 
+An example implementation of a JMOD WebComponent can be found in [builtin/demo/webcomponent.js](/builtin/demo/webcomponent.js). It is critical that all functionality for a JMOD front-end is implemented inside of the WebComponent class. 
+
+### Example WebComponent HTML
+
+```html
+<link rel="stylesheet" href="/assets/standard.css"></link>
+<div class="jmod-wrapper">
+	<div class="jmod-header" style="display: flex; ">
+		<h1>Test Module</h1>
+		<svg viewBox="0 0 360 360">
+			<circle cx="180" 
+				cy="180" 
+				r="120" 
+				stroke="var(--clr-accent)" 
+				stroke-width="30"
+				fill="transparent"/>		
+		</svg>
+	</div>
+	<hr>
+	<div class="jmod-body">
+		<p>
+		Demo for Jablko
+		</p>
+	</div>
+</div>
+```
+
+
+
