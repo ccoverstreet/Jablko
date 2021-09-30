@@ -18,7 +18,7 @@ var serviceFuncMap = map[string]func(*http.Request, *JablkoApp, string) ([]byte,
 func ServiceFuncHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 	pathVars := mux.Vars(r)
 	modname := r.Header.Get("JMOD-NAME")
-	log.Printf("%v\n", pathVars)
+	log.Printf("%v, %v\n", pathVars, modname)
 
 	serviceFuncName, ok := pathVars["func"]
 	if !ok {
