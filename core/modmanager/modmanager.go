@@ -159,12 +159,12 @@ func (mm *ModManager) DeleteJMOD(jmodPath string) error {
 
 func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) error {
 	mm.RLock()
-	defer mm.RUnlock()
 
 	source := r.FormValue("JMOD-Source")
 
 	proc, ok := mm.ProcMap[source]
 	if !ok {
+		mm.RUnlock()
 		return fmt.Errorf("JMOD does not exist")
 	}
 
@@ -174,6 +174,7 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) error 
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		mm.RUnlock()
 		return fmt.Errorf("Unable to read incoming request body - %v", err)
 	}
 
@@ -183,6 +184,7 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) error 
 	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
 
+	mm.RUnlock()
 	proxy.ServeHTTP(w, r)
 
 	return nil
@@ -368,6 +370,7 @@ func (mm *ModManager) StopJMOD(jmodName string) error {
 
 // Should the proc struct handle this
 // Feels weird locking the process outside of process struct
+// Why the fuck was this being locked in the first place?
 func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 	mm.Lock()
 	defer mm.Unlock()
