@@ -2,9 +2,10 @@
 // Cale Overstreet
 // Mar. 30, 2021
 
+// github.com/ccoverstreet/Jablko
 // Core Jablko process entrypoint. Responsible for
 // proxying requests, authentication, process
-// management
+// management.
 
 package main
 
