@@ -16,8 +16,7 @@ type session struct {
 
 type SessionsTable struct {
 	sync.RWMutex
-	Sessions map[string]session
-
+	Sessions        map[string]session
 	SessionLifetime int64
 }
 
@@ -25,7 +24,7 @@ func CreateSessionsTable() *SessionsTable {
 	st := new(SessionsTable)
 	st.Sessions = make(map[string]session)
 
-	st.SessionLifetime = 3600
+	st.SessionLifetime = 604800
 
 	return st
 }
@@ -40,7 +39,6 @@ func (st *SessionsTable) CreateSession(username string, permissionLevel int) (st
 	}
 
 	st.Sessions[cookieValue] = session{username, permissionLevel, time.Now().Unix()}
-
 	return cookieValue, nil
 }
 

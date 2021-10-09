@@ -25,7 +25,7 @@ type JablkoApp struct {
 	HTTPPort      int                       `json:"httpPort"`
 	MessagingMods []string                  `json:"messagingMods"`
 	ModM          *modmanager.ModManager    `json:"jmods"`
-	DB            *database.DatabaseHandler `json:"-"`
+	DB            *database.DatabaseHandler `json:"-t "`
 }
 
 func WrapRoute(route func(http.ResponseWriter, *http.Request, *JablkoApp), inst *JablkoApp) func(http.ResponseWriter, *http.Request) {
