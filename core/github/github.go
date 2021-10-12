@@ -18,8 +18,9 @@ import (
 // https://api.github.com/repos/ccoverstreet/Jablko/tags
 
 func DownloadZipRepo(zipURL string) error {
-	log.Printf("%v", zipURL)
 	base := filepath.Base(zipURL)
+
+	log.Printf("%v", zipURL)
 
 	resp, err := http.Get(zipURL)
 	if err != nil {
@@ -37,6 +38,7 @@ func DownloadZipRepo(zipURL string) error {
 	defer tmpZip.Close()
 
 	size, err := io.Copy(tmpZip, resp.Body)
+	log.Printf("%d", size)
 	defer resp.Body.Close()
 
 	fmt.Println(size)
@@ -50,8 +52,9 @@ func DownloadZipRepo(zipURL string) error {
 
 func UnpackZipRepo(zipURL string, dest string) error {
 	base := filepath.Base(zipURL)
+	log.Printf("%v", base)
 
-	r, err := zip.OpenReader("tmp/" + base + ".zip")
+	r, err := zip.OpenReader("tmp/" + base)
 	if err != nil {
 		return err
 	}
@@ -128,34 +131,27 @@ func GetDefaultBranch(repoName string) (string, error) {
 	return resBody.DefaultBranch, nil
 }
 
-func RetrieveSource(jmodPath string) error {
-	splitPath := strings.Split(jmodPath, "@")
+func RetrieveSource(jmodName string, commit string) error {
+	repoName := jmodName
+	versionTag := commit
+	//trimmedRepoName := strings.Replace(repoName, "github.com/", "", 1)
 
-	if len(splitPath) < 2 {
-		return fmt.Errorf("Malformed github.com path")
+	defaultBranch, err := GetDefaultBranch(repoName)
+	log.Printf("%v", defaultBranch)
+	if err != nil {
+		return err
+	}
+	url := "https://" + jmodName + "/archive/" + versionTag + ".zip"
+
+	err = DownloadZipRepo(url)
+	if err != nil {
+		return err
 	}
 
-	repoName := splitPath[0]
-	versionTag := splitPath[1]
-	trimmedRepoName := strings.Replace(repoName, "github.com/", "", 1)
-
-	if versionTag == "latest" {
-		defaultBranch, err := GetDefaultBranch(repoName)
-		log.Printf("%v", defaultBranch)
-		if err != nil {
-			return err
-		}
-		url := "https://api.github.com/repos/" + trimmedRepoName + "/zipball"
-
-		err = DownloadZipRepo(url)
-		if err != nil {
-			return err
-		}
-
-		err = UnpackZipRepo(url, jmodPath)
-		if err != nil {
-			return err
-		}
+	err = UnpackZipRepo(url, jmodName)
+	if err != nil {
+		log.Printf("%v", err)
+		return err
 	}
 
 	return nil

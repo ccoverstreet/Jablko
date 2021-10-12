@@ -42,16 +42,15 @@ func NewModManager() *ModManager {
 
 func (mm *ModManager) UnmarshalJSON(data []byte) error {
 	// Use a map of json.RawMessage as an intermediate
-
-	intermediateMap := make(map[string]*json.RawMessage)
+	intermediateMap := make(map[string]subprocess.JMODData)
 
 	err := json.Unmarshal(data, &intermediateMap)
 	if err != nil {
 		return err
 	}
 
-	for name, rawMessage := range intermediateMap {
-		err := mm.AddJMOD(name, *rawMessage)
+	for name, data := range intermediateMap {
+		err := mm.AddJMOD(name, data)
 		if err != nil {
 			return err
 		}
@@ -67,7 +66,7 @@ func (mm *ModManager) MarshalJSON() ([]byte, error) {
 	return json.Marshal(mm.ProcMap)
 }
 
-func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
+func (mm *ModManager) AddJMOD(jmodPath string, jmodData subprocess.JMODData) error {
 	mm.Lock()
 	defer mm.Unlock()
 
@@ -81,7 +80,7 @@ func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
 		_, err := os.Stat(jmodPath)
 		if os.IsNotExist(err) {
 			log.Printf("github.com route called, need to check for download and @ syntax")
-			err = github.RetrieveSource(jmodPath) // Retrieves source
+			err = github.RetrieveSource(jmodPath, jmodData.Commit) // Retrieves source
 			if err != nil {
 				return err
 			}
@@ -105,7 +104,7 @@ func (mm *ModManager) AddJMOD(jmodPath string, config []byte) error {
 		8080,
 		jmodKey,
 		dataDir,
-		config)
+		jmodData)
 
 	if err != nil {
 		return err
@@ -382,7 +381,7 @@ func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 
 	proc.Lock()
 	defer proc.Unlock()
-	proc.Config = []byte(newConfig)
+	proc.JMODData.Config = []byte(newConfig)
 
 	return nil
 }

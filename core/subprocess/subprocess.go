@@ -9,6 +9,7 @@
 package subprocess
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -20,19 +21,24 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type JMODData struct {
+	Commit string          `json:"commit"`
+	Config json.RawMessage `json:"config"`
+}
+
 type Subprocess struct {
 	sync.Mutex
 	Cmd      *exec.Cmd
 	ModPort  int
 	CorePort int
 	Key      string
-	Config   []byte
+	JMODData JMODData
 	Dir      string
 	DataDir  string
 	Writer   *SubprocessWriter
 }
 
-func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir string, config []byte) (*Subprocess, error) {
+func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir string, jmodData JMODData) (*Subprocess, error) {
 	// Creates a subprocess from the given parameters
 	// Does not start the process
 
@@ -49,10 +55,13 @@ func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir str
 	sub := new(Subprocess)
 	sub.CorePort = jablkoPort
 	sub.Key = jmodKey
-	sub.Config = config
-	if sub.Config == nil {
-		sub.Config = []byte("{}")
-	}
+	/*
+		sub.Config = config
+		if sub.Config == nil {
+			sub.Config = []byte("{}")
+		}
+	*/
+	sub.JMODData = jmodData
 	sub.Dir = source
 	sub.DataDir = dataDir
 
@@ -67,7 +76,14 @@ func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir str
 }
 
 func (sub *Subprocess) MarshalJSON() ([]byte, error) {
-	return sub.Config, nil
+	b, err := json.Marshal(sub.JMODData)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(b))
+	return b, nil
+	//return sub.Config, nil
 }
 
 // Copies parameters stored in the subprocess into a
@@ -83,7 +99,7 @@ func (sub *Subprocess) generateCMD() {
 		"JABLKO_MOD_PORT=" + strconv.Itoa(sub.ModPort),
 		"JABLKO_MOD_KEY=" + sub.Key,
 		"JABLKO_MOD_DATA_DIR=" + sub.DataDir,
-		"JABLKO_MOD_CONFIG=" + string(sub.Config),
+		"JABLKO_MOD_CONFIG=" + string(sub.JMODData.Config),
 	}
 
 	sub.Cmd.Env = append(hostEnv, jablkoEnv...)

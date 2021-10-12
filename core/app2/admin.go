@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ccoverstreet/Jablko/core/jutil"
+	"github.com/ccoverstreet/Jablko/core/subprocess"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
@@ -68,7 +69,7 @@ func installJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 		return nil, err
 	}
 
-	err = app.ModM.AddJMOD(reqData.JMODPath, nil)
+	err = app.ModM.AddJMOD(reqData.JMODPath, subprocess.JMODData{"", nil})
 	if err != nil {
 		return nil, err
 	}
