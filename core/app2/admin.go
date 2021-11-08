@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ccoverstreet/Jablko/core/jutil"
@@ -59,22 +60,33 @@ func AdminFuncHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 }
 
 func installJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
-	type installData struct {
+	var reqData struct {
 		JMODPath string `json:"jmodPath"`
 	}
 
-	reqData := installData{}
 	err := jutil.ParseJSONBody(r.Body, &reqData)
 	if err != nil {
 		return nil, err
 	}
 
-	err = app.ModM.AddJMOD(reqData.JMODPath, subprocess.JMODData{"", nil})
+	// Correctly identify root of JMOD name
+	splitPath := strings.Split(reqData.JMODPath, "@")
+	jmodName := splitPath[0]
+
+	// Run AddJMOD based on whether a default branch is provided
+	if len(splitPath) == 1 {
+		// This branch should retrieve the latest default branch commit
+		err = app.ModM.AddJMOD(jmodName, subprocess.JMODData{"", nil})
+	} else {
+		err = app.ModM.AddJMOD(jmodName, subprocess.JMODData{splitPath[1], nil})
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	err = app.ModM.StartJMOD(reqData.JMODPath)
+	// Start newly downloaded JMOD
+	err = app.ModM.StartJMOD(jmodName)
 	if err != nil {
 		return nil, err
 	}

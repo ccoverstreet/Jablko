@@ -131,17 +131,24 @@ func GetDefaultBranch(repoName string) (string, error) {
 	return resBody.DefaultBranch, nil
 }
 
+// Handles intricacies with dealing with
+// GitHub repo downloads
 func RetrieveSource(jmodName string, commit string) error {
 	repoName := jmodName
 	versionTag := commit
 	//trimmedRepoName := strings.Replace(repoName, "github.com/", "", 1)
+	fmt.Printf("%s %s\n", jmodName, commit)
 
 	defaultBranch, err := GetDefaultBranch(repoName)
 	log.Printf("%v", defaultBranch)
 	if err != nil {
 		return err
 	}
-	url := "https://" + jmodName + "/archive/" + versionTag + ".zip"
+
+	url := "https://" + repoName + "/archive/" + versionTag + ".zip"
+	if len(versionTag) == 0 {
+		url = "https://" + repoName + "/archive/" + defaultBranch + ".zip"
+	}
 
 	err = DownloadZipRepo(url)
 	if err != nil {

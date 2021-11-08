@@ -55,12 +55,7 @@ func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir str
 	sub := new(Subprocess)
 	sub.CorePort = jablkoPort
 	sub.Key = jmodKey
-	/*
-		sub.Config = config
-		if sub.Config == nil {
-			sub.Config = []byte("{}")
-		}
-	*/
+
 	sub.JMODData = jmodData
 	sub.Dir = source
 	sub.DataDir = dataDir
@@ -83,7 +78,6 @@ func (sub *Subprocess) MarshalJSON() ([]byte, error) {
 
 	fmt.Println(string(b))
 	return b, nil
-	//return sub.Config, nil
 }
 
 // Copies parameters stored in the subprocess into a
