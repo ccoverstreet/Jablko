@@ -79,10 +79,10 @@ class JMODEntry extends HTMLElement {
 	<div id="jmod-controls">
 		<button onclick="this.getRootNode().host.start()" style="background-color: var(--clr-green)">Start</button>
 		<button onclick="this.getRootNode().host.stop()" style="background-color: var(--clr-red)">Stop</button>
-		<button onclick="this.getRootNode().host.build()" style="background-color: var(--clr-blue)">Build</button>
+		<button onclick="this.getRootNode().host.build()" style="background-color: var(--clr-gray)">Build</button>
 
-		<button onclick="this.getRootNode().host.toggleEditor()" style="background-color: var(--clr-green)">Config</button>
-		<button onclick="this.getRootNode().host.getJMODLog()" style="background-color: var(--clr-purple)">Log</button>
+		<button onclick="this.getRootNode().host.toggleEditor()" style="background-color: var(--clr-gray)">Config</button>
+		<button onclick="this.getRootNode().host.getJMODLog()" style="background-color: var(--clr-gray)">Log</button>
 		<button onclick="this.getRootNode().host.deleteJMOD()" style="background-color: var(--clr-red)">Delete</button>
 	</div>
 
