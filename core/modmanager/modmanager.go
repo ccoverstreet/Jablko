@@ -80,10 +80,13 @@ func (mm *ModManager) AddJMOD(jmodPath string, jmodData subprocess.JMODData) err
 		_, err := os.Stat(jmodPath)
 		if os.IsNotExist(err) {
 			log.Printf("github.com route called, need to check for download and @ syntax")
-			err = github.RetrieveSource(jmodPath, jmodData.Commit) // Retrieves source
+			commit, err := github.RetrieveSource(jmodPath, jmodData.Commit) // Retrieves source
 			if err != nil {
 				return err
 			}
+
+			// Change commit to main branch commit
+			jmodData.Commit = commit
 		}
 	}
 
@@ -370,7 +373,7 @@ func (mm *ModManager) StopJMOD(jmodName string) error {
 // Should the proc struct handle this
 // Feels weird locking the process outside of process struct
 // Why the fuck was this being locked in the first place?
-func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
+func (mm *ModManager) SetJMODConfig(jmodName string, newConfig []byte) error {
 	mm.Lock()
 	defer mm.Unlock()
 
@@ -379,9 +382,7 @@ func (mm *ModManager) SetJMODConfig(jmodName string, newConfig string) error {
 		return fmt.Errorf("JMOD not found")
 	}
 
-	proc.Lock()
-	defer proc.Unlock()
-	proc.JMODData.Config = []byte(newConfig)
+	proc.SetConfig(newConfig)
 
 	return nil
 }

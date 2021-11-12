@@ -104,6 +104,19 @@ func (sub *Subprocess) generateCMD() {
 	sub.Cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
 
+func (sub *Subprocess) SetCommit(commit string) {
+	sub.Lock()
+	sub.Unlock()
+
+	sub.JMODData.Commit = commit
+}
+
+func (sub *Subprocess) SetConfig(config []byte) {
+	sub.Lock()
+	defer sub.Unlock()
+	sub.JMODData.Config = config
+}
+
 func (sub *Subprocess) Start() error {
 	sub.Lock()
 	defer sub.Unlock()

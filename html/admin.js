@@ -191,7 +191,7 @@ class JMODEntry extends HTMLElement {
 			},
 			body: JSON.stringify({
 				jmodName: this.jmodName,
-				newConfig: editor.value
+				newConfig: JSON.parse(editor.value)
 			})
 		})
 			.then(async data => {

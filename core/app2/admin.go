@@ -179,23 +179,24 @@ func deleteJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 }
 
 func applyJMODConfig(r *http.Request, app *JablkoApp) ([]byte, error) {
-	type reqFormat struct {
+	var reqData struct {
 		JMODName  string `json:"jmodName"`
-		NewConfig string `json:"newConfig"`
+		NewConfig struct {
+			Commit string          `json:"commit"`
+			Config json.RawMessage `json:"config"`
+		} `json:"newConfig"`
 	}
-
-	reqData := reqFormat{}
 
 	err := jutil.ParseJSONBody(r.Body, &reqData)
 	if err != nil {
 		return nil, err
 	}
 
-	if !json.Valid([]byte(reqData.NewConfig)) {
+	if !json.Valid([]byte(reqData.NewConfig.Config)) {
 		return nil, fmt.Errorf("Invalid JSON provided for config")
 	}
 
-	err = app.ModM.SetJMODConfig(reqData.JMODName, reqData.NewConfig)
+	err = app.ModM.SetJMODConfig(reqData.JMODName, reqData.NewConfig.Config)
 	if err != nil {
 		return nil, err
 	}

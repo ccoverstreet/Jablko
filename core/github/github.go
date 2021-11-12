@@ -133,16 +133,16 @@ func GetDefaultBranch(repoName string) (string, error) {
 
 // Handles intricacies with dealing with
 // GitHub repo downloads
-func RetrieveSource(jmodName string, commit string) error {
+func RetrieveSource(jmodName string, commit string) (string, error) {
 	repoName := jmodName
 	versionTag := commit
 	//trimmedRepoName := strings.Replace(repoName, "github.com/", "", 1)
 	fmt.Printf("%s %s\n", jmodName, commit)
 
 	defaultBranch, err := GetDefaultBranch(repoName)
-	log.Printf("%v", defaultBranch)
 	if err != nil {
-		return err
+		log.Printf("HelloWorld")
+		return "", err
 	}
 
 	url := "https://" + repoName + "/archive/" + versionTag + ".zip"
@@ -152,16 +152,20 @@ func RetrieveSource(jmodName string, commit string) error {
 
 	err = DownloadZipRepo(url)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = UnpackZipRepo(url, jmodName)
 	if err != nil {
 		log.Printf("%v", err)
-		return err
+		return "", err
 	}
 
-	return nil
+	if commit == "" {
+		return defaultBranch, nil
+	}
+
+	return commit, nil
 }
 
 func DeleteSource(jmodPath string) error {
