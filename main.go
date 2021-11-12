@@ -23,6 +23,9 @@ func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Caller().Logger()
 	fmt.Printf("%s\b", startingStatement)
 
+	// Initialize directory structure that Jablko uses
+	CreateDirectories()
+
 	configBytes, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
 		panic(err)
@@ -34,37 +37,8 @@ func main() {
 	}
 	log.Printf("%v\n", jablkoApp2)
 
-	CreateDirectories()
 	jablkoApp2.StartJMODs()
 	jablkoApp2.Run()
-
-	/*
-
-
-		jablkoApp := app.CreateJablkoCoreApp()
-		err = jablkoApp.LoadConfig()
-		if err != nil {
-			log.Error().
-				Err(err).
-				Caller().
-				Msg("Error in loading config")
-
-			panic(err)
-		}
-
-		// Start JMODs
-		errs := jablkoApp.StartJMODs()
-		if len(errs) != 0 {
-			log.Error().Msg("Error when starting JMODs. See prior logs.")
-		}
-
-		fmt.Println(jablkoApp)
-
-		log.Info().Msg("Starting HTTP Server")
-		log.Error().
-			Err(http.ListenAndServe(":8080", jablkoApp.Router)).
-			Msg("Jablko stopping")
-	*/
 }
 
 func CreateDirectories() {

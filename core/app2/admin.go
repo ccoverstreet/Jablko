@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ccoverstreet/Jablko/core/jutil"
+	"github.com/ccoverstreet/Jablko/core/subprocess"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
@@ -58,22 +60,33 @@ func AdminFuncHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 }
 
 func installJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
-	type installData struct {
+	var reqData struct {
 		JMODPath string `json:"jmodPath"`
 	}
 
-	reqData := installData{}
 	err := jutil.ParseJSONBody(r.Body, &reqData)
 	if err != nil {
 		return nil, err
 	}
 
-	err = app.ModM.AddJMOD(reqData.JMODPath, nil)
+	// Correctly identify root of JMOD name
+	splitPath := strings.Split(reqData.JMODPath, "@")
+	jmodName := splitPath[0]
+
+	// Run AddJMOD based on whether a default branch is provided
+	if len(splitPath) == 1 {
+		// This branch should retrieve the latest default branch commit
+		err = app.ModM.AddJMOD(jmodName, subprocess.JMODData{"", nil})
+	} else {
+		err = app.ModM.AddJMOD(jmodName, subprocess.JMODData{splitPath[1], nil})
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	err = app.ModM.StartJMOD(reqData.JMODPath)
+	// Start newly downloaded JMOD
+	err = app.ModM.StartJMOD(jmodName)
 	if err != nil {
 		return nil, err
 	}
@@ -166,23 +179,24 @@ func deleteJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 }
 
 func applyJMODConfig(r *http.Request, app *JablkoApp) ([]byte, error) {
-	type reqFormat struct {
+	var reqData struct {
 		JMODName  string `json:"jmodName"`
-		NewConfig string `json:"newConfig"`
+		NewConfig struct {
+			Commit string          `json:"commit"`
+			Config json.RawMessage `json:"config"`
+		} `json:"newConfig"`
 	}
-
-	reqData := reqFormat{}
 
 	err := jutil.ParseJSONBody(r.Body, &reqData)
 	if err != nil {
 		return nil, err
 	}
 
-	if !json.Valid([]byte(reqData.NewConfig)) {
+	if !json.Valid([]byte(reqData.NewConfig.Config)) {
 		return nil, fmt.Errorf("Invalid JSON provided for config")
 	}
 
-	err = app.ModM.SetJMODConfig(reqData.JMODName, reqData.NewConfig)
+	err = app.ModM.SetJMODConfig(reqData.JMODName, reqData.NewConfig.Config)
 	if err != nil {
 		return nil, err
 	}

@@ -3,3 +3,6 @@ Jablko: main.go core/*/*.go
 	
 run: Jablko
 	./Jablko
+
+clean:
+	rm -r github.com log tmp

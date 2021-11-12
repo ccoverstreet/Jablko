@@ -58,7 +58,7 @@ func saveConfig(r *http.Request, app *JablkoApp, modname string) ([]byte, error)
 		return nil, fmt.Errorf("Invalid JSON")
 	}
 
-	err = app.ModM.SetJMODConfig(modname, string(newConfigByte))
+	err = app.ModM.SetJMODConfig(modname, newConfigByte)
 	if err != nil {
 		return nil, err
 	}

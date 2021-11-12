@@ -270,7 +270,7 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 		return
 	}
 
-	dashboardTemplate, err := ioutil.ReadFile("./core/app/template.html")
+	dashboardTemplate, err := ioutil.ReadFile("./core/app2/template.html")
 	if err != nil {
 		handleHTTPError(err, w)
 		return
@@ -278,13 +278,14 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 
 	WebCompStr, InstConfStr := app.ModM.GenerateJMODDashComponents()
 
-	dashboardReplacer := strings.NewReplacer(
+	dashboardString := strings.NewReplacer(
 		"$JABLKO_TASKBAR", string(bTaskbar),
 		"$JABLKO_WEB_COMPONENT_MAP_DEF", WebCompStr,
 		"$JABLKO_JMOD_INSTANCE_CONF_MAP_DEF", InstConfStr,
-	)
+	).
+		Replace(string(dashboardTemplate))
 
-	fmt.Fprintf(w, "%s", dashboardReplacer.Replace(string(dashboardTemplate)))
+	fmt.Fprintf(w, "%s", dashboardString)
 
 	return
 }
