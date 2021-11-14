@@ -215,6 +215,12 @@ func (sub *Subprocess) Stop() error {
 	return syscall.Kill(-sub.Cmd.Process.Pid, syscall.SIGKILL)
 }
 
+func (sub *Subprocess) Restart() error {
+	_ = sub.Stop()
+	err := sub.Start()
+	return err
+}
+
 func (sub *Subprocess) Build() error {
 	buildProc := exec.Command("make", "build")
 	buildProc.Dir = sub.Dir

@@ -18,6 +18,7 @@ var adminFuncMap = map[string]func(*http.Request, *JablkoApp) ([]byte, error){
 	"getJMODData":     getJMODData,
 	"startJMOD":       startJMOD,
 	"stopJMOD":        stopJMOD,
+	"upgradeJMOD":     upgradeJMOD,
 	"buildJMOD":       buildJMOD,
 	"deleteJMOD":      deleteJMOD,
 	"applyJMODConfig": applyJMODConfig,
@@ -136,6 +137,25 @@ func stopJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 	}
 
 	return []byte("Stopped JMOD"), nil
+}
+
+func upgradeJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
+	var reqData struct {
+		JMODName string `json:"jmodName"`
+		Commit   string `json:"commit"`
+	}
+
+	err := jutil.ParseJSONBody(r.Body, &reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.ModM.UpgradeJMOD(reqData.JMODName, reqData.Commit)
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte("Upgraded JMOD"), nil
 }
 
 func buildJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {

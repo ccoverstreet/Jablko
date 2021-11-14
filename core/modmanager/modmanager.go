@@ -118,6 +118,34 @@ func (mm *ModManager) AddJMOD(jmodPath string, jmodData subprocess.JMODData) err
 	return nil
 }
 
+func (mm *ModManager) UpgradeJMOD(jmodPath string, commit string) error {
+	if !strings.HasPrefix(jmodPath, "github.com") {
+		return fmt.Errorf("JMOD specified is not a github.com JMOD")
+	}
+
+	proc, ok := mm.ProcMap[jmodPath]
+	if !ok {
+		return fmt.Errorf("JMOD does not exists")
+	}
+
+	err := github.DeleteSource(jmodPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = github.RetrieveSource(jmodPath, commit)
+	if err != nil {
+		return err
+	}
+
+	err = proc.Restart()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (mm *ModManager) BuildJMOD(jmodPath string) error {
 	mm.Lock()
 	defer mm.Unlock()
