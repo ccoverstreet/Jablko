@@ -212,7 +212,12 @@ func (sub *Subprocess) Stop() error {
 		return fmt.Errorf("Process already stopped")
 	}
 
-	return syscall.Kill(-sub.Cmd.Process.Pid, syscall.SIGKILL)
+	err := syscall.Kill(-sub.Cmd.Process.Pid, syscall.SIGKILL)
+
+	sub.Cmd.Process = nil
+	sub.Cmd.ProcessState = nil
+
+	return err
 }
 
 func (sub *Subprocess) Restart() error {

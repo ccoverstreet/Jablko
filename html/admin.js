@@ -170,7 +170,7 @@ class JMODEntry extends HTMLElement {
 			body: JSON.stringify({jmodName: this.jmodName, commit: commit})
 		})
 			.then(async data => {
-				console.log(await data.text);
+				console.log(await data.text());
 			})
 			.catch(err => {
 				console.error(err);
