@@ -18,6 +18,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const JABLKO_DEFAULT_CONFIG string = `{
+	"httpPort": 8080,
+	"messagingMods": null,
+	"jmods": {}
+}`
+
 type JablkoApp struct {
 	server        *http.Server
 	router        *mux.Router
