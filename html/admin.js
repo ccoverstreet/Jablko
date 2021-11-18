@@ -86,6 +86,11 @@ class JMODEntry extends HTMLElement {
 		<button onclick="this.getRootNode().host.deleteJMOD()" style="background-color: var(--clr-red)">Delete</button>
 	</div>
 
+	<div>
+		<button onclick="this.getRootNode().host.upgrade()" style="background-color: var(--clr-gray)">Upgrade</button>
+		<input id="input_new_version"/>
+	</div>
+
 	<div id="config-editor-panel" style="display:none;">
 		<textarea id="config-editor"></textarea>
 		<button onclick="this.getRootNode().host.applyConfig();">Apply</button>
@@ -153,6 +158,23 @@ class JMODEntry extends HTMLElement {
 				output.textContent = err.message;
 				console.error(err);
 			});
+	}
+
+	upgrade = () => {
+		let commit = this.shadowRoot.getElementById("input_new_version").value;
+		fetch("/admin/upgradeJMOD", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({jmodName: this.jmodName, commit: commit})
+		})
+			.then(async data => {
+				console.log(await data.text());
+			})
+			.catch(err => {
+				console.error(err);
+			})
 	}
 	
 	build() {

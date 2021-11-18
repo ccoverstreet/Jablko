@@ -28,7 +28,14 @@ func main() {
 
 	configBytes, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
-		panic(err)
+		log.Warn().Msg("jablkoconfig.json not found. Starting Jablko with default config")
+		configBytes = []byte(app2.JABLKO_DEFAULT_CONFIG)
+		err = ioutil.WriteFile("jablkoconfig.json", configBytes, 0644)
+		if err != nil {
+			log.Fatal().
+				Err(err).
+				Msg("Unable to save default config to file")
+		}
 	}
 
 	jablkoApp2, err := app2.CreateJablkoApp(configBytes)

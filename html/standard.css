@@ -43,6 +43,8 @@ input {
 	line-height: 1em;
 	padding: 0.2em;
 	margin: auto auto;
+	background-color: var(--clr-gray);
+	color: var(--clr-font-high);
 }
 
 .jmod-header {
