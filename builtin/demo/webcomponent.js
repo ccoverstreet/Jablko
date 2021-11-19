@@ -92,7 +92,28 @@ class extends HTMLElement {
 	}
 
 	test() {
-		fetch(`/jmod/test?JMOD-Source=${this.source}`);
+		jablko.prompt([
+			{
+				label: "First Name",
+				id: "firstName",
+				type: "input"
+			},
+			{
+				label: "Last Name",
+				id: "lastName",
+				type: "input"
+			},
+			{
+				label: "Do you like coding?",
+				id: "likesCoding",
+				type: "checkbox"
+			}
+		], this.subHandler);
+	}
+
+	subHandler = (output, elem) => {
+		console.log(output);
+		elem.remove();
 	}
 
 	getUDPState() {

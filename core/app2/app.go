@@ -329,6 +329,7 @@ func passReqToJMOD(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 var assetsMap = map[string]func(http.ResponseWriter) error{
 	"standard.css": sendStandardCSS,
 	"admin.js":     sendAdminJS,
+	"general.js":   sendGeneralJS,
 }
 
 func assetsHandler(w http.ResponseWriter, r *http.Request) {
@@ -367,6 +368,18 @@ func sendStandardCSS(w http.ResponseWriter) error {
 
 func sendAdminJS(w http.ResponseWriter) error {
 	b, err := ioutil.ReadFile("./html/admin.js")
+	if err != nil {
+		return err
+	}
+
+	w.Header().Set("Content-Type", "text/javascript")
+	fmt.Fprintf(w, "%s", b)
+
+	return nil
+}
+
+func sendGeneralJS(w http.ResponseWriter) error {
+	b, err := ioutil.ReadFile("./html/general.js")
 	if err != nil {
 		return err
 	}
