@@ -43,7 +43,7 @@ input {
 	line-height: 1em;
 	padding: 0.2em;
 	margin: auto auto;
-	background-color: var(--clr-gray);
+	background-color: var(--clr-background);
 	color: var(--clr-font-high);
 }
 

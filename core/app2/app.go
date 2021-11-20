@@ -361,6 +361,7 @@ func sendStandardCSS(w http.ResponseWriter) error {
 	}
 
 	w.Header().Set("Content-Type", "text/css")
+	w.Header().Set("Cache-Control", "max-age=6000")
 	fmt.Fprintf(w, "%s", fileBytes)
 
 	return nil
