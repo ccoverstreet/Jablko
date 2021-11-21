@@ -10,13 +10,16 @@ function InstallJMOD() {
 		body: JSON.stringify({jmodPath: jmodPath})
 	})
 		.then(async data => {
-			console.log(await data.text());
 			getJMODData();
+			if (data.status < 200 || data.status >= 400) {
+				throw new Error(await data.text());
+			}
+
+			console.log(await data.text());
 		})
 		.catch(err => {
-			alert(err);
+			jablko.alert(err.toString());
 			console.error(err);
-			console.log(err);
 		})
 }
 
@@ -129,8 +132,7 @@ class JMODEntry extends HTMLElement {
 				console.log(await data.text());
 			})
 			.catch(err => {
-				const output = this.shadowRoot.getElementById("jmod-error-output");
-				output.textContent = err.message;
+				jablko.alert(err.toString());
 				console.error(err);
 			});
 	}
@@ -154,8 +156,7 @@ class JMODEntry extends HTMLElement {
 				console.log(await data.text());
 			})
 			.catch(err => {
-				const output = this.shadowRoot.getElementById("jmod-error-output");
-				output.textContent = err.message;
+				jablko.alert(err.toString());
 				console.error(err);
 			});
 	}
@@ -173,6 +174,7 @@ class JMODEntry extends HTMLElement {
 				console.log(await data.text());
 			})
 			.catch(err => {
+				jablko.alert(err.toString());
 				console.error(err);
 			})
 	}
@@ -189,8 +191,8 @@ class JMODEntry extends HTMLElement {
 				console.log(await data.text());
 			})
 			.catch(err => {
+				jablko.alert(err.toString());
 				console.error(err);
-				console.log(err);
 			})
 	}
 
@@ -227,10 +229,8 @@ class JMODEntry extends HTMLElement {
 				console.log(await data.text());
 			})
 			.catch(err => {
-				const output = this.shadowRoot.getElementById("jmod-error-output");
-				output.textContent = err.message;
+				jablko.alert(err.toString());
 				console.error(err);
-				console.log(err);
 			});
 	}
 
@@ -260,8 +260,8 @@ class JMODEntry extends HTMLElement {
 			})
 	}
 
-	deleteJMOD() {
-		var yes = confirm(`Are you sure you want to delete ${this.jmodName}`);
+	async deleteJMOD() {
+		var yes = await jablko.confirm(`Are you sure you want to delete ${this.jmodName}`);
 
 		if (yes) {
 			fetch("/admin/deleteJMOD", {
@@ -276,8 +276,8 @@ class JMODEntry extends HTMLElement {
 					getJMODData();
 				})
 				.catch(err => {
+					jablko.alert(err.toString());
 					console.error(err);
-					console.log(err);
 				})
 		}
 	}
@@ -303,8 +303,8 @@ function getJMODData() {
 			})
 		})
 		.catch(err => {
+			jablko.alert(err.toString());
 			console.error(err);
-			console.log(err);
 		})
 }
 
@@ -330,6 +330,7 @@ function getUserList() {
 			}
 		})
 		.catch(err => {
+			jablko.alert(err.toString());
 			console.error(err);
 		});
 }
@@ -364,7 +365,7 @@ function createUser(event, formNode) {
 			getUserList()
 		})
 		.catch(err => {
-			console.log(err);
+			jablko.alert(err.toString());
 			console.error(err);
 		})
 }
@@ -390,7 +391,7 @@ function deleteUser(event) {
 			getUserList()
 		})
 		.catch(err => {
-			console.log(err);
+			console.alert(err.toString());
 			console.error(err);
 		})
 }
