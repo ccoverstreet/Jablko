@@ -104,6 +104,10 @@ func (sub *Subprocess) generateCMD() {
 	sub.Cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
 
+func (sub *Subprocess) IsRunning() bool {
+	return !(sub.Cmd.Process == nil)
+}
+
 func (sub *Subprocess) SetCommit(commit string) {
 	sub.Lock()
 	sub.Unlock()
@@ -198,24 +202,28 @@ func (sub *Subprocess) wait() {
 func (sub *Subprocess) Stop() error {
 	sub.Lock()
 	defer sub.Unlock()
+	defer func() {
+		sub.Cmd.Process = nil
+		sub.Cmd.ProcessState = nil
+	}()
 
 	if sub.Cmd == nil {
-		return fmt.Errorf("Subprocess.Cmd is nil")
+		// Process already doesn't exist
+		return nil
 	}
 
 	// If process was never succesfully created
 	if sub.Cmd.Process == nil {
-		return fmt.Errorf("Process doesn't exist")
+		// Process was never created successfully
+		return nil
 	}
 
 	if sub.Cmd.ProcessState != nil {
-		return fmt.Errorf("Process already stopped")
+		// Process state is invalid
+		return nil
 	}
 
 	err := syscall.Kill(-sub.Cmd.Process.Pid, syscall.SIGKILL)
-
-	sub.Cmd.Process = nil
-	sub.Cmd.ProcessState = nil
 
 	return err
 }

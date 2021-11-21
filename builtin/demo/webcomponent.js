@@ -54,7 +54,8 @@ class extends HTMLElement {
 
 		<button onclick="this.getRootNode().host.talk()" style="border-color: var(--clr-red);">Talk</button>
 		<button onclick="this.getRootNode().host.testSave()">Test Save</button>
-		<button onclick="this.getRootNode().host.test()">Test</button>
+		<button onclick="this.getRootNode().host.testPrompt()">Test Prompt</button>
+		<button onclick="this.getRootNode().host.testConfirm()">Test Confirm</button>
 	</div>
 </div>
 		`
@@ -91,8 +92,38 @@ class extends HTMLElement {
 		}
 	}
 
-	test() {
-		fetch(`/jmod/test?JMOD-Source=${this.source}`);
+	testPrompt() {
+		jablko.prompt([
+			{
+				label: "First Name",
+				id: "firstName",
+				type: "input"
+			},
+			{
+				label: "Last Name",
+				id: "lastName",
+				type: "input"
+			},
+			{
+				label: "Do you like coding?",
+				id: "likesCoding",
+				type: "checkbox"
+			},
+			{
+				label: "Why do you like coding?",
+				id: "logic",
+				type: "textarea"
+			}
+		], this.subHandler);
+	}
+
+	subHandler = (output, elem) => {
+		console.log(output);
+		elem.remove();
+	}
+
+	testConfirm = async () => {
+		console.log(await jablko.confirm("Test confirm. Does this work?"));
 	}
 
 	getUDPState() {

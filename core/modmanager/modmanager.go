@@ -252,8 +252,14 @@ func (mm *ModManager) GenerateJMODDashComponents() (string, string) {
 
 	// Create channel and spawn goroutines to query JMODs
 	outChan := make(chan DashComponent, 2)
+	nValidJMODs := 0
 	for jmodName, proc := range mm.ProcMap {
+		if !proc.IsRunning() {
+			continue
+		}
+
 		baseURL := "http://localhost:" + strconv.Itoa(proc.ModPort)
+		nValidJMODs += 1
 		go getDashComponent(jmodName, baseURL, outChan)
 	}
 
@@ -263,7 +269,7 @@ func (mm *ModManager) GenerateJMODDashComponents() (string, string) {
 	// Read from channel the same number of times as
 	// the number of JMODs. This is guaranteed to not deadlock as
 	// the number of processes (therefore channel reads) is known
-	for i := 0; i < len(mm.ProcMap); i++ {
+	for i := 0; i < nValidJMODs; i++ {
 		comp := <-outChan
 
 		if comp.Err != nil {

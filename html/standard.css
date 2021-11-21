@@ -43,7 +43,17 @@ input {
 	line-height: 1em;
 	padding: 0.2em;
 	margin: auto auto;
-	background-color: var(--clr-gray);
+	background-color: var(--clr-surface-2);
+	color: var(--clr-font-high);
+}
+
+textarea {
+	background-color: var(--clr-surface-2);
+	color: var(--clr-font-high);
+}
+
+select {
+	background-color: var(--clr-surface-2);
 	color: var(--clr-font-high);
 }
 
@@ -88,13 +98,3 @@ h3 {
 	padding: 0.5em;
 }
 
-textarea {
-    background-color: var(--clr-background);
-    color: var(--clr-font-high);
-}
-
-
-select {
-	background-color: var(--clr-background);
-	color: var(--clr-font-high);
-}
