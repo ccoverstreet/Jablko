@@ -56,6 +56,7 @@ class extends HTMLElement {
 		<button onclick="this.getRootNode().host.testSave()">Test Save</button>
 		<button onclick="this.getRootNode().host.testPrompt()">Test Prompt</button>
 		<button onclick="this.getRootNode().host.testConfirm()">Test Confirm</button>
+		<button onclick="this.getRootNode().host.testAlert()">Test Alert</button>
 	</div>
 </div>
 		`
@@ -124,6 +125,11 @@ class extends HTMLElement {
 
 	testConfirm = async () => {
 		console.log(await jablko.confirm("Test confirm. Does this work?"));
+	}
+
+	testAlert = () => {
+		jablko.alert("Test alert (5s lifetime)", 5000);
+		jablko.alert("Test alert (not timed)");
 	}
 
 	getUDPState() {
