@@ -192,6 +192,7 @@ func GetAvailablePort(minPort int, maxPort int) (int, error) {
 func (sub *Subprocess) wait() {
 	err := sub.Cmd.Wait()
 
+	sub.Writer.Write([]byte("\n###################\nJMOD STOPPED\n###################\n\n"))
 	log.Warn().
 		Err(err).
 		Str("jmodName", sub.Dir).
