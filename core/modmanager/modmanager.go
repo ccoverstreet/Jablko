@@ -75,6 +75,11 @@ func (mm *ModManager) AddJMOD(jmodPath string, jmodData subprocess.JMODData) err
 		return fmt.Errorf("Module is already registered")
 	}
 
+	// Make sure relative paths aren't used
+	if strings.Contains(jmodPath, "..") {
+		return fmt.Errorf("\"..\" not allowed in JMOD path")
+	}
+
 	if strings.HasPrefix(jmodPath, "github.com") {
 		// Check if mod is already installed
 		_, err := os.Stat(jmodPath)

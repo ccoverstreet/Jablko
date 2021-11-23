@@ -1,3 +1,12 @@
+const jablkoadmin = {
+	checkResGoodStatus: async (data) => {
+		if (data.status < 200 || data.status >= 400) {
+			throw new Error(await data.text());
+		}
+		return data;
+	}
+};
+
 function InstallJMOD() {
 	jmodPath = document.getElementById("install-jmod-input").value.trim();
 	console.log(jmodPath);
@@ -9,14 +18,14 @@ function InstallJMOD() {
 		},
 		body: JSON.stringify({jmodPath: jmodPath})
 	})
+		.then(jablkoadmin.checkResGoodStatus)
 		.then(async data => {
-			console.log(await data.text());
+			jablko.alert(await data.text(), 3000);
 			getJMODData();
 		})
 		.catch(err => {
-			alert(err);
+			jablko.alert(err.toString());
 			console.error(err);
-			console.log(err);
 		})
 }
 
@@ -118,19 +127,14 @@ class JMODEntry extends HTMLElement {
 			},
 			body: JSON.stringify({"jmodName": this.jmodName})
 		})
+			.then(jablkoadmin.checkResGoodStatus)
 			.then(async data => {
-				if (data.status < 200 || data.status >= 400) {
-					throw new Error(await data.text());
-				}
-
-				const output = this.shadowRoot.getElementById("jmod-error-output");
-				output.textContent = "";
-
-				console.log(await data.text());
+				const text = await data.text();
+				jablko.alert(text, 3000);
+				console.log(text);
 			})
 			.catch(err => {
-				const output = this.shadowRoot.getElementById("jmod-error-output");
-				output.textContent = err.message;
+				jablko.alert(err.toString());
 				console.error(err);
 			});
 	}
@@ -143,19 +147,14 @@ class JMODEntry extends HTMLElement {
 			},
 			body: JSON.stringify({jmodName: this.jmodName})
 		})
+			.then(jablkoadmin.checkResGoodStatus)
 			.then(async data => {
-				if (data.status < 200 || data.status >= 400) {
-					throw new Error(await data.text());
-				}
-
-				const output = this.shadowRoot.getElementById("jmod-error-output");
-				output.textContent = "";
-
-				console.log(await data.text());
+				const text = await data.text();
+				jablko.alert(text, 3000);
+				console.log(text);
 			})
 			.catch(err => {
-				const output = this.shadowRoot.getElementById("jmod-error-output");
-				output.textContent = err.message;
+				jablko.alert(err.toString());
 				console.error(err);
 			});
 	}
@@ -170,9 +169,11 @@ class JMODEntry extends HTMLElement {
 			body: JSON.stringify({jmodName: this.jmodName, commit: commit})
 		})
 			.then(async data => {
+				await jablkoadmin.checkResGoodStatus(data);
 				console.log(await data.text());
 			})
 			.catch(err => {
+				jablko.alert(err.toString());
 				console.error(err);
 			})
 	}
@@ -185,12 +186,15 @@ class JMODEntry extends HTMLElement {
 			},
 			body: JSON.stringify({jmodName: this.jmodName})
 		})
+			.then(jablkoadmin.checkResGoodStatus)
 			.then(async data => {
-				console.log(await data.text());
+				const text = await data.text();
+				jablko.alert(text, 3000);
+				console.log(text);
 			})
 			.catch(err => {
+				jablko.alert(err.toString());
 				console.error(err);
-				console.log(err);
 			})
 	}
 
@@ -216,21 +220,16 @@ class JMODEntry extends HTMLElement {
 				newConfig: JSON.parse(editor.value)
 			})
 		})
+			.then(jablkoadmin.checkResGoodStatus)
 			.then(async data => {
-				if (data.status < 200 || data.status >= 400) {
-					throw new Error(await data.text());
-				}
-
-				const output = this.shadowRoot.getElementById("jmod-error-output");
-				output.textContent = "";
-
-				console.log(await data.text());
+				let text = await data.text();
+				jablko.alert(text, 3000);
+				this.toggleEditor();
+				console.log(text);
 			})
 			.catch(err => {
-				const output = this.shadowRoot.getElementById("jmod-error-output");
-				output.textContent = err.message;
+				jablko.alert(err.toString());
 				console.error(err);
-				console.log(err);
 			});
 	}
 
@@ -249,7 +248,10 @@ class JMODEntry extends HTMLElement {
 			},
 			body: JSON.stringify({jmodName: this.jmodName})
 		})
+			.then(jablkoadmin.checkResGoodStatus)
 			.then(async data => {
+				await jablkoadmin.checkResGoodStatus(data);
+
 				var tab = window.open("about:blank", "_blank");
 				tab.document.write(`<p style="white-space: pre;">${await data.text()}</p>`)
 				tab.document.close();
@@ -260,8 +262,8 @@ class JMODEntry extends HTMLElement {
 			})
 	}
 
-	deleteJMOD() {
-		var yes = confirm(`Are you sure you want to delete ${this.jmodName}`);
+	async deleteJMOD() {
+		var yes = await jablko.confirm(`Are you sure you want to delete ${this.jmodName}`);
 
 		if (yes) {
 			fetch("/admin/deleteJMOD", {
@@ -271,13 +273,14 @@ class JMODEntry extends HTMLElement {
 				},
 				body: JSON.stringify({jmodName: this.jmodName})
 			})
+				.then(jablkoadmin.checkResGoodStatus)
 				.then(async data => {
 					console.log(await data.text());
 					getJMODData();
 				})
 				.catch(err => {
+					jablko.alert(err.toString());
 					console.error(err);
-					console.log(err);
 				})
 		}
 	}
@@ -303,8 +306,8 @@ function getJMODData() {
 			})
 		})
 		.catch(err => {
+			jablko.alert(err.toString());
 			console.error(err);
-			console.log(err);
 		})
 }
 
@@ -330,6 +333,7 @@ function getUserList() {
 			}
 		})
 		.catch(err => {
+			jablko.alert(err.toString());
 			console.error(err);
 		});
 }
@@ -364,7 +368,7 @@ function createUser(event, formNode) {
 			getUserList()
 		})
 		.catch(err => {
-			console.log(err);
+			jablko.alert(err.toString());
 			console.error(err);
 		})
 }
@@ -390,7 +394,7 @@ function deleteUser(event) {
 			getUserList()
 		})
 		.catch(err => {
-			console.log(err);
+			console.alert(err.toString());
 			console.error(err);
 		})
 }
