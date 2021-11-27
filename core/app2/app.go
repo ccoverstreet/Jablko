@@ -1,6 +1,7 @@
 package app2
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -291,8 +292,19 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request, app *JablkoApp) {
 	).
 		Replace(string(dashboardTemplate))
 
-	fmt.Fprintf(w, "%s", dashboardString)
+	//fmt.Fprintf(w, "%s", dashboardString)
 
+	writer, err := gzip.NewWriterLevel(w, gzip.BestCompression)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Unable to create gzip writer")
+		return
+	}
+
+	defer writer.Close()
+
+	w.Header().Set("Content-Encoding", "gzip")
+	writer.Write([]byte(dashboardString))
 	return
 }
 
