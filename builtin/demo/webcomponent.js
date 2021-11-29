@@ -57,6 +57,7 @@ class extends HTMLElement {
 		<button onclick="this.getRootNode().host.testPrompt()">Test Prompt</button>
 		<button onclick="this.getRootNode().host.testConfirm()">Test Confirm</button>
 		<button onclick="this.getRootNode().host.testAlert()">Test Alert</button>
+		<button onclick="this.getRootNode().host.testCrossMod()">Cross Mod Communication</button>
 	</div>
 </div>
 		`
@@ -67,6 +68,9 @@ class extends HTMLElement {
 	}
 
 	init(source, config) {
+		this.source = source;
+		this.logPrefix = source.split("/")[-1] + " ";
+
 		// Setup WebSocket
 		try {
 			this.webSocket = new WebSocket(`ws://${document.location.host}/jmod/socket?JMOD-Source=${source}`);
@@ -76,8 +80,6 @@ class extends HTMLElement {
 			return;
 		}
 
-		this.source = source;
-		this.logPrefix = source.split("/")[-1] + " ";
 	}
 
 	webSocketResHandler(event) {
@@ -154,5 +156,15 @@ class extends HTMLElement {
 	testSave() {
 		console.log("HelloWorld");
 		fetch(`/jmod/testConfigSave?JMOD-Source=${this.source}`)
+	}
+
+	testCrossMod = async () => {
+		console.log("Testing cross mod communication");
+		console.log("Front-end calling backend for different JMOD...");
+		const res = await fetch(`/jmod/getRecipeList?JMOD-Source=github.com/ccoverstreet/Jarmuz-Cookbook`);
+		console.log(await res.text());
+
+		const res2 = await fetch(`/jmod/testCrossJMOD?JMOD-Source=${this.source}`);
+		console.log(await res2.text());
 	}
 }

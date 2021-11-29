@@ -92,6 +92,11 @@ func installJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 		return nil, err
 	}
 
+	err = app.SaveConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	return []byte("Installed JMOD"), nil
 }
 
@@ -191,6 +196,11 @@ func deleteJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 	}
 
 	err = app.ModM.DeleteJMOD(reqData.JMODName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.SaveConfig()
 	if err != nil {
 		return nil, err
 	}

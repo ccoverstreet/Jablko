@@ -78,7 +78,8 @@ func main() {
 	router.HandleFunc("/jmod/test", TestHandler)
 	router.HandleFunc("/jmod/getUDPState", UDPStateHandler) // Simple GET for UDP Server State
 	router.HandleFunc("/jmod/testConfigSave", TestConfigSave)
-	router.HandleFunc("/service/sendMessage", SendMessageHandler)
+	router.HandleFunc("/jmod/testCrossJMOD", TestCrossJMOD)
+	router.HandleFunc("/service/sendMessage", SendMessageHandler) // TODO: WTF was this route intended for?
 
 	log.Println(curConfig.PortUDP)
 	// Start UDP server with in separate go routine
@@ -283,6 +284,29 @@ func TestConfigSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = JablkoSaveConfig(jablkoCorePort, jablkoModPort, jablkoModKey, b)
+
+	log.Println(err)
+}
+
+func TestCrossJMOD(w http.ResponseWriter, r *http.Request) {
+	client := &http.Client{}
+	reqPath := "http://localhost:" + jablkoCorePort + "/jmod/getRecipeList?JMOD-Source=github.com/ccoverstreet/Jarmuz-Cookbook"
+
+	req, err := http.NewRequest("GET", reqPath, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	req.Header.Add("JMOD-KEY", jablkoModKey)
+	req.Header.Add("JMOD-PORT", jablkoModPort)
+
+	res, err := client.Do(req)
+
+	resBody, err := ioutil.ReadAll(res.Body)
+
+	log.Println(resBody)
+	fmt.Fprintf(w, "Response from server call of same function: %s", resBody)
 
 	log.Println(err)
 }
