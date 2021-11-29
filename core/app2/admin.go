@@ -164,11 +164,9 @@ func upgradeJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 }
 
 func buildJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
-	type buildData struct {
+	var reqData struct {
 		JMODName string `json:"jmodName"`
 	}
-
-	reqData := buildData{}
 
 	err := jutil.ParseJSONBody(r.Body, &reqData)
 	if err != nil {
@@ -184,24 +182,19 @@ func buildJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 }
 
 func deleteJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
-	type reqFormat struct {
+	var reqData struct {
 		JMODName string `json:"jmodName"`
 	}
 
-	reqData := reqFormat{}
-
-	err := jutil.ParseJSONBody(r.Body, &reqData)
-	if err != nil {
+	if err := jutil.ParseJSONBody(r.Body, &reqData); err != nil {
 		return nil, err
 	}
 
-	err = app.ModM.DeleteJMOD(reqData.JMODName)
-	if err != nil {
+	if err := app.ModM.DeleteJMOD(reqData.JMODName); err != nil {
 		return nil, err
 	}
 
-	err = app.SaveConfig()
-	if err != nil {
+	if err := app.SaveConfig(); err != nil {
 		return nil, err
 	}
 
