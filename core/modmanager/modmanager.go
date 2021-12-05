@@ -204,7 +204,7 @@ func (mm *ModManager) PassRequest(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	modPort := proc.ModPort
-	url, _ := url.Parse("http://localhost:" + strconv.Itoa(modPort))
+	url, _ := url.Parse("http://127.0.0.1:" + strconv.Itoa(modPort))
 	proxy := httputil.NewSingleHostReverseProxy(url)
 
 	reqBody, err := ioutil.ReadAll(r.Body)
