@@ -234,7 +234,7 @@ func (mm *ModManager) GetJMODHostname(jmodName string) (string, error) {
 		return "", fmt.Errorf("JMOD not found")
 	}
 
-	return "localhost:" + strconv.Itoa(proc.ModPort), nil
+	return "127.0.0.1:" + strconv.Itoa(proc.ModPort), nil
 }
 
 // Requests to JMODs should be sent through this function as
@@ -263,7 +263,7 @@ func (mm *ModManager) GenerateJMODDashComponents() (string, string) {
 			continue
 		}
 
-		baseURL := "http://localhost:" + strconv.Itoa(proc.ModPort)
+		baseURL := "http://127.0.0.1:" + strconv.Itoa(proc.ModPort)
 		nValidJMODs += 1
 		go getDashComponent(jmodName, baseURL, outChan)
 	}
