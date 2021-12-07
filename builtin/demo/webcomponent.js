@@ -58,6 +58,7 @@ class extends HTMLElement {
 		<button onclick="this.getRootNode().host.testConfirm()">Test Confirm</button>
 		<button onclick="this.getRootNode().host.testAlert()">Test Alert</button>
 		<button onclick="this.getRootNode().host.testCrossMod()">Cross Mod Communication</button>
+		<button onclick="this.getRootNode().host.testJarmuzMessage()">Cross Mod Communication</button>
 	</div>
 </div>
 		`
@@ -166,5 +167,21 @@ class extends HTMLElement {
 
 		const res2 = await fetch(`/jmod/testCrossJMOD?JMOD-Source=${this.source}`);
 		console.log(await res2.text());
+	}
+
+	testJarmuzMessage = async() => {
+		fetch("/jmod/sendMessage?JMOD-Source=/home/coverstreet/Coding/Jablko_Home/Mods/Jarmuz-Message", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({message: "Hello from test module"})
+		})
+			.then(async data => {
+				console.log(await data.text());
+			})
+			.catch(err => {
+				console.error(err);
+			})
 	}
 }
