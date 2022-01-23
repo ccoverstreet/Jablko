@@ -38,9 +38,9 @@ type Subprocess struct {
 	Writer   *SubprocessWriter
 }
 
+// Creates a subprocess from the given parameters
+// Does not start the process
 func CreateSubprocess(source string, jablkoPort int, jmodKey string, dataDir string, jmodData JMODData) (*Subprocess, error) {
-	// Creates a subprocess from the given parameters
-	// Does not start the process
 
 	log.Info().
 		Str("subprocess", source).
