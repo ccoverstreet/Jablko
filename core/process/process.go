@@ -14,11 +14,12 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/rs/zerolog/log"
 )
 
-func ImageNameToDir(imageName string) string {
+func CleanImageName(imageName string) string {
 	return strings.ReplaceAll(imageName, "/", "_")
 }
 
@@ -34,18 +35,25 @@ type Proc interface {
 }
 
 type DockerProc struct {
+	sync.Mutex
 	Config  ProcConfig
 	DataDir string
 	Cmd     *exec.Cmd
+	Writer  *JMODWriter
 }
 
 func CreateProc(config ProcConfig) (Proc, error) {
-	absPath, err := filepath.Abs(ImageNameToDir(config.ImageName))
+	absPath, err := filepath.Abs(CleanImageName(config.ImageName))
 	if err != nil {
 		return nil, err
 	}
 
-	return &DockerProc{config, absPath, nil}, nil
+	writer, err := CreateJMODWriter(config.ImageName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DockerProc{sync.Mutex{}, config, absPath, nil, writer}, nil
 }
 
 func (proc *DockerProc) Start(port int) error {
@@ -59,13 +67,17 @@ func (proc *DockerProc) Start(port int) error {
 		proc.Config.ImageName)
 
 	//proc.Cmd = exec.Command("echo", "aSAdasdaSDASD")
-	proc.Cmd.Stdout = os.Stdout
-	proc.Cmd.Stderr = os.Stderr
+	proc.Cmd.Stdout = proc.Writer
+	proc.Cmd.Stderr = proc.Writer
 
 	err := proc.Cmd.Start()
 	if err != nil {
 		return err
 	}
+
+	fmt.Fprintf(proc.Writer, `
+==================== JMOD STARTED ====================
+`)
 
 	go proc.wait()
 
@@ -74,6 +86,9 @@ func (proc *DockerProc) Start(port int) error {
 
 func (proc *DockerProc) wait() {
 	proc.Cmd.Wait()
+	fmt.Fprintf(proc.Writer, `
+==================== JMOD STOPPED ====================
+`)
 	log.Info().
 		Str("imageName", proc.Config.ImageName).
 		Msg("Docker process exited.")
@@ -83,6 +98,13 @@ func (proc *DockerProc) wait() {
 // TODO: Need to find a work around that works for Windows as well
 // Kind of low priority
 func (proc *DockerProc) Kill() error {
+	proc.Lock()
+	defer proc.Unlock()
+
+	fmt.Fprintf(proc.Writer, `
+==================== JMOD KILLED ====================
+`)
+
 	return proc.Cmd.Process.Signal(os.Interrupt)
 }
 
