@@ -2,6 +2,7 @@ package modmanager
 
 import (
 	"encoding/json"
+	"fmt"
 	"sync"
 
 	"github.com/ccoverstreet/Jablko/core/process"
@@ -10,7 +11,7 @@ import (
 
 type ModManager struct {
 	sync.RWMutex
-	Mods map[string]process.Proc
+	Mods map[string]*process.DockerProc
 }
 
 func (mm *ModManager) UnmarshalJSON(data []byte) error {
@@ -24,7 +25,7 @@ func (mm *ModManager) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	mm.Mods = make(map[string]process.Proc)
+	mm.Mods = make(map[string]*process.DockerProc)
 
 	errs := []error{}
 
@@ -57,31 +58,44 @@ func (mm *ModManager) Cleanup() error {
 	return nil
 }
 
-func (mm *ModManager) StartAll() {
-	mm.Lock()
-	defer mm.Unlock()
+func (mm *ModManager) StartJMOD(modName string, port int) error {
+	mm.RLock()
+	defer mm.RUnlock()
 
-	i := 10000
+	log.Info().Str("imageName", modName).Msg("Starting JMOD.")
 
-	for modName, mod := range mm.Mods {
-		log.Info().Str("imageName", modName).Msg("Starting JMOD.")
+	mod, ok := mm.Mods[modName]
+	if !ok {
+		return fmt.Errorf(`JMOD with name "%s" does not exist.`, modName)
+	}
 
-		if !mod.IsLocal() {
-			err := mod.PullImage()
-			if err != nil {
-				log.Error().
-					Err(err).
-					Msg("Unable to pull image for JMOD")
-			}
-		}
-
-		err := mod.Start(i)
+	if !mod.IsLocal() {
+		err := mod.PullImage()
 		if err != nil {
 			log.Error().
 				Err(err).
-				Msg("Error starting JMOD")
+				Msg("Unable to pull image for JMOD.")
 		}
+	}
 
+	err := mod.Start(port)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Error starting JMOD.")
+	}
+
+	return nil
+}
+
+func (mm *ModManager) StartAll() {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	i := 10000
+
+	for modName, _ := range mm.Mods {
+		mm.StartJMOD(modName, i)
 		i++
 	}
 }

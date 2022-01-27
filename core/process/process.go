@@ -29,15 +29,6 @@ type ProcConfig struct {
 	Tag       string
 }
 
-type Proc interface {
-	Start(port int) error // Starts the JMOD after searching for an available port
-	Kill() error
-	CreateDataDirIfNE() error
-	MarshalJSON() ([]byte, error)
-	PullImage() error
-	IsLocal() bool
-}
-
 type DockerProc struct {
 	sync.Mutex
 	Config  ProcConfig
@@ -46,7 +37,7 @@ type DockerProc struct {
 	Writer  *JMODWriter
 }
 
-func CreateProc(config ProcConfig) (Proc, error) {
+func CreateProc(config ProcConfig) (*DockerProc, error) {
 	absPath, err := filepath.Abs(CleanImageName(config.ImageName))
 	if err != nil {
 		return nil, err
