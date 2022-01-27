@@ -20,6 +20,18 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const JMODSTARTMESSAGE = `
+==================== JMOD STARTED ====================
+`
+
+const JMODSTOPMESSAGE = `
+==================== JMOD STOPPED ====================
+`
+
+const JMODKILLEDMESSAGE = `
+==================== JMOD KILLED ====================
+`
+
 func CleanImageName(imageName string) string {
 	return strings.ReplaceAll(imageName, "/", "_")
 }
@@ -30,7 +42,7 @@ type ProcConfig struct {
 }
 
 type DockerProc struct {
-	sync.Mutex
+	sync.RWMutex
 	Config  ProcConfig
 	DataDir string
 	Cmd     *exec.Cmd
@@ -38,7 +50,7 @@ type DockerProc struct {
 }
 
 func CreateProc(config ProcConfig) (*DockerProc, error) {
-	absPath, err := filepath.Abs(CleanImageName(config.ImageName))
+	absPath, err := filepath.Abs("data/" + CleanImageName(config.ImageName))
 	if err != nil {
 		return nil, err
 	}
@@ -48,10 +60,13 @@ func CreateProc(config ProcConfig) (*DockerProc, error) {
 		return nil, err
 	}
 
-	return &DockerProc{sync.Mutex{}, config, absPath, nil, writer}, nil
+	return &DockerProc{sync.RWMutex{}, config, absPath, nil, writer}, nil
 }
 
 func (proc *DockerProc) MarshalJSON() ([]byte, error) {
+	proc.Lock()
+	defer proc.Unlock()
+
 	var tempStruct = struct {
 		Tag string `json:"tag"`
 	}{proc.Config.Tag}
@@ -60,6 +75,9 @@ func (proc *DockerProc) MarshalJSON() ([]byte, error) {
 }
 
 func (proc *DockerProc) IsLocal() bool {
+	proc.RLock()
+	defer proc.RUnlock()
+
 	return proc.Config.Tag == "local"
 }
 
@@ -72,6 +90,9 @@ func (proc *DockerProc) PullImage() error {
 }
 
 func (proc *DockerProc) Start(port int) error {
+	proc.Lock()
+	defer proc.Unlock()
+
 	proc.CreateDataDirIfNE()
 	log.Info().
 		Int("port", port).
@@ -91,9 +112,7 @@ func (proc *DockerProc) Start(port int) error {
 		return err
 	}
 
-	fmt.Fprintf(proc.Writer, `
-==================== JMOD STARTED ====================
-`)
+	fmt.Fprintf(proc.Writer, JMODSTARTMESSAGE)
 
 	go proc.wait()
 
@@ -102,9 +121,7 @@ func (proc *DockerProc) Start(port int) error {
 
 func (proc *DockerProc) wait() {
 	proc.Cmd.Wait()
-	fmt.Fprintf(proc.Writer, `
-==================== JMOD STOPPED ====================
-`)
+	fmt.Fprintf(proc.Writer, JMODSTOPMESSAGE)
 	log.Info().
 		Str("imageName", proc.Config.ImageName).
 		Msg("Docker process exited.")
@@ -117,9 +134,7 @@ func (proc *DockerProc) Kill() error {
 	proc.Lock()
 	defer proc.Unlock()
 
-	fmt.Fprintf(proc.Writer, `
-==================== JMOD KILLED ====================
-`)
+	fmt.Fprintf(proc.Writer, JMODKILLEDMESSAGE)
 
 	if proc.Cmd == nil || proc.Cmd.Process == nil {
 		return nil

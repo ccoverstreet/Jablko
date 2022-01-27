@@ -1,0 +1,9 @@
+{
+    "users": {
+        "asd": {
+            "passwordHash": "$2a$10$iRr1KXbT1BWEuHWRt5TXjeerCw/i6CdkcdYas4aZWnq5Wk/1QXm.O",
+            "permissionLevel": 1
+        }
+    },
+    "pmods": {}
+}
