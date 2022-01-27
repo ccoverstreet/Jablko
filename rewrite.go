@@ -55,11 +55,11 @@ func setupLogging() {
 
 func createNeededDirs() error {
 	err := os.Mkdir("log", 0755)
+	err = os.Mkdir("data", 0755)
 	if err != nil {
+		log.Error().Err(err)
 		return err
 	}
-
-	err = os.Mkdir("data", 0755)
 
 	return err
 }

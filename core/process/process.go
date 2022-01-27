@@ -47,6 +47,7 @@ type DockerProc struct {
 	DataDir string
 	Cmd     *exec.Cmd
 	Writer  *JMODWriter
+	Port    int
 }
 
 func CreateProc(config ProcConfig) (*DockerProc, error) {
@@ -97,6 +98,8 @@ func (proc *DockerProc) Start(port int) error {
 	log.Info().
 		Int("port", port).
 		Msg("Starting process")
+
+	proc.Port = port
 
 	proc.Cmd = exec.Command("docker", "run",
 		"-p", strconv.Itoa(port)+":8080",

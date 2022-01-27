@@ -3,6 +3,7 @@ package modmanager
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"sync"
 
 	"github.com/ccoverstreet/Jablko/core/process"
@@ -99,3 +100,5 @@ func (mm *ModManager) StartAll() {
 		i++
 	}
 }
+
+func (mm *ModManager) PassRequestToJMOD(w http.ResponseWriter)
