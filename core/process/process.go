@@ -61,7 +61,7 @@ func CreateProc(config ProcConfig) (*DockerProc, error) {
 		return nil, err
 	}
 
-	return &DockerProc{sync.RWMutex{}, config, absPath, nil, writer}, nil
+	return &DockerProc{sync.RWMutex{}, config, absPath, nil, writer, 0}, nil
 }
 
 func (proc *DockerProc) MarshalJSON() ([]byte, error) {

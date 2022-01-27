@@ -15,11 +15,21 @@ type JablkoCore struct {
 	router *mux.Router
 }
 
-func CreateHTTPRouter() *mux.Router {
+func WrapRoute(route func(http.ResponseWriter, *http.Request, *JablkoCore), core *JablkoCore) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		route(w, r, core)
+	}
+}
+
+func CreateHTTPRouter(core *JablkoCore) *mux.Router {
 	r := &mux.Router{}
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "ASDASDASD")
 	})
+
+	r.PathPrefix("/jmod/").
+		Handler(http.HandlerFunc(WrapRoute(PassReqToJMOD, core))).
+		Methods("GET", "POST")
 
 	return r
 }
@@ -30,7 +40,7 @@ func CreateJablkoCore(config []byte) (*JablkoCore, error) {
 
 	log.Printf("%v", newApp)
 
-	newApp.router = CreateHTTPRouter()
+	newApp.router = CreateHTTPRouter(newApp)
 
 	return newApp, err
 }
@@ -53,4 +63,8 @@ func (core *JablkoCore) Cleanup() {
 			Err(err).
 			Msg("Errors occured when cleaning up Jablko Core processes")
 	}
+}
+
+func PassReqToJMOD(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
+
 }
