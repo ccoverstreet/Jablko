@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
-	"time"
+	"os/signal"
+	"syscall"
 
-	"github.com/ccoverstreet/Jablko/core/process"
+	"github.com/ccoverstreet/Jablko/core/app"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -22,21 +25,27 @@ func main() {
 	setupLogging()
 	createNeededDirs()
 
-	// Temporary test code
-	proc, err := process.CreateProc(process.ProcConfig{
-		"asd",
-		"latest",
-	})
-
+	confB, err := ioutil.ReadFile("./jablkoconfig.json")
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("%v", proc.CreateDataDirIfNE())
-	proc.Start(8080)
+	core, err := app.CreateJablkoCore(confB)
+	if err != nil {
+		panic(err)
+	}
 
-	time.Sleep(10 * time.Second)
-	proc.Kill()
+	b, err := json.MarshalIndent(core, "", "    ")
+	if err != nil {
+		panic(err)
+	}
+
+	log.Printf("%s", b)
+
+	setupInterruptHandler(core)
+	core.StartAllMods()
+	core.Listen()
+	core.Cleanup()
 }
 
 func setupLogging() {
@@ -53,4 +62,14 @@ func createNeededDirs() error {
 	err = os.Mkdir("data", 0755)
 
 	return err
+}
+
+func setupInterruptHandler(core *app.JablkoCore) {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		core.Cleanup()
+		os.Exit(0)
+	}()
 }

@@ -8,6 +8,7 @@
 package process
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -32,6 +33,9 @@ type Proc interface {
 	Start(port int) error // Starts the JMOD after searching for an available port
 	Kill() error
 	CreateDataDirIfNE() error
+	MarshalJSON() ([]byte, error)
+	PullImage() error
+	IsLocal() bool
 }
 
 type DockerProc struct {
@@ -56,7 +60,28 @@ func CreateProc(config ProcConfig) (Proc, error) {
 	return &DockerProc{sync.Mutex{}, config, absPath, nil, writer}, nil
 }
 
+func (proc *DockerProc) MarshalJSON() ([]byte, error) {
+	var tempStruct = struct {
+		Tag string `json:"tag"`
+	}{proc.Config.Tag}
+
+	return json.Marshal(tempStruct)
+}
+
+func (proc *DockerProc) IsLocal() bool {
+	return proc.Config.Tag == "local"
+}
+
+func (proc *DockerProc) PullImage() error {
+	log.Info().
+		Str("imageName", proc.Config.ImageName).
+		Msg("Pulling JMOD image from DockerHub")
+	cmd := exec.Command("docker", "pull", proc.Config.ImageName)
+	return cmd.Run()
+}
+
 func (proc *DockerProc) Start(port int) error {
+	proc.CreateDataDirIfNE()
 	log.Info().
 		Int("port", port).
 		Msg("Starting process")
@@ -105,17 +130,17 @@ func (proc *DockerProc) Kill() error {
 ==================== JMOD KILLED ====================
 `)
 
+	if proc.Cmd == nil || proc.Cmd.Process == nil {
+		return nil
+	}
+
 	return proc.Cmd.Process.Signal(os.Interrupt)
 }
 
 func (proc *DockerProc) CreateDataDirIfNE() error {
 	_, err := os.Stat(proc.DataDir)
 
-	if err == nil {
-		return nil
-	}
-
-	if !os.IsNotExist(err) {
+	if err == nil || !os.IsNotExist(err) {
 		return nil
 	}
 

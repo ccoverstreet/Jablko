@@ -63,7 +63,7 @@ func (writer *JMODWriter) Write(b []byte) (int, error) {
 		writer.curDay = time.Now().Day()
 	}
 
-	fmt.Printf("\033[0;34m%s: %s\033[0m", writer.ImageName, b)
+	fmt.Printf("\n\033[0;34m%s: %s\033[0m\n", writer.ImageName, b)
 	writer.logFile.Write(b)
 
 	return len(b), nil
