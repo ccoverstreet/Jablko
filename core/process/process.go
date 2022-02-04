@@ -8,8 +8,13 @@
 package process
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -46,8 +51,8 @@ type DockerProc struct {
 	Config  ProcConfig
 	DataDir string
 	Cmd     *exec.Cmd
-	Writer  *JMODWriter
-	Port    int
+	writer  *JMODWriter
+	port    int
 }
 
 func CreateProc(config ProcConfig) (*DockerProc, error) {
@@ -96,10 +101,11 @@ func (proc *DockerProc) Start(port int) error {
 
 	proc.CreateDataDirIfNE()
 	log.Info().
+		Str("imageName", proc.Config.ImageName).
 		Int("port", port).
 		Msg("Starting process")
 
-	proc.Port = port
+	proc.port = port
 
 	proc.Cmd = exec.Command("docker", "run",
 		"-p", strconv.Itoa(port)+":8080",
@@ -107,15 +113,15 @@ func (proc *DockerProc) Start(port int) error {
 		proc.Config.ImageName)
 
 	//proc.Cmd = exec.Command("echo", "aSAdasdaSDASD")
-	proc.Cmd.Stdout = proc.Writer
-	proc.Cmd.Stderr = proc.Writer
+	proc.Cmd.Stdout = proc.writer
+	proc.Cmd.Stderr = proc.writer
 
 	err := proc.Cmd.Start()
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(proc.Writer, JMODSTARTMESSAGE)
+	fmt.Fprintf(proc.writer, JMODSTARTMESSAGE)
 
 	go proc.wait()
 
@@ -124,7 +130,7 @@ func (proc *DockerProc) Start(port int) error {
 
 func (proc *DockerProc) wait() {
 	proc.Cmd.Wait()
-	fmt.Fprintf(proc.Writer, JMODSTOPMESSAGE)
+	fmt.Fprintf(proc.writer, JMODSTOPMESSAGE)
 	log.Info().
 		Str("imageName", proc.Config.ImageName).
 		Msg("Docker process exited.")
@@ -137,7 +143,7 @@ func (proc *DockerProc) Kill() error {
 	proc.Lock()
 	defer proc.Unlock()
 
-	fmt.Fprintf(proc.Writer, JMODKILLEDMESSAGE)
+	fmt.Fprintf(proc.writer, JMODKILLEDMESSAGE)
 
 	if proc.Cmd == nil || proc.Cmd.Process == nil {
 		return nil
@@ -158,6 +164,37 @@ func (proc *DockerProc) CreateDataDirIfNE() error {
 
 // Overwrites the config file located within the JMOD image's data directory
 func (proc *DockerProc) UpdateConfig(newConfig string) error {
+
+	return nil
+}
+
+func (proc *DockerProc) GetPort() int {
+	proc.RLock()
+	defer proc.RUnlock()
+
+	return proc.port
+}
+
+func (proc *DockerProc) PassRequest(w http.ResponseWriter, r *http.Request) error {
+	proc.RLock()
+	defer proc.RUnlock()
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	port := proc.GetPort()
+	url, _ := url.Parse("http://127.0.0.1:" + strconv.Itoa(port))
+	proxy := httputil.NewSingleHostReverseProxy(url)
+
+	r.Host = url.Host
+	r.URL.Host = url.Host
+	r.URL.Scheme = url.Scheme
+	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
+
+	proxy.ServeHTTP(w, r)
 
 	return nil
 }

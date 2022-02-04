@@ -17,4 +17,11 @@ On startup several environment variables are provided to each JMOD: Jablko Core 
 
 The config file for each JMOD will be stored in the mounted `/data` directory within the image as `jmodconfig.json`. On first JMOD install, this file will not exist and it is the JMOD's responsibility to create this file and ensure it is named correctly. User-specified config changes work by allowing the user to edit the current version of this file and upon application, Jablko will stop the JMOD and restart the image with the new config file in the `/data` directory.
 
-The webcomponent for each JMOD is to be POSTed to the core process on the route `/service/webcomponent` by each JMOD after JMOD startup. Jablko will cache the webcomponents file and cash the integrated dashboard code.
+JMODs should handle a route `/webcomponent` and respond with the javascript required for the webcomponent card displayed on the dashboard.
+
+---
+
+**This portion may not be included**. The webcomponent for each JMOD is to be POSTed to the core process on the route `/service/webcomponent` by each JMOD after JMOD startup. Jablko will cache the webcomponents file and cash the integrated dashboard code.
+
+---
+

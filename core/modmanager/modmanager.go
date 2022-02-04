@@ -3,6 +3,8 @@ package modmanager
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"net/http"
 	"sync"
 
 	"github.com/ccoverstreet/Jablko/core/process"
@@ -58,9 +60,32 @@ func (mm *ModManager) Cleanup() error {
 	return nil
 }
 
+func findAvailablePort() (int, error) {
+	minPort := 10000
+	maxPort := 20000
+
+	for i := minPort; i < maxPort; i++ {
+		conn, err := net.Listen("tcp", fmt.Sprintf(":%d", i))
+		if err == nil {
+			conn.Close()
+			return i, nil
+		}
+	}
+
+	return 0, fmt.Errorf("No available port found within range")
+}
+
 func (mm *ModManager) StartJMOD(modName string, port int) error {
 	mm.RLock()
 	defer mm.RUnlock()
+
+	if port == 0 {
+		var err error
+		port, err = findAvailablePort()
+		if err != nil {
+			return err
+		}
+	}
 
 	log.Info().Str("imageName", modName).Msg("Starting JMOD.")
 
@@ -100,4 +125,16 @@ func (mm *ModManager) StartAll() {
 	}
 }
 
-//func (mm *ModManager) PassRequestToJMOD(w http.ResponseWriter)
+// This should be moved into process
+func (mm *ModManager) PassReqToJMOD(w http.ResponseWriter, r *http.Request) error {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	jmodName := r.FormValue("JMOD")
+	proc, ok := mm.Mods[jmodName]
+	if !ok {
+		return fmt.Errorf("JMOD does not exist.")
+	}
+
+	return proc.PassRequest(w, r)
+}

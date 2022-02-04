@@ -66,5 +66,5 @@ func (core *JablkoCore) Cleanup() {
 }
 
 func PassReqToJMOD(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
-
+	core.ModM.PassReqToJMOD(w, r)
 }
