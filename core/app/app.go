@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/ccoverstreet/Jablko/core/modmanager"
@@ -23,9 +22,7 @@ func WrapRoute(route func(http.ResponseWriter, *http.Request, *JablkoCore), core
 
 func CreateHTTPRouter(core *JablkoCore) *mux.Router {
 	r := &mux.Router{}
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "ASDASDASD")
-	})
+	r.HandleFunc("/", WrapRoute(dashboardHandler, core))
 
 	r.PathPrefix("/jmod/").
 		Handler(http.HandlerFunc(WrapRoute(PassReqToJMOD, core))).
@@ -67,4 +64,8 @@ func (core *JablkoCore) Cleanup() {
 
 func PassReqToJMOD(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
 	core.ModM.PassReqToJMOD(w, r)
+}
+
+func dashboardHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
+	core.ModM.GetDashboard()
 }

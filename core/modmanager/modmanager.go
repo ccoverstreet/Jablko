@@ -3,8 +3,10 @@ package modmanager
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/ccoverstreet/Jablko/core/process"
@@ -13,7 +15,9 @@ import (
 
 type ModManager struct {
 	sync.RWMutex
-	Mods map[string]*process.DockerProc
+	Mods       map[string]*process.DockerProc
+	fRegenDash bool
+	dash       string
 }
 
 func (mm *ModManager) UnmarshalJSON(data []byte) error {
@@ -39,6 +43,9 @@ func (mm *ModManager) UnmarshalJSON(data []byte) error {
 		}
 		mm.Mods[modName] = proc
 	}
+
+	mm.fRegenDash = true
+	mm.dash = ""
 
 	return nil
 }
@@ -137,4 +144,46 @@ func (mm *ModManager) PassReqToJMOD(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	return proc.PassRequest(w, r)
+}
+
+// TODO: Properly wrap collected dashboard code
+func (mm *ModManager) GenerateDashboard() error {
+	wcs := ""
+	errors := "ERRORS:"
+	for modName, mod := range mm.Mods {
+		modWCURL := fmt.Sprintf("http://127.0.0.1:%s/webcomponent", strconv.Itoa(mod.GetPort()))
+		resp, err := http.Get(modWCURL)
+		if err != nil || (resp.StatusCode < 200 || resp.StatusCode >= 400) {
+			errors += fmt.Sprintf(" %s - (status: %d) %v;", modName, resp.StatusCode, err)
+			continue
+		}
+
+		text, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			errors += fmt.Sprintf("%s - %v;", modName, err)
+			continue
+		}
+
+		wcs += "\n" + string(text) + "\n"
+	}
+
+	fmt.Println(wcs)
+
+	return fmt.Errorf(errors)
+}
+
+func (mm *ModManager) GetDashboard() string {
+	mm.RLock()
+	defer mm.RUnlock()
+
+	if mm.fRegenDash {
+		err := mm.GenerateDashboard()
+		if err != nil {
+			log.Error().
+				Err(err).
+				Msg("Error generating dashboard")
+		}
+	}
+
+	return mm.dash
 }
