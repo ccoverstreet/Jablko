@@ -112,7 +112,6 @@ func (proc *DockerProc) Start(port int) error {
 		"--mount", fmt.Sprintf("type=bind,source=%s,target=/data", proc.DataDir),
 		proc.Config.ImageName)
 
-	//proc.Cmd = exec.Command("echo", "aSAdasdaSDASD")
 	proc.Cmd.Stdout = proc.writer
 	proc.Cmd.Stderr = proc.writer
 
@@ -173,6 +172,24 @@ func (proc *DockerProc) GetPort() int {
 	defer proc.RUnlock()
 
 	return proc.port
+}
+
+func (proc *DockerProc) WebComponent() (string, error) {
+	proc.RLock()
+	defer proc.RUnlock()
+
+	url := fmt.Sprintf("http://127.0.0.1:%s/webcomponent", strconv.Itoa(proc.GetPort()))
+	resp, err := http.Get(url)
+	if err != nil || (resp.StatusCode < 200 || resp.StatusCode >= 400) {
+		return "", fmt.Errorf("%s: %v", proc.Config.ImageName, resp.StatusCode)
+	}
+
+	text, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("%s: %v;", proc.Config.ImageName, err)
+	}
+
+	return string(text), nil
 }
 
 func (proc *DockerProc) PassRequest(w http.ResponseWriter, r *http.Request) error {

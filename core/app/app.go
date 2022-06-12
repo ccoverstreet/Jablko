@@ -2,7 +2,11 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"path/filepath"
+	"runtime"
 
 	"github.com/ccoverstreet/Jablko/core/modmanager"
 	"github.com/gorilla/mux"
@@ -20,13 +24,37 @@ func WrapRoute(route func(http.ResponseWriter, *http.Request, *JablkoCore), core
 	}
 }
 
+func WrapMiddleware(middleware func(http.Handler, *JablkoCore) http.Handler, core *JablkoCore) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return middleware(next, core)
+	}
+}
+
+func LoggingMiddleware(next http.Handler, core *JablkoCore) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Info().
+			Str("method", r.Method).
+			Str("uri", r.RequestURI).
+			Str("remoteAddress", r.RemoteAddr).
+			Msg("Incoming request")
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func CreateHTTPRouter(core *JablkoCore) *mux.Router {
 	r := &mux.Router{}
+
+	r.Use(WrapMiddleware(LoggingMiddleware, core))
+	r.Use(WrapMiddleware(AuthMiddleware, core))
+
 	r.HandleFunc("/", WrapRoute(dashboardHandler, core))
 
 	r.PathPrefix("/jmod/").
 		Handler(http.HandlerFunc(WrapRoute(PassReqToJMOD, core))).
 		Methods("GET", "POST")
+
+	r.HandleFunc("/assets/{file}", WrapRoute(assetsHandler, core))
 
 	return r
 }
@@ -66,6 +94,59 @@ func PassReqToJMOD(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
 	core.ModM.PassReqToJMOD(w, r)
 }
 
+func routeErrorHandler(w http.ResponseWriter, err error) {
+	_, filename, line, _ := runtime.Caller(1)
+
+	log.Error().
+		Str("file", filename).
+		Int("line", line).
+		Err(err).
+		Msg("Error occured while handling route.")
+
+	http.Error(w, err.Error(), 406)
+}
+
 func dashboardHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
-	core.ModM.GetDashboard()
+	html := core.ModM.GetDashboard()
+
+	fmt.Fprintf(w, "%s", html)
+}
+
+var VALID_ASSETS = [...]string{
+	"common.css",
+}
+
+func isValidAsset(filename string) bool {
+	for _, a := range VALID_ASSETS {
+		if a == filename {
+			return true
+		}
+	}
+
+	return false
+}
+
+func assetsHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
+	filename := mux.Vars(r)["file"]
+
+	if !isValidAsset(filename) {
+		routeErrorHandler(w, fmt.Errorf("Invalid asset '%s' requested", filename))
+		return
+	}
+
+	data, err := ioutil.ReadFile("html/" + filename)
+	if err != nil {
+		routeErrorHandler(w, err)
+		return
+	}
+
+	mimeMap := map[string]string{
+		".css": "text/css",
+		".js":  "text/javascript",
+	}
+
+	ext := filepath.Ext(filename)
+
+	w.Header().Add("Content-Type", mimeMap[ext])
+	fmt.Fprintf(w, "%s", data)
 }

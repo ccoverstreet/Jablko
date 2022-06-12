@@ -1,5 +1,5 @@
-Jablko: main.go core/*/*.go
-	go build -o Jablko main.go
+Jablko: rewrite.go core/*/*.go
+	go build -o Jablko rewrite.go
 	
 run: Jablko
 	./Jablko

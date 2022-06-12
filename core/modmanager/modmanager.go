@@ -6,7 +6,8 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"strconv"
+	"os"
+	"strings"
 	"sync"
 
 	"github.com/ccoverstreet/Jablko/core/process"
@@ -146,30 +147,56 @@ func (mm *ModManager) PassReqToJMOD(w http.ResponseWriter, r *http.Request) erro
 	return proc.PassRequest(w, r)
 }
 
+func CleanModName(name string) string {
+	replacer := strings.NewReplacer(
+		"_", "-",
+		"/", "-",
+	)
+
+	return replacer.Replace(name)
+}
+
 // TODO: Properly wrap collected dashboard code
 func (mm *ModManager) GenerateDashboard() error {
+	jablkoRoot, err := os.Executable()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(jablkoRoot)
+
+	// Load dashboard template
+	dashTemplate, err := ioutil.ReadFile("html/dashboard_template.html")
+	if err != nil {
+		return err
+	}
+
+	formatStr := "WCMAP[\"MODNAME\"] = WEBCOMPONENT\n\n"
 	wcs := ""
-	errors := "ERRORS:"
+	errors := ""
 	for modName, mod := range mm.Mods {
-		modWCURL := fmt.Sprintf("http://127.0.0.1:%s/webcomponent", strconv.Itoa(mod.GetPort()))
-		resp, err := http.Get(modWCURL)
-		if err != nil || (resp.StatusCode < 200 || resp.StatusCode >= 400) {
-			errors += fmt.Sprintf(" %s - (status: %d) %v;", modName, resp.StatusCode, err)
-			continue
-		}
-
-		text, err := ioutil.ReadAll(resp.Body)
+		wcText, err := mod.WebComponent()
 		if err != nil {
-			errors += fmt.Sprintf("%s - %v;", modName, err)
-			continue
+			errors += fmt.Sprintf(" %v;", err)
 		}
 
-		wcs += "\n" + string(text) + "\n"
+		wcReplacer := strings.NewReplacer(
+			"MODNAME", CleanModName(modName),
+			"WEBCOMPONENT", wcText,
+		)
+
+		wcs += wcReplacer.Replace(formatStr)
 	}
 
 	fmt.Println(wcs)
 
-	return fmt.Errorf(errors)
+	if len(errors) != 0 {
+		return fmt.Errorf(errors)
+	}
+
+	mm.dash = strings.Replace(string(dashTemplate), "$WEBCOMPONENTS", wcs, 1)
+
+	return nil
 }
 
 func (mm *ModManager) GetDashboard() string {
@@ -177,6 +204,9 @@ func (mm *ModManager) GetDashboard() string {
 	defer mm.RUnlock()
 
 	if mm.fRegenDash {
+		log.Info().
+			Msg("Generating dashboard")
+
 		err := mm.GenerateDashboard()
 		if err != nil {
 			log.Error().

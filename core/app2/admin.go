@@ -87,7 +87,7 @@ func installJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 	}
 
 	// Start newly downloaded JMOD
-	err = app.ModM.StartJMOD(jmodName)
+	err = app.ModM.StartJMOD(jmodName, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func startJMOD(r *http.Request, app *JablkoApp) ([]byte, error) {
 		return nil, err
 	}
 
-	err = app.ModM.StartJMOD(reqData.JMODName)
+	err = app.ModM.StartJMOD(reqData.JMODName, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +241,7 @@ func applyJMODConfig(r *http.Request, app *JablkoApp) ([]byte, error) {
 		time.Sleep(1 * time.Second)
 	}
 
-	err = app.ModM.StartJMOD(reqData.JMODName)
+	err = app.ModM.StartJMOD(reqData.JMODName, 0)
 	if err != nil {
 		return nil, err
 	}
