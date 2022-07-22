@@ -1,0 +1,116 @@
+:root {
+	font-family: Arial;
+	--color-primary: #6200EE;
+	--color-primary-dark: #3700B3;
+	--color-secondary: #03DAC6;
+	--color-secondary-dark: #018786;
+	--color-background: #f0f0f0;
+	--color-surface: #ffffff;
+	--color-error: #b00020;
+	--color-on-primary: #ffffff;
+	--color-on-secondary: #000000;
+	--color-on-background: #000000;
+	--color-on-surface: #000000;
+	--color-on-error: #ffffff;
+}
+
+body {
+	margin: 0px;
+	background-color: var(--color-background);
+  	-ms-overflow-style: none;  /* IE and Edge */
+  	scrollbar-width: none;  /* Firefox */
+}
+
+body::-webkit-scrollbar {
+  	display: none;
+}
+
+
+#taskbar {
+	height: 3em;
+	display: flex;
+	justify-content: flex-start;
+	background-color: var(--color-primary);
+	position: -webkit-sticky;
+	position: sticky;
+	background-image: linear-gradient(to bottom right, var(--color-primary), #15b1cd);
+	top: 0;
+}
+
+#taskbar > a {
+	border-radius: 0px;
+	border-width: 0px;
+	height: 3em;
+	width: 3em;
+	text-decoration: none;
+	background-color: rgba(0, 0, 0, 0);
+	color: var(--color-on-primary);
+	display: flex;
+	align-items: center;
+	outline: none;
+	z-index: 100;
+}
+
+#taskbar > a > svg {
+	height: 3em;
+	width: 3em;
+}
+
+
+#taskbar > a:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+#taskbar > a:target {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+#taskbar-title {
+	display: flex;
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	height: 100%;
+	justify-content: center;
+	align-items: center;
+	color: var(--color-on-primary);
+	font-weight: bold;
+	width: 100%;
+}
+
+#taskbar-title > a {
+	color: var(--color-on-primary);
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.tab-content {
+	display: none;
+}
+
+.tab-content:target {
+	display: block ;
+}
+
+#mod-holder {
+	columns: 3 20em;
+	column-gap:  0;
+}
+
+#mod-holder > * {
+	display: inline-block;
+}
+
+
+.mod-card {
+	background-color: #ffffff;
+	margin: 0.25em;
+}
+
+.mod-header {
+
+}
+
+.mod-body {
+	padding: 0.5em;
+}

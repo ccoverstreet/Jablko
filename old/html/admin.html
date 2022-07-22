@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Jablko</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/assets/standard.css"></link>
+		<script src="/assets/general.js"></script>
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+				const adminButton = document.getElementById("button-goto-admin");
+				adminButton.style.backgroundColor = "var(--clr-green)";
+			});
+
+			function switchPanel(panelId) {
+				const panels = document.querySelectorAll("#panel-switcher-content > div");
+				const buttons = document.querySelectorAll("#panel-switcher-header > button");
+				for (var i = 0; i < buttons.length; i++) {
+					if (panels[i].id == panelId) {
+						panels[i].style.display = "flex";
+						buttons[i].style.backgroundColor = "var(--clr-green)";
+						continue
+					}
+
+					panels[i].style.display = "none";
+					buttons[i].style.backgroundColor = "var(--clr-gray)";
+				}
+			}	
+
+		</script>
+		<script src="/assets/admin.js"></script>
+	</head>
+	<style>
+		#panel-switcher {
+			padding: 0.4em;
+		}
+		#panel-switcher-header {
+			display: flex;
+			height: 3em;
+			background-color: var(--clr-surface-2);
+		}
+		#panel-switcher-header > button {
+			flex: 1;
+			margin: 0px;
+			margin-right: 0.2em;
+			border-radius: 2px;
+		}
+
+		#panel-switcher-content {
+			background-color: var(--clr-surface-1);
+			padding: 0.4em;
+		}
+
+		.label_input_pair {
+			display: flex;
+		}
+		.label_input_pair > p {
+			display: flex;
+			padding-right: 0.5em;
+			margin-left: 1em;
+		}
+		.label_input_pair > input {
+			display: flex;
+			margin-right: 1em;
+		}
+
+		h2 {
+			width: 100%;
+		}
+
+		hr {
+			width: 100%;
+		}
+
+		#jmod-settings-panel {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
+		#jmod-entry-holder {
+			display: flex;
+			flex-direction: column;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: center;
+			width: 100%;
+		}
+		#jmod-entry-holder > * {
+			flex: 1 1;
+			max-width: 30em;
+			width: 100%;
+			padding: 0.1em;
+		}
+
+		#user-settings-panel {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
+		#user-settings-panel > div {
+			flex: 0 0 20em;
+		}
+
+	</style>
+	<body>
+		$JABLKO_TASKBAR
+		<div id="panel-switcher">
+			<div id="panel-switcher-header">
+				<button onclick="switchPanel('general-settings-panel')" style="background-color: var(--clr-gray); font-weight: bold;">General</button>
+				<button onclick="switchPanel('jmod-settings-panel')" style="background-color: var(--clr-green); font-weight: bold;">JMODS</button>
+				<button onclick="switchPanel('user-settings-panel')" style="background-color: var(--clr-gray); font-weight: bold;">Users</button>
+			</div>
+
+			<div id="panel-switcher-content">
+				<div id="general-settings-panel">
+
+				</div>
+				
+				<div id="jmod-settings-panel">
+					<div style="display: flex; flex: 1 1; max-width: 30em; width: 100%;">
+						<input id="install-jmod-input" style="width: 100%; margin: auto 1em;"></input>
+						<button onclick="InstallJMOD()" style="background-color: var(--clr-green)">Add JMOD</button>
+					</div>
+
+					<div id="jmod-entry-holder"></div>
+				</div>
+
+
+				<div id="user-settings-panel" style="display: none">
+					<div>
+						<h2>User List</h2>
+						<div id="user-list">
+						</div>
+					</div>
+
+					<div>
+						<h2>Create User</h2>
+						<form style="display: grid; grid-template-columns: auto auto">
+							<p>Username:</p>
+							<input id="create-user-username" type="username" onkeypress="createUser(event, this.parentNode)"></input>
+
+							<p>Password:</p>
+							<input id="create-user-password1" type="password" onkeypress="createUser(event, this.parentNode)"></input>
+
+							<p>Confirm Password:</p>
+							<input id="create-user-password2" type="password" onkeypress="createUser(event, this.parentNode)"></input>
+						</form>
+
+						<button onclick="event.key = 'Enter'; createUser(event, this.parentNode);" style="background-color: var(--clr-green)">Create</button>
+					</div>
+
+					<div>
+						<h2>Delete User</h2>
+						<form>
+							<div class="label_input_pair">
+								<p>Username:</p>
+								<input id="delete-user-username" type="username" onkeypress="deleteUser(event)"></input>
+							</div>
+
+							<button onclick="event.key='Enter'; deleteUser(event)" style="border-color: var(--clr-red)">Delete</button>
+						</form>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

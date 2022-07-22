@@ -1,0 +1,60 @@
+{
+  "httpPort": 8080,
+  "messagingMods": null,
+  "jmods": {
+    "/home/coverstreet/Coding/Jablko_Home/Mods/Jarmuz-Message": {
+      "commit": "",
+      "config": {
+        "botID": "449fb0056662a64f2268750500"
+      }
+    },
+    "/home/coverstreet/Coding/Jablko_Home/Mods/Jarmuz-Voice": {
+      "commit": "",
+      "config": null
+    },
+    "builtin/demo": {
+      "commit": "",
+      "config": {
+        "portUDP": 41111,
+        "instances": [
+          {
+            "value": 32
+          }
+        ]
+      }
+    },
+    "github.com/ccoverstreet/Jarmuz-Cookbook": {
+      "commit": "main",
+      "config": {
+        "instances": [
+          {
+            "title": "Cookbook"
+          }
+        ]
+      }
+    },
+    "github.com/ccoverstreet/Jarmuz-RGB-Light": {
+      "commit": "main",
+      "config": {
+        "instances": [
+          {
+            "lightIPs": [
+              "10.0.0.5"
+            ]
+          }
+        ]
+      }
+    },
+    "github.com/ccoverstreet/Jarmuz-Status": {
+      "commit": "main",
+      "config": {
+        "devices": {
+          "localhost": {
+            "name": "me"
+          }
+        },
+        "pollInterval": 300
+      }
+    }
+  }
+}
