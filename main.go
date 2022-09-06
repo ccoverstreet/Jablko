@@ -1,10 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 
+	"github.com/ccoverstreet/Jablko/core/core"
 	"github.com/ccoverstreet/Jablko/core/process"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -14,14 +15,35 @@ func main() {
 	greeting("0.3.0")
 	setupLogging()
 
-	x := process.CreateDockerProcess("ccoverstreet/go-sample", "asd")
-	fmt.Println(x)
+	jsonstr, err := os.ReadFile("jablkoconfig.json")
+	if err != nil {
+		panic(err)
+	}
 
-	log.Printf("%v", x.Start(10000))
+	app, err := core.CreateJablkoCore(jsonstr)
+	if err != nil {
+		panic(err)
+	}
+	app.PMan.AddMod(process.PROC_DEBUG, "Hello", "ASD")
 
-	time.Sleep(1 * time.Second)
-	fmt.Println(x.Stop())
-	time.Sleep(1 * time.Second)
+	b, err := json.MarshalIndent(app, "", "    ")
+	fmt.Println(err, string(b))
+	//app.Start()
+
+	/*
+		pman := procmanager.CreateProcManager()
+		fmt.Println(pman)
+		pman.AddMod(process.PROC_DEBUG, "tester", "")
+		pman.AddMod(process.PROC_DEBUG, "teste", "")
+		pman.AddMod(process.PROC_DEBUG, "test", "")
+		err := pman.StartMod("tester")
+		fmt.Println(err)
+		pman.StartMod("teste")
+		pman.StartMod("test")
+		fmt.Println(pman)
+		pman.RemoveMod("tester")
+		fmt.Println(pman)
+	*/
 }
 
 func greeting(version string) {
