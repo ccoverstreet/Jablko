@@ -12,34 +12,28 @@ import (
 	"sync"
 )
 
-func CreateDebugProcess(name string, tag string) *DebugProcess {
-	return &DebugProcess{sync.RWMutex{}, name, tag, 0, ""}
+func CreateDebugProcess(name string, conf ModProcessConfig) *DebugProcess {
+	return &DebugProcess{sync.RWMutex{}, name, conf.Tag, conf.Port, ""}
+}
+
+func CreateDebugProcessFromBytes(name string, conf []byte) (*DebugProcess, error) {
+	var tmp ModProcessConfig
+
+	err := json.Unmarshal(conf, &tmp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return CreateDebugProcess(name, tmp), err
 }
 
 func (proc *DebugProcess) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`{
-		"name": "%s",
 		"tag": "%s",
-		"type": "%s"
-	}`, proc.name, proc.tag, PROC_DEBUG)), nil
-}
-
-func (proc *DebugProcess) UnmarshalJSON(b []byte) error {
-	data := struct {
-		Name string `json:"name"`
-		Tag  string `json:"tag"`
-		Type string `json:"type"`
-	}{}
-
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return err
-	}
-
-	proc.name = data.Name
-	proc.tag = data.Tag
-
-	return nil
+		"type": "%s",
+		"port": %d
+	}`, proc.tag, PROC_DEBUG, proc.port)), nil
 }
 
 func (proc *DebugProcess) Start(port int) error {

@@ -22,7 +22,12 @@ type ModProcess interface {
 	PassRequest(w http.ResponseWriter, r *http.Request) error
 	WebComponent() (string, error)
 	MarshalJSON() ([]byte, error)
-	UnmarshalJSON([]byte) error
+}
+
+type ModProcessConfig struct {
+	Tag  string `json:"tag"`
+	Type string `json:"type"`
+	Port int    `json:"port"`
 }
 
 type DockerProcess struct {

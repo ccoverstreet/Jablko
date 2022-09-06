@@ -28,10 +28,7 @@ func (pman *ProcManager) MarshalJSON() ([]byte, error) {
 }
 
 func (pman *ProcManager) UnmarshalJSON(b []byte) error {
-	tmp := map[string](struct {
-		Tag  string `json:"tag"`
-		Type string `json:"type"`
-	}){}
+	tmp := map[string]process.ModProcessConfig{}
 
 	err := json.Unmarshal(b, &tmp)
 	if err != nil {
@@ -41,7 +38,7 @@ func (pman *ProcManager) UnmarshalJSON(b []byte) error {
 	for name, conf := range tmp {
 		switch conf.Type {
 		case process.PROC_DEBUG:
-			pman.mods[name] = process.CreateDebugProcess(name, conf.Tag)
+			pman.mods[name] = process.CreateDebugProcess(name, conf)
 		default:
 			return fmt.Errorf("Unable to load config. Process type %s is invalid", conf.Type)
 		}
@@ -50,7 +47,8 @@ func (pman *ProcManager) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (pman *ProcManager) AddMod(procType string, procName string, tag string) error {
+// TODO: Figure out what type conf should actually be
+func (pman *ProcManager) AddMod(procName string, conf process.ModProcessConfig) error {
 	pman.Lock()
 	defer pman.Unlock()
 
@@ -60,9 +58,9 @@ func (pman *ProcManager) AddMod(procType string, procName string, tag string) er
 		return fmt.Errorf("Mod %s already exists")
 	}
 
-	switch procType {
+	switch conf.Type {
 	case process.PROC_DEBUG:
-		newProc = process.CreateDebugProcess(procName, tag)
+		newProc = process.CreateDebugProcess(procName, conf)
 		/*
 			case process.PROC_DOCKER:
 				newProc = process.CreateDockerProcess(procName, tag)

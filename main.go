@@ -24,7 +24,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	app.PMan.AddMod(process.PROC_DEBUG, "Hello", "ASD")
+
+	app.PMan.AddMod("testasjfsadfjhasd", process.ModProcessConfig{
+		"sometag",
+		process.PROC_DEBUG,
+		8080,
+	})
 
 	b, err := json.MarshalIndent(app, "", "    ")
 	fmt.Println(err, string(b))
