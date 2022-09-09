@@ -24,6 +24,8 @@ func CreateProcManager() ProcManager {
 }
 
 func (pman *ProcManager) MarshalJSON() ([]byte, error) {
+	pman.RLock()
+	defer pman.RUnlock()
 	return json.Marshal(pman.mods)
 }
 

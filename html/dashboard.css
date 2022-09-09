@@ -1,0 +1,36 @@
+#content-selector {
+	height: 4em;
+	display: flex;
+	background-color: 
+}
+
+#content-selector > button {
+	height: 100%;
+	padding: 0em 0.5em ;
+	margin: 0;
+}
+
+
+#content {
+	height: 90vh;
+}
+
+.dashboard-tab {
+	height: 100%;
+}
+
+
+#mod-edit {
+	background-color: var(--clr-surface-1);
+}
+
+#mod-edit-content {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+jablko-mod-card {
+	margin: 0.25em;
+}
+

@@ -1,0 +1,95 @@
+:root {
+	font-family: Arial;
+	--clr-background: #1a1a1a;
+    --clr-surface-1: #262626;
+    --clr-surface-2: #2a2b2f;
+    --clr-font-high: #d9d9d9;
+    --clr-font-med: #999999;
+    --clr-font-low: #666666;
+    --clr-primary: #4db6ac;
+    --clr-accent: #1f9af4;
+    --clr-green: #44a751;
+    --clr-red: #f1385f;
+	--clr-blue: #1f9af4;
+    --clr-yellow: #aaaa44;
+	--clr-purple: #6a447e;
+	--clr-gray: #444444;
+	color: var(--clr-font-high);
+	--border-radius: 0.25em;
+}
+
+body {
+	margin: 0px;
+	padding: 0px;
+	background-color: var(--clr-background);
+	overflow: auto;
+}
+
+.card {
+	border-radius: 0.25em;
+	padding: 0.5em;
+}
+
+button {
+	font-size: 1em;
+	border-radius: 2px;
+	border-width: 0px;
+	color: var(--clr-font-high);
+	margin: 0.5em;
+	padding: 0.3em 0.6em;
+	background-color: var(--clr-gray);
+}
+
+button:hover {
+	filter: brightness(70%);
+}
+
+input {
+	line-height: 1em;
+	padding: 0.2em;
+	margin: auto auto;
+	background-color: var(--clr-surface-2);
+	color: var(--clr-font-high);
+}
+
+textarea {
+	background-color: var(--clr-surface-2);
+	color: var(--clr-font-high);
+}
+
+select {
+	background-color: var(--clr-surface-2);
+	color: var(--clr-font-high);
+}
+
+.jmod-header {
+	height: 3em;
+}
+.jmod-header > h1{
+	flex-grow: 1;
+}
+.jmod-header > svg {
+	height: 3em;
+	width: 3em;
+}
+
+hr {
+	margin: 0.2em 0em;
+	border-color: var(--clr-accent);
+	border-style: solid
+}
+
+h1 {
+	font-size: 2em;
+	color: var(--clr-font-med);
+	margin: 0.25em 0.25em;
+}
+
+h2 {
+	margin: 0.2em 0em;
+}
+
+h3 {
+	margin: 0.2em 0em;
+	text-align: center;
+}

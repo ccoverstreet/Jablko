@@ -33,7 +33,7 @@ func main() {
 
 	b, err := json.MarshalIndent(app, "", "    ")
 	fmt.Println(err, string(b))
-	//app.Start()
+	app.Start()
 
 	/*
 		pman := procmanager.CreateProcManager()

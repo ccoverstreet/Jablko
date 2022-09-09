@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="/assets/admin.js"></script>
+		<link rel="stylesheet" type="text/css" href="/assets/standard.css"/>
+		<link rel="stylesheet" type="text/css" href="/assets/dashboard.css"/>
+	</head>
+	<body>
+		<div id="content-selector">
+			<button onclick="jablko.showTab('home-tab')">Home</button>
+			<button onclick="jablko.showTab('admin-tab')">Admin</button>
+		</div>
+		<div id="content">
+			<div id="home-tab" class="dashboard-tab" style="display: none">
+			</div>
+
+			<div id="admin-tab" class="dashboard-tab" style="display: block">
+				<div id="mod-edit" class="card">
+					<div id="mod-edit-controls">
+						<button onclick="jablko.addMod()">Add Mod</button>
+					</div>
+
+					<hr>
+
+					<div id="mod-edit-content">
+					</div>
+				</div>	
+			</div>
+		</div>
+	</body>
+</html>
