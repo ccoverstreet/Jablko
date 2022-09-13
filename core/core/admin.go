@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ccoverstreet/Jablko/core/process"
 	"github.com/gorilla/mux"
 )
 
@@ -25,6 +26,8 @@ var ADMINFUNCMAP = map[string]func(body []byte, core *JablkoCore) (interface{}, 
 	"asd":        exampleAdminFunc,
 	"getModList": getModListHandler,
 	"removeMod":  removeModHandler,
+	"addMod":     addModHandler,
+	"updateMod":  updateModHandler,
 }
 
 func AdminFuncHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
@@ -42,11 +45,13 @@ func AdminFuncHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) 
 	if err != nil {
 		httpErrorHandler(w,
 			CreateHTTPError(400, "Unable to read request body", err))
+		return
 	}
 
 	res, herr := handler(body, core)
 	if herr != nil {
 		httpErrorHandler(w, herr)
+		return
 	}
 
 	JSONResponse(w, res)
@@ -86,6 +91,52 @@ func getModListHandler(b []byte, core *JablkoCore) (interface{}, *HTTPError) {
 	return &core.PMan, nil
 }
 
+// Adds the mod to the manager, runs its update function, and tries to start it
+func addModHandler(b []byte, core *JablkoCore) (interface{}, *HTTPError) {
+	input := struct {
+		Type string `json:"type"`
+		Name string `json:"name"`
+		Tag  string `json:"tag"`
+		Port int    `json:port`
+	}{}
+
+	err := json.Unmarshal(b, &input)
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(400, "Unable to add mod", err)
+	}
+
+	err = core.PMan.AddMod(input.Name, process.ModProcessConfig{
+		input.Tag,
+		input.Type,
+		input.Port,
+	})
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(500, "Unable to add mod", err)
+	}
+
+	err = core.PMan.UpdateMod(input.Name, input.Tag)
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(500, "Unable to run update function for mod", err)
+	}
+
+	err = core.SaveConfig()
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(500, "Unable to save config", err)
+	}
+
+	err = core.PMan.StartMod(input.Name)
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(500, "Unable to save config", err)
+	}
+
+	return struct{}{}, nil
+}
+
 func removeModHandler(b []byte, core *JablkoCore) (interface{}, *HTTPError) {
 	input := struct {
 		Name string `json:"name"`
@@ -100,6 +151,46 @@ func removeModHandler(b []byte, core *JablkoCore) (interface{}, *HTTPError) {
 	if err != nil {
 		return nil,
 			CreateHTTPError(500, "Unable to remove mod", err)
+	}
+
+	err = core.SaveConfig()
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(500, "Unable to save config", err)
+	}
+
+	return struct{}{}, nil
+}
+
+func updateModHandler(b []byte, core *JablkoCore) (interface{}, *HTTPError) {
+	input := struct {
+		Name string `json:"name"`
+		Tag  string `json:"tag"`
+	}{}
+
+	err := json.Unmarshal(b, &input)
+
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(400, "Invalid input for updateModHandler", err)
+	}
+
+	err = core.PMan.UpdateMod(input.Name, input.Tag)
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(500, "Unable to update mod", err)
+	}
+
+	err = core.PMan.StopMod(input.Name)
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(500, "Unable to stop mod", err)
+	}
+
+	err = core.PMan.StartMod(input.Name)
+	if err != nil {
+		return struct{}{},
+			CreateHTTPError(500, "Unable to start mod", err)
 	}
 
 	return struct{}{}, nil

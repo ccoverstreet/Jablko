@@ -40,7 +40,8 @@ func (pman *ProcManager) UnmarshalJSON(b []byte) error {
 	for name, conf := range tmp {
 		switch conf.Type {
 		case process.PROC_DEBUG:
-			pman.mods[name] = process.CreateDebugProcess(name, conf)
+			tempProc, _ := process.CreateDebugProcess(name, conf)
+			pman.mods[name] = tempProc
 		default:
 			return fmt.Errorf("Unable to load config. Process type %s is invalid", conf.Type)
 		}
@@ -54,21 +55,26 @@ func (pman *ProcManager) AddMod(procName string, conf process.ModProcessConfig) 
 	pman.Lock()
 	defer pman.Unlock()
 
-	var newProc process.ModProcess
-
 	if _, ok := pman.mods[procName]; ok {
-		return fmt.Errorf("Mod %s already exists")
+		return fmt.Errorf("Mod %s already exists", procName)
 	}
+
+	var newProc process.ModProcess
+	var procCreateErr error
 
 	switch conf.Type {
 	case process.PROC_DEBUG:
-		newProc = process.CreateDebugProcess(procName, conf)
+		newProc, procCreateErr = process.CreateDebugProcess(procName, conf)
 		/*
 			case process.PROC_DOCKER:
 				newProc = process.CreateDockerProcess(procName, tag)
 		*/
 	default:
 		return fmt.Errorf("Invalid mod type specified")
+	}
+
+	if procCreateErr != nil {
+		return procCreateErr
 	}
 
 	pman.mods[procName] = newProc
@@ -94,6 +100,18 @@ func (pman *ProcManager) RemoveMod(procName string) error {
 
 	delete(pman.mods, procName)
 	return nil
+}
+
+func (pman *ProcManager) UpdateMod(procName string, tag string) error {
+	pman.Lock()
+	defer pman.Unlock()
+
+	proc, ok := pman.mods[procName]
+	if !ok {
+		return fmt.Errorf("Unable to update mod. Mod %s does not exist", procName)
+	}
+
+	return proc.Update(procName, tag)
 }
 
 func getOpenPort(start int, stop int) (int, error) {
@@ -128,4 +146,16 @@ func (pman *ProcManager) StartMod(procName string) error {
 	fmt.Println(pman.portSearchIndex)
 
 	return proc.Start(port)
+}
+
+func (pman *ProcManager) StopMod(procName string) error {
+	pman.Lock()
+	defer pman.Unlock()
+
+	proc, ok := pman.mods[procName]
+	if !ok {
+		return fmt.Errorf("Unable to start mod. Mod %s does not exists", procName)
+	}
+
+	return proc.Stop()
 }

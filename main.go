@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/ccoverstreet/Jablko/core/core"
-	"github.com/ccoverstreet/Jablko/core/process"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -25,11 +24,12 @@ func main() {
 		panic(err)
 	}
 
-	app.PMan.AddMod("testasjfsadfjhasd", process.ModProcessConfig{
-		"sometag",
-		process.PROC_DEBUG,
-		8080,
-	})
+	/*
+		app.PMan.AddMod("testasjfsadfjhasd", process.ModProcessConfig{
+			"sometag",
+			process.PROC_DEBUG,
+			8080,
+	*/
 
 	b, err := json.MarshalIndent(app, "", "    ")
 	fmt.Println(err, string(b))

@@ -16,12 +16,13 @@ class JablkoModCard extends HTMLElement {
 		display: flex; height: 3em;">
 			<h3 style="line-height: 2em">${this.data.name}</h3>
 			<div style="flex-grow: 1"></div>
-			<button onclick="this.getRootNode().host.remove()">Delete</button>
+			<button onclick="this.getRootNode().host.updateMod()">Update</button>
+			<button onclick="this.getRootNode().host.removeMod()">Delete</button>
 		</div>
 		`
 	}
 
-	remove = () => {
+	removeMod = () => {
 		const payload = {
 			name: this.data.name
 		};
@@ -41,156 +42,41 @@ class JablkoModCard extends HTMLElement {
 				alert(res.data.err);
 				console.log(res.data);
 			});
+
+	}
+
+	updateMod = () => {
+		jablko.prompt({
+			fields: [
+				{
+					type: "string",
+					label: "Tag",
+					id: "tag"
+				}
+			]
+		},
+			async function(prompt) {
+				console.log(prompt);
+				const data = prompt.collect();
+				console.log(data);
+				console.log(this);
+				console.log(this.data);
+				data.name = this.data.name;
+
+				const x = await jablko.postJSON("/admin/updateMod", data)
+					.then(async res => {
+						res = await jablko.checkFetchError(res);
+						jablko.getModList(document.getElementById("mod-edit-content"));
+						prompt.close();
+					})
+					.catch(async res => {
+						console.error(res, res.data);
+						throw new Error(res.data.err);
+					});
+			}.bind(this));
 	}
 }
-
-class JablkoPrompt extends HTMLElement {
-	constructor() {
-		super();
-		this.attachShadow({mode: "open"});
-	}
-
-	init = (conf, callback) => {
-		this.config = conf;
-
-		this.shadowRoot.innerHTML = `
-		<link rel="stylesheet" href="/assets/standard.css"/>
-		<style>
-			#container {
-				position: absolute;
-				top: 0;
-				left: 0;
-				background-color: rgba(0, 0, 0, 0.2);
-				z-index:100;
-				width: 100vw;
-				height: 100vh;
-			}	
-
-			#display {
-				height: max(100%, 100vh);
-			}
-
-			.pair {
-				 display: flex;
-				 align-items: center;
-			}
-			.pair > p {
-				margin-right: 1em;
-			}
-
-			input {
-				height: 1.5em;
-				margin: 0.25em;
-			}
-		</style>
-		<div id="container">
-			<div id="display">
-			</div>
-		</div>
-		`
-
-		const disp = this.shadowRoot.querySelector("#display");
-
-		const promptBody = document.createElement("div");
-		promptBody.style.display = "flex";
-		promptBody.style.flexDirection = "column";
-		promptBody.style.backgroundColor = "var(--clr-surface-1)";
-		promptBody.style.margin = "0.5em 0.5em"
-		promptBody.style.padding = "0.5em"
-
-
-		for (const field of conf.fields) {
-			switch (field.type) {
-				case "number":  {
-					let pair = document.createElement("div");
-					pair.classList.add("pair");
-
-					let input = document.createElement("input");
-					if (!field.id)
-						throw "Jablko Prompt: No id specified";
-					input.id = field.id;
-
-					let label = document.createElement("p");
-
-					label.textContent = field.label + ":";
-
-					pair.appendChild(label);
-					pair.appendChild(input);
-					promptBody.appendChild(pair)
-					break;
-				}
-
-				case "string": {
-					let pair = document.createElement("div");
-					pair.classList.add("pair");
-
-					let input = document.createElement("input");
-					if (!field.id)
-						throw "Jablko Prompt: No id specified";
-					input.id = field.id;
-
-					let label = document.createElement("p");
-
-					label.textContent = field.label + ":";
-
-					pair.appendChild(label);
-					pair.appendChild(input);
-					promptBody.appendChild(pair)
-					break;
-				}
-
-				default: 
-					console.log(2);
-			}
-		}
-
-		const cancel = document.createElement("button");
-		cancel.textContent = "Cancel";
-		cancel.onclick = this.close;
-
-		const confirm = document.createElement("button");
-		confirm.textContent = "Confirm";
-		confirm.onclick = function() {
-			callback(this.getRootNode().host);
-		}
-
-		promptBody.appendChild(cancel);
-		promptBody.appendChild(confirm);
-
-		disp.appendChild(promptBody);
-	}
-
-	close = () => {
-		console.log("Closing prompt");
-		this.remove();
-	}
-
-	// Returns JSON object containing prompt fields
-	collect = () => {
-		const out = {}
-		for (const field of this.config.fields)	{
-			console.log(field);
-			switch (field.type) {
-				case "number": {
-					const rawVal = this.shadowRoot.querySelector("#"+field.id).value;
-					console.log(rawVal);
-					out[field.id] = parseInt(rawVal);
-					break;
-				} 
-
-				case "string": {
-					out[field.id] = this.shadowRoot.querySelector("#"+field.id).value;
-					break;
-				}
-			}
-		}
-
-		return out;
-	}
-}
-
 customElements.define("jablko-mod-card", JablkoModCard);
-customElements.define("jablko-prompt", JablkoPrompt);
 
 const jablko = {
 	showTab: (tabId) => {
@@ -209,6 +95,16 @@ const jablko = {
 		const p = document.createElement("jablko-prompt");
 		p.init(conf, callback);
 		document.querySelector("body").appendChild(p);
+	},
+	
+	postJSON: (url, data) => {
+		return fetch(url, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(data)
+		})
 	},
 
 	checkFetchError: async (res) => {
@@ -267,11 +163,11 @@ const jablko = {
 				}
 			]
 		},
-			function(prompt) {
+			async function(prompt) {
 				console.log(prompt);
 				const data = prompt.collect();
 
-				fetch("/admin/addMod", {
+				const x = await fetch("/admin/addMod", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json"
@@ -280,11 +176,19 @@ const jablko = {
 				})
 					.then(async res => {
 						res = await jablko.checkFetchError(res);
+						jablko.getModList(document.getElementById("mod-edit-content"));
 					})
-					.catch(res => {
-						console.error(res);
+					.catch(async res => {
+						console.error(res, res.data);
+						throw new Error(res.data.err);
 					});
 			})
+
+
+	},
+
+	updateMod: (modName) => {
+		
 	}
 }
 

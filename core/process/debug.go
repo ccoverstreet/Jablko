@@ -2,7 +2,6 @@ package process
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -10,22 +9,15 @@ import (
 	"net/url"
 	"strconv"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
-func CreateDebugProcess(name string, conf ModProcessConfig) *DebugProcess {
-	return &DebugProcess{sync.RWMutex{}, name, conf.Tag, conf.Port, ""}
-}
-
-func CreateDebugProcessFromBytes(name string, conf []byte) (*DebugProcess, error) {
-	var tmp ModProcessConfig
-
-	err := json.Unmarshal(conf, &tmp)
-
-	if err != nil {
-		return nil, err
+func CreateDebugProcess(name string, conf ModProcessConfig) (*DebugProcess, error) {
+	if conf.Port == 0 || conf.Port > 65535 {
+		return nil, fmt.Errorf("Invalid port specified for debug-type mod: %d", conf.Port)
 	}
-
-	return CreateDebugProcess(name, tmp), err
+	return &DebugProcess{sync.RWMutex{}, name, conf.Tag, conf.Port, ""}, nil
 }
 
 func (proc *DebugProcess) MarshalJSON() ([]byte, error) {
@@ -37,14 +29,30 @@ func (proc *DebugProcess) MarshalJSON() ([]byte, error) {
 }
 
 func (proc *DebugProcess) Start(port int) error {
+	log.Debug().
+		Str("name", proc.name).
+		Msg("Starting debug process")
+
 	return nil
 }
 
 func (proc *DebugProcess) Stop() error {
+	log.Debug().
+		Str("name", proc.name).
+		Msg("Stopping debug process")
+
 	return nil
 }
 
 func (proc *DebugProcess) Update(name string, tag string) error {
+	proc.Lock()
+	defer proc.Unlock()
+	log.Debug().
+		Str("name", proc.name).
+		Msg("Updating debug process (just changing tag)")
+
+	proc.tag = tag
+
 	return nil
 }
 

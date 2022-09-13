@@ -9,6 +9,7 @@ import (
 
 	"github.com/ccoverstreet/Jablko/core/procmanager"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 )
 
 type JablkoCore struct {
@@ -24,6 +25,9 @@ func CreateJablkoCore(config []byte) (*JablkoCore, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Add middleware
+	core.router.Use(LoggingMiddleware)
 
 	core.router.HandleFunc("/dashboard", func(w http.ResponseWriter, r *http.Request) {
 		b, err := os.ReadFile("./html/dashboard.html")
@@ -55,6 +59,27 @@ func WrapRoute(fun func(http.ResponseWriter, *http.Request, *JablkoCore), app *J
 	}
 }
 
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Info().
+			Str("route", r.URL.RequestURI()).
+			Str("remoteAddr", r.RemoteAddr).
+			Msg("Inbound request")
+
+		next.ServeHTTP(w, r)
+	})
+
+}
+
+func (core *JablkoCore) SaveConfig() error {
+	b, err := json.Marshal(core)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile("jablkoconfig.json", b, 0666)
+}
+
 func (core *JablkoCore) Start() {
 	http.ListenAndServe(":"+strconv.Itoa(core.PortHTTP), core.router)
 }
@@ -67,6 +92,7 @@ type assetInfo struct {
 }
 
 var assetMap = map[string]assetInfo{
+	"jutil.js":      {"jutil.js", "text/javascript"},
 	"admin.js":      {"admin.js", "text/javascript"},
 	"standard.css":  {"standard.css", "text/css"},
 	"dashboard.css": {"dashboard.css", "text/css"},
@@ -90,5 +116,6 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", asset.MimeType)
+	w.Header().Set("Cache-Control", "max-age=3600")
 	w.Write(b)
 }

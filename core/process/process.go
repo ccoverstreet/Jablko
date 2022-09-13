@@ -14,7 +14,7 @@ const (
 type ModProcess interface {
 	Start(port int) error
 	Stop() error
-	Update(name string, tag string) error // Should stop the mod, pull/update the mod
+	Update(name string, tag string) error // Should stop the mod, pull/update the mod, and restart
 	Name() string
 	Tag() string
 	Type() string
