@@ -3,6 +3,7 @@ package process
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -95,6 +96,21 @@ func (proc *DebugProcess) PassRequest(w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
-func (proc *DebugProcess) WebComponent() (string, error) {
+func (proc *DebugProcess) WebComponent(refresh bool) (string, error) {
+	// Update existing webcomponent store
+	if refresh {
+		resp, err := http.Get("http://127.0.0.1:" + strconv.Itoa(proc.port))
+		if err != nil {
+			return "", err
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+
+		proc.webComponent = string(body)
+	}
+
 	return proc.webComponent, nil
 }

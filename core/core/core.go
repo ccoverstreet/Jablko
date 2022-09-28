@@ -29,17 +29,13 @@ func CreateJablkoCore(config []byte) (*JablkoCore, error) {
 	// Add middleware
 	core.router.Use(LoggingMiddleware)
 
-	core.router.HandleFunc("/dashboard", func(w http.ResponseWriter, r *http.Request) {
-		b, err := os.ReadFile("./html/dashboard.html")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Fprintf(w, "%s", b)
-	})
+	core.router.HandleFunc("/dashboard", wrapRoute(dashboardHandler))
 
 	core.router.HandleFunc("/admin/{func}", WrapRoute(AdminFuncHandler, core))
 	core.router.HandleFunc("/assets/{file}", assetsHandler).Methods("GET")
+	core.router.PathPrefix("/mod/").
+		Handler(http.HandlerFunc(WrapRoute(passRequestHandler, core))).
+		Methods("GET", "POST")
 
 	return core, nil
 }
@@ -103,14 +99,14 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 
 	asset, ok := assetMap[file]
 	if !ok {
-		httpErrorHandler(w,
+		HTTPErrorHandler(w,
 			CreateHTTPError(400, fmt.Sprintf("Invalid file '%s' requested", file), nil))
 		return
 	}
 
 	b, err := os.ReadFile("html/" + asset.Path)
 	if err != nil {
-		httpErrorHandler(w,
+		HTTPErrorHandler(w,
 			CreateHTTPError(500, fmt.Sprintf("Unable to serve file %s", file), nil))
 		return
 	}
@@ -118,4 +114,34 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", asset.MimeType)
 	w.Header().Set("Cache-Control", "max-age=3600")
 	w.Write(b)
+}
+
+func dashboardHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
+	core.PMan.GenerateWCScript()
+
+	b, err := os.ReadFile("./html/dashboard.html")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Fprintf(w, "%s", b)
+}
+
+func passRequestHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
+	params := r.URL.Query()
+	modName, ok := params["mod"]
+	if !ok {
+		HTTPErrorHandler(w, CreateHTTPError(400,
+			fmt.Sprintf("Mod not specified"), nil))
+		return
+	}
+
+	err := core.PMan.PassRequest(modName[0], w, r)
+	if err != nil {
+		HTTPErrorHandler(w, CreateHTTPError(400,
+			fmt.Sprintf("Unable to pass request"), err))
+		return
+	}
+
+	// JSONResponse(w, struct{}{})
 }

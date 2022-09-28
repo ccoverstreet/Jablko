@@ -3,7 +3,9 @@ package procmanager
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
+	"net/http"
 	"sync"
 
 	"github.com/ccoverstreet/Jablko/core/process"
@@ -158,4 +160,25 @@ func (pman *ProcManager) StopMod(procName string) error {
 	}
 
 	return proc.Stop()
+}
+
+func (pman *ProcManager) PassRequest(modName string, w http.ResponseWriter, r *http.Request) error {
+	pman.RLock()
+	defer pman.RUnlock()
+
+	proc, ok := pman.mods[modName]
+	if !ok {
+		return fmt.Errorf("Unable to pass request. Mod %s does not exist", modName)
+	}
+
+	return proc.PassRequest(w, r)
+}
+
+func (pman *ProcManager) GenerateWCScript() error {
+	pman.RLock()
+	defer pman.RUnlock()
+
+	for modName, mod := range pman.mods {
+		log.Println(modName)
+	}
 }

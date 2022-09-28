@@ -20,7 +20,7 @@ type ModProcess interface {
 	Type() string
 	Port() int
 	PassRequest(w http.ResponseWriter, r *http.Request) error
-	WebComponent() (string, error)
+	WebComponent(bool) (string, error)
 	MarshalJSON() ([]byte, error)
 }
 

@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func httpErrorHandler(w http.ResponseWriter, aErr *HTTPError) {
+func HTTPErrorHandler(w http.ResponseWriter, aErr *HTTPError) {
 	b, err := json.Marshal(aErr)
 	if err != nil {
 		log.Println(err)
@@ -36,21 +36,21 @@ func AdminFuncHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) 
 	handler, ok := ADMINFUNCMAP[fun]
 
 	if !ok {
-		httpErrorHandler(w, CreateHTTPError(400,
+		HTTPErrorHandler(w, CreateHTTPError(400,
 			fmt.Sprintf("Invalid admin func '%s' requested", fun), nil))
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		httpErrorHandler(w,
+		HTTPErrorHandler(w,
 			CreateHTTPError(400, "Unable to read request body", err))
 		return
 	}
 
 	res, herr := handler(body, core)
 	if herr != nil {
-		httpErrorHandler(w, herr)
+		HTTPErrorHandler(w, herr)
 		return
 	}
 
@@ -73,7 +73,7 @@ func CreateHTTPError(statusCode int, message string, err error) *HTTPError {
 func JSONResponse(w http.ResponseWriter, data interface{}) {
 	b, err := json.Marshal(data)
 	if err != nil {
-		httpErrorHandler(w,
+		HTTPErrorHandler(w,
 			CreateHTTPError(500, "Unable to marshal handler JSON res", err))
 		return
 	}
