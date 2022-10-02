@@ -4,6 +4,27 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<script src="/assets/jutil.js"></script>
 		<script src="/assets/admin.js"></script>
+
+		<script type="text/javascript">
+			$WCSCRIPT
+
+			document.addEventListener("DOMContentLoaded", () => {
+				const holder = document.getElementById("dashboard-mod-holder");
+
+				for (const [i, modName] of Object.keys(MOD_COMPONENTS).entries()) {
+					const customElementName = `mod-${i}`;
+					customElements.define(customElementName, MOD_COMPONENTS[modName])
+
+					for (var j = 0; j < 20; j++) {
+						const newModCard = document.createElement(customElementName);
+						newModCard.init(modName);
+
+						holder.appendChild(newModCard);
+					}
+				}
+			})
+		</script>
+
 		<link rel="stylesheet" type="text/css" href="/assets/standard.css"/>
 		<link rel="stylesheet" type="text/css" href="/assets/dashboard.css"/>
 	</head>
@@ -13,7 +34,9 @@
 			<button onclick="jablko.showTab('admin-tab')">Admin</button>
 		</div>
 		<div id="content">
-			<div id="home-tab" class="dashboard-tab" style="display: none">
+			<div id="home-tab" class="dashboard-tab" style="display: block">
+				<div id="dashboard-mod-holder">
+				</div>
 			</div>
 
 			<div id="admin-tab" class="dashboard-tab" style="display: block">

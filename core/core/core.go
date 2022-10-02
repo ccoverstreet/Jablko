@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/ccoverstreet/Jablko/core/procmanager"
 	"github.com/gorilla/mux"
@@ -29,7 +30,7 @@ func CreateJablkoCore(config []byte) (*JablkoCore, error) {
 	// Add middleware
 	core.router.Use(LoggingMiddleware)
 
-	core.router.HandleFunc("/dashboard", wrapRoute(dashboardHandler))
+	core.router.HandleFunc("/dashboard", WrapRoute(dashboardHandler, core))
 
 	core.router.HandleFunc("/admin/{func}", WrapRoute(AdminFuncHandler, core))
 	core.router.HandleFunc("/assets/{file}", assetsHandler).Methods("GET")
@@ -117,19 +118,29 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func dashboardHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
-	core.PMan.GenerateWCScript()
+	wcScript, err := core.PMan.GenerateWCScript()
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("Errors occured while generating WebComponent Script")
+	}
 
-	b, err := os.ReadFile("./html/dashboard.html")
+	fmt.Println(wcScript)
+
+	template, err := os.ReadFile("./html/dashboard.html")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Fprintf(w, "%s", b)
+
+	filled := strings.Replace(string(template), "$WCSCRIPT", wcScript, 1)
+
+	fmt.Fprintf(w, "%s", filled)
 }
 
 func passRequestHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore) {
 	params := r.URL.Query()
-	modName, ok := params["mod"]
+	modName, ok := params["modName"]
 	if !ok {
 		HTTPErrorHandler(w, CreateHTTPError(400,
 			fmt.Sprintf("Mod not specified"), nil))
@@ -142,6 +153,4 @@ func passRequestHandler(w http.ResponseWriter, r *http.Request, core *JablkoCore
 			fmt.Sprintf("Unable to pass request"), err))
 		return
 	}
-
-	// JSONResponse(w, struct{}{})
 }

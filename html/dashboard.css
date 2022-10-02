@@ -30,7 +30,16 @@
 	justify-content: center;
 }
 
-jablko-mod-card {
-	margin: 0.25em;
+
+#dashboard-mod-holder {
+	columns: 3 20em;
+	column-gap: 0px;
 }
+
+#dashboard-mod-holder > * {
+	display: inline-block;
+	width: calc(100% - 0.2em);
+	margin: 0.1em;
+}
+
 

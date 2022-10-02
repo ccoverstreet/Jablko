@@ -99,7 +99,7 @@ func (proc *DebugProcess) PassRequest(w http.ResponseWriter, r *http.Request) er
 func (proc *DebugProcess) WebComponent(refresh bool) (string, error) {
 	// Update existing webcomponent store
 	if refresh {
-		resp, err := http.Get("http://127.0.0.1:" + strconv.Itoa(proc.port))
+		resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/webComponent", proc.port))
 		if err != nil {
 			return "", err
 		}

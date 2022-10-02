@@ -3,7 +3,6 @@ package procmanager
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"sync"
@@ -174,11 +173,26 @@ func (pman *ProcManager) PassRequest(modName string, w http.ResponseWriter, r *h
 	return proc.PassRequest(w, r)
 }
 
-func (pman *ProcManager) GenerateWCScript() error {
+func (pman *ProcManager) GenerateWCScript() (string, error) {
 	pman.RLock()
 	defer pman.RUnlock()
 
+	errorString := ""
+
+	wcScript := `
+const MOD_COMPONENTS = {}
+
+	`
+
 	for modName, mod := range pman.mods {
-		log.Println(modName)
+		wcStr, err := mod.WebComponent(true)
+		if err != nil {
+			errorString += "\n" + err.Error()
+			continue
+		}
+
+		wcScript += fmt.Sprintf("\n\nMOD_COMPONENTS[\"%s\"] = %s\n\n", modName, wcStr)
 	}
+
+	return wcScript, fmt.Errorf("%s", errorString)
 }

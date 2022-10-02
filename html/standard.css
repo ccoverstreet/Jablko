@@ -62,16 +62,6 @@ select {
 	color: var(--clr-font-high);
 }
 
-.jmod-header {
-	height: 3em;
-}
-.jmod-header > h1{
-	flex-grow: 1;
-}
-.jmod-header > svg {
-	height: 3em;
-	width: 3em;
-}
 
 hr {
 	margin: 0.2em 0em;
@@ -92,4 +82,28 @@ h2 {
 h3 {
 	margin: 0.2em 0em;
 	text-align: center;
+}
+
+
+
+.mod-card {
+	background-color: var(--clr-surface-1);
+}
+
+.mod-header {
+	height: 3em;
+	display: flex;
+}
+
+.mod-header > h1{
+	flex-grow: 1;
+}
+
+.mod-header > svg {
+	height: 3em;
+	width: 3em;
+}
+
+.mod-body {
+	padding: 0.5em;
 }
