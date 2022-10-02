@@ -42,6 +42,8 @@ func demoHandler(w http.ResponseWriter, r *http.Request) {
 		fun,
 	}
 
+	log.Printf("Function %s requested", fun)
+
 	sendJSONResponse(w, res)
 }
 
