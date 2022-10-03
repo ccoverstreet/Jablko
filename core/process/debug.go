@@ -1,14 +1,9 @@
 package process
 
 import (
-	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
-	"strconv"
 	"sync"
 
 	"github.com/rs/zerolog/log"
@@ -77,23 +72,7 @@ func (proc *DebugProcess) PassRequest(w http.ResponseWriter, r *http.Request) er
 	proc.RLock()
 	defer proc.RUnlock()
 
-	url, _ := url.Parse("http://127.0.0.1:" + strconv.Itoa(proc.port))
-	proxy := httputil.NewSingleHostReverseProxy(url)
-
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return nil
-	}
-
-	r.Host = url.Host
-	r.URL.Host = url.Host
-	r.URL.Scheme = url.Scheme
-	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
-
-	proxy.ServeHTTP(w, r)
-
-	return nil
+	return ProxyHTTPRequest(w, r, proc.port)
 }
 
 func (proc *DebugProcess) WebComponent(refresh bool) (string, error) {

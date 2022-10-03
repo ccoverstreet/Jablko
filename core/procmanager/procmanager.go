@@ -43,6 +43,10 @@ func (pman *ProcManager) UnmarshalJSON(b []byte) error {
 		case process.PROC_DEBUG:
 			tempProc, _ := process.CreateDebugProcess(name, conf)
 			pman.mods[name] = tempProc
+
+		case process.PROC_DOCKER:
+			tempProc, _ := process.CreateDockerProcess(name, conf)
+			pman.mods[name] = tempProc
 		default:
 			return fmt.Errorf("Unable to load config. Process type %s is invalid", conf.Type)
 		}
@@ -66,6 +70,9 @@ func (pman *ProcManager) AddMod(procName string, conf process.ModProcessConfig) 
 	switch conf.Type {
 	case process.PROC_DEBUG:
 		newProc, procCreateErr = process.CreateDebugProcess(procName, conf)
+
+	case process.PROC_DOCKER:
+		newProc, procCreateErr = process.CreateDockerProcess(procName, conf)
 		/*
 			case process.PROC_DOCKER:
 				newProc = process.CreateDockerProcess(procName, tag)
@@ -147,6 +154,18 @@ func (pman *ProcManager) StartMod(procName string) error {
 	fmt.Println(pman.portSearchIndex)
 
 	return proc.Start(port)
+}
+
+func (pman *ProcManager) StartAllMods() error {
+	errorString := ""
+	for modName, _ := range pman.mods {
+		err := pman.StartMod(modName)
+		if err != nil {
+			errorString += "\n" + err.Error()
+		}
+	}
+
+	return fmt.Errorf("%s", errorString)
 }
 
 func (pman *ProcManager) StopMod(procName string) error {

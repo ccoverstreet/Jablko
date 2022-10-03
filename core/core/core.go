@@ -38,6 +38,8 @@ func CreateJablkoCore(config []byte) (*JablkoCore, error) {
 		Handler(http.HandlerFunc(WrapRoute(passRequestHandler, core))).
 		Methods("GET", "POST")
 
+	core.PMan.StartAllMods()
+
 	return core, nil
 }
 

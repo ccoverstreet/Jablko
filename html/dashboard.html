@@ -15,12 +15,10 @@
 					const customElementName = `mod-${i}`;
 					customElements.define(customElementName, MOD_COMPONENTS[modName])
 
-					for (var j = 0; j < 20; j++) {
-						const newModCard = document.createElement(customElementName);
-						newModCard.init(modName);
+					const newModCard = document.createElement(customElementName);
+					newModCard.init(modName);
 
-						holder.appendChild(newModCard);
-					}
+					holder.appendChild(newModCard);
 				}
 			})
 		</script>

@@ -1,7 +1,10 @@
 package process
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -28,8 +31,18 @@ func pullDockerImage(name string, tag string) error {
 	return cmd.Run()
 }
 
-func CreateDockerProcess(name string, tag string) *DockerProcess {
-	return &DockerProcess{sync.RWMutex{}, name, tag, 0, nil}
+func CreateDockerProcess(name string, conf ModProcessConfig) (*DockerProcess, error) {
+	return &DockerProcess{sync.RWMutex{}, name, conf.Tag, 0, "", nil}, nil
+}
+
+func (proc *DockerProcess) MarshalJSON() ([]byte, error) {
+	tempStruct := struct {
+		Name string `json:"name"`
+		Tag  string `json:"tag"`
+		Type string `json:"type"`
+	}{proc.name, proc.tag, PROC_DOCKER}
+
+	return json.Marshal(tempStruct)
 }
 
 // Only pull docker image if the image is not found locally
@@ -63,7 +76,7 @@ func (proc *DockerProcess) Start(port int) error {
 
 	// Create Cmd
 	proc.Cmd = exec.Command("docker", "run",
-		"-p", strconv.Itoa(port)+":8080",
+		"-p", strconv.Itoa(port)+":9090",
 		proc.name+":"+proc.tag)
 
 	err = proc.Cmd.Start()
@@ -73,6 +86,8 @@ func (proc *DockerProcess) Start(port int) error {
 			Err(err).
 			Msg("Docker process exited")
 	}()
+
+	proc.port = port
 
 	return err
 }
@@ -116,4 +131,29 @@ func (proc *DockerProcess) Update(name string, tag string) error {
 
 	return nil
 	// TODO
+}
+
+func (proc *DockerProcess) PassRequest(w http.ResponseWriter, r *http.Request) error {
+	proc.RLock()
+	defer proc.RUnlock()
+
+	return ProxyHTTPRequest(w, r, proc.port)
+}
+
+func (proc *DockerProcess) WebComponent(refresh bool) (string, error) {
+	if refresh {
+		resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/webComponent", proc.port))
+		if err != nil {
+			return "", err
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+
+		proc.webComponent = string(body)
+	}
+
+	return proc.webComponent, nil
 }

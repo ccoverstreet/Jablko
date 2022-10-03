@@ -1,8 +1,13 @@
 package process
 
 import (
+	"bytes"
+	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os/exec"
+	"strconv"
 	"sync"
 )
 
@@ -32,10 +37,11 @@ type ModProcessConfig struct {
 
 type DockerProcess struct {
 	sync.RWMutex
-	name string // Name of Docker image
-	tag  string // Tag of docker image (ex. latest)
-	port int
-	Cmd  *exec.Cmd
+	name         string // Name of Docker image
+	tag          string // Tag of docker image (ex. latest)
+	port         int
+	webComponent string
+	Cmd          *exec.Cmd
 }
 
 // In this case, the only data stored by Jablko is the port
@@ -46,4 +52,24 @@ type DebugProcess struct {
 	tag          string
 	port         int
 	webComponent string
+}
+
+func ProxyHTTPRequest(w http.ResponseWriter, r *http.Request, port int) error {
+	url, _ := url.Parse("http://127.0.0.1:" + strconv.Itoa(port))
+	proxy := httputil.NewSingleHostReverseProxy(url)
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	r.Host = url.Host
+	r.URL.Host = url.Host
+	r.URL.Scheme = url.Scheme
+	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
+
+	proxy.ServeHTTP(w, r)
+
+	return nil
 }
