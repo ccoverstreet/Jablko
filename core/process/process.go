@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os/exec"
 	"strconv"
 	"sync"
 )
@@ -33,15 +32,6 @@ type ModProcessConfig struct {
 	Tag  string `json:"tag"`
 	Type string `json:"type"`
 	Port int    `json:"port"`
-}
-
-type DockerProcess struct {
-	sync.RWMutex
-	name         string // Name of Docker image
-	tag          string // Tag of docker image (ex. latest)
-	port         int
-	webComponent string
-	Cmd          *exec.Cmd
 }
 
 // In this case, the only data stored by Jablko is the port

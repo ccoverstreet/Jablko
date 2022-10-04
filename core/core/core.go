@@ -71,7 +71,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 }
 
 func (core *JablkoCore) SaveConfig() error {
-	b, err := json.Marshal(core)
+	b, err := json.MarshalIndent(core, "", "  ")
 	if err != nil {
 		return err
 	}

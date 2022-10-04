@@ -31,32 +31,63 @@ func (pman *ProcManager) MarshalJSON() ([]byte, error) {
 }
 
 func (pman *ProcManager) UnmarshalJSON(b []byte) error {
-	tmp := map[string]process.ModProcessConfig{}
-
-	err := json.Unmarshal(b, &tmp)
-	if err != nil {
-		return err
+	// This struct is used to switch between config types and handlers
+	type idStruct struct {
+		Name string `json:"name"`
+		Type string `json:"type"`
 	}
 
-	for name, conf := range tmp {
-		switch conf.Type {
-		case process.PROC_DEBUG:
-			tempProc, _ := process.CreateDebugProcess(name, conf)
-			pman.mods[name] = tempProc
+	rawConfig := map[string]json.RawMessage{}
+	idMap := map[string]idStruct{}
 
+	// Unmarshal raw map
+	err := json.Unmarshal(b, &rawConfig)
+	if err != nil {
+		return fmt.Errorf("Unable to unmarshal raw config map: %v", err)
+	}
+
+	// Unmarshal id map
+	err = json.Unmarshal(b, &idMap)
+	if err != nil {
+		return fmt.Errorf("Unable to unmarshal id map: %v", err)
+	}
+
+	for modName, modID := range idMap {
+		fmt.Println(modName, modID, string(rawConfig[modName]))
+
+		switch modID.Type {
 		case process.PROC_DOCKER:
-			tempProc, _ := process.CreateDockerProcess(name, conf)
-			pman.mods[name] = tempProc
+			tempProc, err := process.CreateDockerProcessFromBytes(rawConfig[modName])
+			if err != nil {
+				return err
+			}
+			pman.mods[modID.Name] = tempProc
 		default:
-			return fmt.Errorf("Unable to load config. Process type %s is invalid", conf.Type)
+			return fmt.Errorf("Unable to load config. Process type %s is invalid", modID.Type)
 		}
 	}
+
+	/*
+		for name, conf := range tmp {
+			switch conf.Type {
+			case process.PROC_DEBUG:
+				tempProc, _ := process.CreateDebugProcess(name, conf)
+				pman.mods[name] = tempProc
+
+			case process.PROC_DOCKER:
+				tempProc, _ := process.CreateDockerProcess(name, conf)
+				pman.mods[name] = tempProc
+			default:
+				return fmt.Errorf("Unable to load config. Process type %s is invalid", conf.Type)
+			}
+		}
+	*/
 
 	return nil
 }
 
 // TODO: Figure out what type conf should actually be
-func (pman *ProcManager) AddMod(procName string, conf process.ModProcessConfig) error {
+func (pman *ProcManager) AddMod(procName string, procType string, conf []byte) error {
 	pman.Lock()
 	defer pman.Unlock()
 
@@ -69,10 +100,10 @@ func (pman *ProcManager) AddMod(procName string, conf process.ModProcessConfig) 
 
 	switch conf.Type {
 	case process.PROC_DEBUG:
-		newProc, procCreateErr = process.CreateDebugProcess(procName, conf)
+		newProc, procCreateErr = process.CreateDebugProcessFromBytes(conf)
 
 	case process.PROC_DOCKER:
-		newProc, procCreateErr = process.CreateDockerProcess(procName, conf)
+		newProc, procCreateErr = process.CreateDockerProcessFromBytes(conf)
 		/*
 			case process.PROC_DOCKER:
 				newProc = process.CreateDockerProcess(procName, tag)
