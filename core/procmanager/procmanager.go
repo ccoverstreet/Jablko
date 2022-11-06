@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/ccoverstreet/Jablko/core/process"
+	"github.com/rs/zerolog/log"
 )
 
 type ProcManager struct {
@@ -41,6 +42,7 @@ func (pman *ProcManager) UnmarshalJSON(b []byte) error {
 	idMap := map[string]idStruct{}
 
 	// Unmarshal raw map
+	// Fed to
 	err := json.Unmarshal(b, &rawConfig)
 	if err != nil {
 		return fmt.Errorf("Unable to unmarshal raw config map: %v", err)
@@ -52,42 +54,38 @@ func (pman *ProcManager) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("Unable to unmarshal id map: %v", err)
 	}
 
-	for modName, modID := range idMap {
-		fmt.Println(modName, modID, string(rawConfig[modName]))
+	for modName, _ := range idMap {
+		err := pman.AddMod(modName, rawConfig[modName])
+		if err != nil {
+			log.Error().
+				Str("modName", modName).
+				Str("conf", string(rawConfig[modName])).
+				Msg("Error reading config")
 
-		switch modID.Type {
-		case process.PROC_DOCKER:
-			tempProc, err := process.CreateDockerProcessFromBytes(rawConfig[modName])
-			if err != nil {
-				return err
-			}
-			pman.mods[modID.Name] = tempProc
-		default:
-			return fmt.Errorf("Unable to load config. Process type %s is invalid", modID.Type)
 		}
-	}
 
-	/*
-		for name, conf := range tmp {
-			switch conf.Type {
+		/*
+			switch modID.Type {
 			case process.PROC_DEBUG:
-				tempProc, _ := process.CreateDebugProcess(name, conf)
-				pman.mods[name] = tempProc
-
-			case process.PROC_DOCKER:
-				tempProc, _ := process.CreateDockerProcess(name, conf)
-				pman.mods[name] = tempProc
+				tempProc, err := process.CreateDebugProcessFromBytes(rawConfig[modName])
+				fmt.Println(tempProc, err)
+				case process.PROC_DOCKER:
+					tempProc, err := process.CreateDockerProcessFromBytes(rawConfig[modName])
+					if err != nil {
+						return err
+					}
+					pman.mods[modID.Name] = tempProc
 			default:
-				return fmt.Errorf("Unable to load config. Process type %s is invalid", conf.Type)
+				return fmt.Errorf("Unable to load config. Process type %s is invalid", modID.Type)
 			}
-		}
-	*/
+		*/
+	}
 
 	return nil
 }
 
 // TODO: Figure out what type conf should actually be
-func (pman *ProcManager) AddMod(procName string, procType string, conf []byte) error {
+func (pman *ProcManager) AddMod(procName string, conf []byte) error {
 	pman.Lock()
 	defer pman.Unlock()
 
@@ -95,19 +93,20 @@ func (pman *ProcManager) AddMod(procName string, procType string, conf []byte) e
 		return fmt.Errorf("Mod %s already exists", procName)
 	}
 
+	// Determine mod type from config
+	procType, err := process.DetermineProcType(conf)
+	if err != nil {
+		return err
+	}
+
 	var newProc process.ModProcess
 	var procCreateErr error
 
-	switch conf.Type {
+	switch procType {
 	case process.PROC_DEBUG:
 		newProc, procCreateErr = process.CreateDebugProcessFromBytes(conf)
-
 	case process.PROC_DOCKER:
 		newProc, procCreateErr = process.CreateDockerProcessFromBytes(conf)
-		/*
-			case process.PROC_DOCKER:
-				newProc = process.CreateDockerProcess(procName, tag)
-		*/
 	default:
 		return fmt.Errorf("Invalid mod type specified")
 	}
@@ -117,6 +116,7 @@ func (pman *ProcManager) AddMod(procName string, procType string, conf []byte) e
 	}
 
 	pman.mods[procName] = newProc
+	fmt.Println(pman.mods)
 
 	return nil
 }

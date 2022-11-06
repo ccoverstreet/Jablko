@@ -93,30 +93,18 @@ func getModListHandler(b []byte, core *JablkoCore) (interface{}, *HTTPError) {
 
 // Adds the mod to the manager, runs its update function, and tries to start it
 func addModHandler(b []byte, core *JablkoCore) (interface{}, *HTTPError) {
-	input := struct {
-		Type string `json:"type"`
-		Name string `json:"name"`
-		Tag  string `json:"tag"`
-		Port int    `json:port`
-	}{}
+	procName := process.DetermineProcName(b)
+	procTag := process.DetermineProcTag(b)
 
-	err := json.Unmarshal(b, &input)
-	if err != nil {
-		return struct{}{},
-			CreateHTTPError(400, "Unable to add mod", err)
-	}
+	fmt.Println(procName, procTag)
 
-	err = core.PMan.AddMod(input.Name, process.ModProcessConfig{
-		input.Tag,
-		input.Type,
-		input.Port,
-	})
+	err := core.PMan.AddMod(procName, b)
 	if err != nil {
 		return struct{}{},
 			CreateHTTPError(500, "Unable to add mod", err)
 	}
 
-	err = core.PMan.UpdateMod(input.Name, input.Tag)
+	err = core.PMan.UpdateMod(procName, procTag)
 	if err != nil {
 		return struct{}{},
 			CreateHTTPError(500, "Unable to run update function for mod", err)
@@ -128,7 +116,7 @@ func addModHandler(b []byte, core *JablkoCore) (interface{}, *HTTPError) {
 			CreateHTTPError(500, "Unable to save config", err)
 	}
 
-	err = core.PMan.StartMod(input.Name)
+	err = core.PMan.StartMod(procName)
 	if err != nil {
 		return struct{}{},
 			CreateHTTPError(500, "Unable to save config", err)

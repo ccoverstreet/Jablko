@@ -2,12 +2,13 @@ package process
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
-	"sync"
 )
 
 const (
@@ -28,22 +29,6 @@ type ModProcess interface {
 	MarshalJSON() ([]byte, error)
 }
 
-type ModProcessConfig struct {
-	Tag  string `json:"tag"`
-	Type string `json:"type"`
-	Port int    `json:"port"`
-}
-
-// In this case, the only data stored by Jablko is the port
-// used for communication
-type DebugProcess struct {
-	sync.RWMutex
-	name         string
-	tag          string
-	port         int
-	webComponent string
-}
-
 func ProxyHTTPRequest(w http.ResponseWriter, r *http.Request, port int) error {
 	url, _ := url.Parse("http://127.0.0.1:" + strconv.Itoa(port))
 	proxy := httputil.NewSingleHostReverseProxy(url)
@@ -62,4 +47,39 @@ func ProxyHTTPRequest(w http.ResponseWriter, r *http.Request, port int) error {
 	proxy.ServeHTTP(w, r)
 
 	return nil
+}
+
+// Determines proc type from a byte version of the provided config
+func DetermineProcType(conf []byte) (string, error) {
+	temp := struct {
+		Type string `json:"type"`
+	}{""}
+
+	err := json.Unmarshal(conf, &temp)
+
+	if temp.Type != PROC_DEBUG && temp.Type != PROC_DOCKER {
+		return "", fmt.Errorf("Invalid mod type '%s' specified", temp.Type)
+	}
+
+	return temp.Type, err
+}
+
+func DetermineProcName(conf []byte) string {
+	temp := struct {
+		Name string `json:"name"`
+	}{}
+
+	json.Unmarshal(conf, &temp)
+
+	return temp.Name
+}
+
+func DetermineProcTag(conf []byte) string {
+	temp := struct {
+		Tag string `json:"tag"`
+	}{}
+
+	json.Unmarshal(conf, &temp)
+
+	return temp.Tag
 }

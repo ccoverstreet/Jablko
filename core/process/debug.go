@@ -1,6 +1,7 @@
 package process
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,11 +10,39 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func CreateDebugProcess(name string, conf ModProcessConfig) (*DebugProcess, error) {
+type DebugProcessConf struct {
+	Name string `json:"name"`
+	Tag  string `json:"tag"`
+	Port int    `json:"port"`
+}
+
+// In this case, the only data stored by Jablko is the port
+// used for communication
+type DebugProcess struct {
+	sync.RWMutex
+	name         string
+	tag          string
+	port         int
+	webComponent string
+}
+
+func CreateDebugProcess(conf DebugProcessConf) (*DebugProcess, error) {
 	if conf.Port == 0 || conf.Port > 65535 {
 		return nil, fmt.Errorf("Invalid port specified for debug-type mod: %d", conf.Port)
 	}
-	return &DebugProcess{sync.RWMutex{}, name, conf.Tag, conf.Port, ""}, nil
+
+	return &DebugProcess{sync.RWMutex{}, conf.Name, conf.Tag, conf.Port, ""}, nil
+}
+
+func CreateDebugProcessFromBytes(b []byte) (*DebugProcess, error) {
+	conf := DebugProcessConf{}
+
+	err := json.Unmarshal(b, &conf)
+	if err != nil {
+		return nil, err
+	}
+
+	return CreateDebugProcess(conf)
 }
 
 func (proc *DebugProcess) MarshalJSON() ([]byte, error) {

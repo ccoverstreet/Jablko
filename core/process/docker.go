@@ -13,6 +13,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type DockerProcessConf struct {
+	Name string `json:"name"`
+	Tag  string `json:"tag"`
+}
+
 type DockerProcess struct {
 	sync.RWMutex
 	name         string // Name of Docker image
@@ -20,12 +25,6 @@ type DockerProcess struct {
 	port         int
 	webComponent string
 	Cmd          *exec.Cmd
-}
-
-type DockerProcessConfig struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	Tag  string `json:"tag"`
 }
 
 func dockerImageExists(name string, tag string) bool {
@@ -46,12 +45,12 @@ func pullDockerImage(name string, tag string) error {
 	return cmd.Run()
 }
 
-func CreateDockerProcess(conf DockerProcessConfig) (*DockerProcess, error) {
+func CreateDockerProcess(conf DockerProcessConf) (*DockerProcess, error) {
 	return &DockerProcess{sync.RWMutex{}, conf.Name, conf.Tag, 0, "", nil}, nil
 }
 
 func CreateDockerProcessFromBytes(conf []byte) (*DockerProcess, error) {
-	newConf := DockerProcessConfig{}
+	newConf := DockerProcessConf{}
 
 	err := json.Unmarshal(conf, &newConf)
 	if err != nil {
