@@ -34,7 +34,7 @@ func CreateJablkoCore(config []byte) (*JablkoCore, error) {
 
 	core.router.HandleFunc("/admin/{func}", WrapRoute(AdminFuncHandler, core))
 	core.router.HandleFunc("/assets/{file}", assetsHandler).Methods("GET")
-	core.router.PathPrefix("/mod/").
+	core.router.PathPrefix("/").
 		Handler(http.HandlerFunc(WrapRoute(passRequestHandler, core))).
 		Methods("GET", "POST")
 

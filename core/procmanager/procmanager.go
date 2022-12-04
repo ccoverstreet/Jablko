@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/ccoverstreet/Jablko/core/process"
@@ -61,24 +62,7 @@ func (pman *ProcManager) UnmarshalJSON(b []byte) error {
 				Str("modName", modName).
 				Str("conf", string(rawConfig[modName])).
 				Msg("Error reading config")
-
 		}
-
-		/*
-			switch modID.Type {
-			case process.PROC_DEBUG:
-				tempProc, err := process.CreateDebugProcessFromBytes(rawConfig[modName])
-				fmt.Println(tempProc, err)
-				case process.PROC_DOCKER:
-					tempProc, err := process.CreateDockerProcessFromBytes(rawConfig[modName])
-					if err != nil {
-						return err
-					}
-					pman.mods[modID.Name] = tempProc
-			default:
-				return fmt.Errorf("Unable to load config. Process type %s is invalid", modID.Type)
-			}
-		*/
 	}
 
 	return nil
@@ -161,7 +145,9 @@ func getOpenPort(start int, stop int) (int, error) {
 			return i, nil
 		}
 
-		conn.Close()
+		if conn != nil {
+			conn.Close()
+		}
 	}
 
 	return 0, fmt.Errorf("No open ports found in range %d to %d", start, stop)
@@ -183,6 +169,12 @@ func (pman *ProcManager) StartMod(procName string) error {
 
 	pman.portSearchIndex = ((pman.portSearchIndex + 1) % 10000) + 10000
 	fmt.Println(pman.portSearchIndex)
+
+	// Make data directory if it doesn't exist
+	err = os.MkdirAll("data/"+procName, 0755)
+	if err != nil && !os.IsExist(err) {
+		return fmt.Errorf("Unable to create data directory for %s: %v", procName, err)
+	}
 
 	return proc.Start(port)
 }

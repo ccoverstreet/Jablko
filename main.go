@@ -12,7 +12,10 @@ import (
 
 func main() {
 	greeting("0.3.0")
+
+	// Setup environment
 	setupLogging()
+	setupDirs()
 
 	jsonstr, err := os.ReadFile("jablkoconfig.json")
 	if err != nil {
@@ -62,4 +65,15 @@ func greeting(version string) {
 func setupLogging() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).
 		With().Caller().Logger()
+}
+
+func setupDirs() {
+	if _, err := os.Stat("data"); err != nil {
+		err := os.MkdirAll("data", 0700)
+		if err != nil {
+			log.Fatal().
+				Err(err).
+				Msgf("Cannot create required directory %s", "data")
+		}
+	}
 }

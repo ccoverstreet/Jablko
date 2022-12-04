@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"sync"
 
@@ -25,6 +26,7 @@ type DockerProcess struct {
 	port         int
 	webComponent string
 	Cmd          *exec.Cmd
+	Writer       *SubprocessWriter
 }
 
 func dockerImageExists(name string, tag string) bool {
@@ -46,7 +48,12 @@ func pullDockerImage(name string, tag string) error {
 }
 
 func CreateDockerProcess(conf DockerProcessConf) (*DockerProcess, error) {
-	return &DockerProcess{sync.RWMutex{}, conf.Name, conf.Tag, 0, "", nil}, nil
+	writer, err := CreateSubprocessWriter(conf.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &DockerProcess{sync.RWMutex{}, conf.Name, conf.Tag,
+		0, "", nil, writer}, nil
 }
 
 func CreateDockerProcessFromBytes(conf []byte) (*DockerProcess, error) {
@@ -99,10 +106,20 @@ func (proc *DockerProcess) Start(port int) error {
 		return err
 	}
 
+	dataDirAbs, err := filepath.Abs("data/" + proc.name)
+	if err != nil {
+		return err
+	}
+
 	// Create Cmd
 	proc.Cmd = exec.Command("docker", "run",
 		"-p", strconv.Itoa(port)+":9090",
+		"--mount", fmt.Sprintf("type=bind,source=%s,target=/jablko", dataDirAbs),
 		proc.name+":"+proc.tag)
+
+	proc.port = port
+	proc.Cmd.Stdout = proc.Writer
+	proc.Cmd.Stderr = proc.Writer
 
 	err = proc.Cmd.Start()
 	go func() {
@@ -111,8 +128,6 @@ func (proc *DockerProcess) Start(port int) error {
 			Err(err).
 			Msg("Docker process exited")
 	}()
-
-	proc.port = port
 
 	return err
 }

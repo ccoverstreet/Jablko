@@ -5,7 +5,7 @@
 This is the specification for the process that Jablko spawns and represents the brains of the mod. The mod has the following requirements
 
 - HTTP API
-	- `/mod/<some route for functions>`
+	- `<some route for functions>?modName=yourModName`
 		- General requests to be passed through from Jablko to the mod must be prefixed with the `/mod` route.
 		- The target mod is specified by passing the mod name as a URL argument (specified in [frontend](#frontend))
 	- `/mod/webComponent`
