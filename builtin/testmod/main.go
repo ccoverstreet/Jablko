@@ -51,13 +51,21 @@ func main() {
 	router.HandleFunc("/mod/{func}", demoHandler)
 	router.HandleFunc("/webComponent", webComponentHandler)
 
+	// Example of some long running work with data storage
+	f, err := os.OpenFile("jablko/test.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+
 	go func() {
 		for {
 			time.Sleep(time.Duration(instance.UpdateInterval) * time.Second)
 			log.Println("Doing work")
+			fmt.Fprintf(f, "What's up?\n")
 		}
 	}()
 
+	// Start any servers that need to listen
 	log.Println("Starting HTTP Server")
 	http.ListenAndServe(":9090", router)
 	fmt.Println("vim-go")
